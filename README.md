@@ -13,15 +13,15 @@ Requermientos:
 Docker :
 Ejecutar: # ```docker-compose up```
 
-# ```docker exec -ti laravel_app /bin/bash```
+- ```docker exec -ti laravel_app /bin/bash```
 
-# ```php artisan key:generate```
+ - ```php artisan key:generate```
 
-# ```php artisan config:cache```
+- ```php artisan config:cache```
 
-# ```php artisan migrate:fresh```
+- ```php artisan migrate:fresh``
 
-# ```php artisan serve```
+- ```php artisan serve```
 
 
 - ```docker exec -ti laravel_mysql mysql -u root```
