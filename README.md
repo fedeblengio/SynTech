@@ -23,17 +23,17 @@ Ejecutar: # ```docker-compose up```
 
 - ```php artisan serve```
 
-# Entrar a MariaDB
+# Entrar A Mysql
 - ```docker exec -ti laravel_mysql mysql -u root```
 
 # Comandos php artisan make:
 
 - ```php artisan make:controller nombreDelControlador``` # CREAR UN CONTROLADOR
 
-```php artisan make:model nombreDelModelo``` # CREA UN MODELO
+- ```php artisan make:model nombreDelModelo``` # CREA UN MODELO
 
-``` php artisan make:migration nombreDeLaMigracion ``` # CREA UNA MIGRACION
+- ``` php artisan make:migration nombreDeLaMigracion ``` # CREA UNA MIGRACION
 
-```php artisan migrate``` # CARGA LAS NUEVAS TABLAS
+- ```php artisan migrate``` # CARGA LAS NUEVAS TABLAS
 
-```php artisan serve``` # EJECUTA SERVER
+- ```php artisan serve``` # EJECUTA SERVER
