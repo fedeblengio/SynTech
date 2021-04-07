@@ -32,8 +32,8 @@ Ejecutar: # ```docker-compose up```
 
 ```php artisan make:model nombreDelModelo``` # CREA UN MODELO
 
-# php artisan make:migration nombreDeLaMigracion # CREA UNA MIGRACION
+``` php artisan make:migration nombreDeLaMigracion ``` # CREA UNA MIGRACION
 
-# php artisan migrate
+```php artisan migrate``` # CARGA LAS NUEVAS TABLAS
 
-# php artisan serve
+```php artisan serve``` # EJECUTA SERVER
