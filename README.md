@@ -2,7 +2,7 @@
 
 # Trello
 
-https://trello.com/invite/b/0cFZvwRZ/15f5bfc96f851057b3f9408bbc6bada8/proyecto2021
+https://trello.com/invite/b/0cFZvwRZ/74e25bf1661230e35cfbc2c82945f10c/syntech
 
 # Miro
 https://miro.com/app/board/o9J_lLThV_s=/
