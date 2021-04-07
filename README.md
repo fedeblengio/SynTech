@@ -5,7 +5,7 @@
 https://trello.com/invite/b/0cFZvwRZ/15f5bfc96f851057b3f9408bbc6bada8/proyecto2021
 
 # Miro
-
+https://miro.com/app/board/o9J_lLThV_s=/
 # Ejecutar con Docker
 
 Requermientos:
@@ -19,7 +19,7 @@ Ejecutar: # ```docker-compose up```
 
 - ```php artisan config:cache```
 
-- ```php artisan migrate:fresh``
+- ```php artisan migrate:fresh```
 
 - ```php artisan serve```
 
