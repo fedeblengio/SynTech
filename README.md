@@ -15,11 +15,12 @@ Ejecutar: # ```docker-compose up```
 
 - ```docker exec -ti laravel_app /bin/bash```
 
- - ```php artisan key:generate```
+ - ```php artisan key:generate;php artisan config:cache;php artisan migrate:fresh;```
 
-- ```php artisan config:cache```
+- ```php artisan config:clear;php artisan cache:clear;php artisan config:cache;```
 
-- ```php artisan migrate:fresh```
+
+
 
 - ```php artisan serve```
 
@@ -37,7 +38,3 @@ Ejecutar: # ```docker-compose up```
 - ```php artisan migrate``` # CARGA LAS NUEVAS TABLAS
 
 - ```php artisan serve``` # EJECUTA SERVER
-
- - ```php artisan config:clear```
- - ```php artisan cache:clear```
- - ```php artisan config:cache```
