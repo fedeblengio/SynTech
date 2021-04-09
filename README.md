@@ -37,3 +37,7 @@ Ejecutar: # ```docker-compose up```
 - ```php artisan migrate``` # CARGA LAS NUEVAS TABLAS
 
 - ```php artisan serve``` # EJECUTA SERVER
+
+ - ```php artisan config:clear```
+ - ```php artisan cache:clear```
+ - ```php artisan config:cache```
