@@ -74,7 +74,7 @@ return [
                 'sync_passwords' => false,
                 'sync_attributes' => [
                     'name' => 'cn',
-                    'email' => 'mail',
+                    /* 'email' => 'mail', */
                 ],
             ],
         ],

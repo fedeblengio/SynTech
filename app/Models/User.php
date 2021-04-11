@@ -20,7 +20,7 @@ class User extends Authenticatable implements LdapAuthenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', /* 'email', */ 'password',
     ];
 
     /**
@@ -38,6 +38,6 @@ class User extends Authenticatable implements LdapAuthenticatable
      * @var array
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
+       /*  'email_verified_at' => 'datetime', */
     ];
 }

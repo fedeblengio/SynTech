@@ -19,7 +19,7 @@ Ejecutar: # ```docker-compose up```
 
 - ```php artisan config:clear;php artisan cache:clear;php artisan config:cache;```
 
-
+-```php artisan ldap:test```
 
 
 - ```php artisan serve```
