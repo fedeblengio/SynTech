@@ -1,6 +1,6 @@
 <p align="center"><img src="https://i.pinimg.com/originals/1e/ae/0d/1eae0d90b1256075eba5e84ea755fb33.jpg" width="400"></a></p>
 
-# Trello
+# Trelloo
 
 https://trello.com/invite/b/0cFZvwRZ/74e25bf1661230e35cfbc2c82945f10c/syntech
 
