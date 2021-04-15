@@ -38,3 +38,5 @@ Ejecutar: # ```docker-compose up```
 - ```php artisan migrate``` # CARGA LAS NUEVAS TABLAS
 
 - ```php artisan serve``` # EJECUTA SERVER
+
+- ```Prueba Jenkins``` # ANASHE
