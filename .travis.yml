@@ -4,12 +4,11 @@ php:
   - 7.3
 
 os: linux
-
+services:
+  - docker
 before_script:
-  - composer install
-  - cp .env.example .env
-  - php artisan key:generate
+  - docker-compose up
 
 
 script:
-  - vendor/bin/phpunit
+  - docker exec laravel_app vendor/bin/phpunit
