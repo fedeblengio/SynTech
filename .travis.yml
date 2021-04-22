@@ -10,5 +10,5 @@ before_script:
   - cp .env.example .env
   - composer install
 script:
-  - php artisan serve
+
   - vendor/bin/phpunit
