@@ -9,4 +9,4 @@ services:
 before_script:
   - composer install
 script:
-  - docker exec laravel_app vendor/bin/phpunit
+  - vendor/bin/phpunit
