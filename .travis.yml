@@ -6,9 +6,6 @@ php:
 os: linux
 services:
   - docker
-before_script:
-  - docker-compose up
-
 
 script:
   - docker exec laravel_app vendor/bin/phpunit
