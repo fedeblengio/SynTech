@@ -15,17 +15,19 @@ use App\Http\Controllers;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::post('/login','App\Http\Controllers\loginController@connect');
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
 
 Route::get('/test', function (){
     return 'Hola';
 });
 
-Route::get('/login','App\Http\Controllers\loginController@index');
 
-Route::get('/prueba','App\Http\Controllers\usuariosController@index');
-Route::get('/prueba3','App\Http\Controllers\usuariosController@store');
+
+Route::get('/usuarios','App\Http\Controllers\usuariosController@index');
+
+Route::get('/usuario','App\Http\Controllers\usuariosController@show');
+Route::post('/usuario','App\Http\Controllers\usuariosController@create');
+Route::delete('/usuario','App\Http\Controllers\usuariosController@destroy');
+Route::put('/usuario','App\Http\Controllers\usuariosController@update');
 

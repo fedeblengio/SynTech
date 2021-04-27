@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Http\Request;
 
 class loginController extends Controller
@@ -34,9 +34,21 @@ class loginController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
 
+
+
+    public function connect(Request $request)
+    {
+        $connection = new \LdapRecord\Connection([
+            'hosts' => ['syntech2021.ddns.net'],
+        ]);
+
+        if ($connection->auth()->attempt($request->username, $request->password)) {
+            return "Credenciales Validas";
+        } else {
+            // Invalid credentials.
+            return "Credenciales Erroneas";
+        }
     }
 
     /**

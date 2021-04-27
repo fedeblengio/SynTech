@@ -12,10 +12,10 @@ class usuariosController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $allUsers =  User::all();
-        return response()->json($allUsers);
+        return $allUsers;
     }
 
     /**
@@ -23,9 +23,31 @@ class usuariosController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $user = (new User)->inside('ou='.$request->ou.',dc=syntech,dc=intra');
+
+        $user->cn = $request->cn;
+        $user->unicodePwd = $request->unicodePwd;
+        $user->samaccountname = $request->samaccountname;
+        $user->userPrincipalName = $request->userPrincipalName;
+
+        $user->save();
+
+        // Sync the created users attributes.
+        $user->refresh();
+
+        // Enable the user.
+        $user->userAccountControl = 66048;
+
+
+        try {
+
+            $user->save();
+            return "Usuario creado";
+        } catch (\LdapRecord\LdapRecordException $e) {
+            return "Fallo al crear usuario ".$e;
+        }
     }
 
     /**
@@ -34,25 +56,9 @@ class usuariosController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store()
     {
-        $user = (new User)->inside('ou=Users,dc=syntech,dc=intra');
 
-        $user->cn = 'John Doe';
-        $user->unicodePwd = 'Ak098768010';
-        $user->samaccountname = 'jdoe';
-        $user->userPrincipalName = 'jdoe@acme.org';
-
-        $user->save();
-
-        // Enable the user.
-        $user->userAccountControl = 512;
-
-        try {
-            $user->save();
-        } catch (\LdapRecord\LdapRecordException $e) {
-            // Failed saving user.
-        }
     }
 
     /**
@@ -61,9 +67,13 @@ class usuariosController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function show(User $user)
+    public function show(Request $request)
     {
-        //
+        $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
+        $nombre= $user->getName();
+        $ou= $user->getParentDn();
+
+        return "Nombre: ".$nombre." , ".$ou;
     }
 
     /**
@@ -72,9 +82,10 @@ class usuariosController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function edit(User $user)
+    public function edit(Request $request)
     {
-        //
+
+
     }
 
     /**
@@ -84,9 +95,17 @@ class usuariosController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request)
     {
-        //
+        $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
+
+        $user->unicodePwd = $request->unicodePwd;
+
+        $user->save();
+
+        return "Usuario Modificado";
+
+
     }
 
     /**
@@ -95,8 +114,12 @@ class usuariosController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user)
+    public function destroy(Request $request)
     {
-        //
+        $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
+        $user->delete();
+
+        return "Usuario Eliminado";
+
     }
 }
