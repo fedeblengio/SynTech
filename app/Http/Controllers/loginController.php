@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Http\Request;
 
@@ -39,12 +39,16 @@ class loginController extends Controller
 
     public function connect(Request $request)
     {
+        $token =env('JWT_SECRET','vqILwvJW6Vxup3KMGhiooseXlFwpuT60rvr71tAi2bVwpVgs3rUgnlrik54AFQDb');
         $connection = new \LdapRecord\Connection([
             'hosts' => ['syntech2021.ddns.net'],
         ]);
 
         if ($connection->auth()->attempt($request->username, $request->password)) {
-            return "Credenciales Validas";
+            return [
+                'username' => $request->username,
+                'token' => $token
+                 ];
         } else {
             // Invalid credentials.
             return "Credenciales Erroneas";
