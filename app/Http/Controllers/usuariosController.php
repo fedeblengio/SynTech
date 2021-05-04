@@ -1,28 +1,29 @@
 <?php
 
 namespace App\Http\Controllers;
-
-
+use App\Models\usuarios;
 use Illuminate\Http\Request;
 use LdapRecord\Models\ActiveDirectory\User;
+
 class usuariosController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+   
     public function index(Request $request)
     {
         $allUsers =  User::all();
         return $allUsers;
     }
+    public function agregarUsuarioDB(Request $request){
+        $usuario = new usuarios;
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+            $usuario -> username = $request->samaccountname;
+            $usuario -> nombre = $request->cn;
+            $usuario -> email = $request->userPrincipalName;
+            $usuario-> ou= $request->ou;
+
+            $usuario -> save();
+    }
+
     public function create(Request $request)
     {
         $user = (new User)->inside('ou='.$request->ou.',dc=syntech,dc=intra');
@@ -42,7 +43,7 @@ class usuariosController extends Controller
 
 
         try {
-
+            self::agregarUsuarioDB($request);
             $user->save();
             return "Usuario creado";
         } catch (\LdapRecord\LdapRecordException $e) {
