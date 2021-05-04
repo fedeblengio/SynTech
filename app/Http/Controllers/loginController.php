@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Http\Request;
+use LdapRecord\Connection;
 
 class loginController extends Controller
 {
@@ -41,10 +42,10 @@ class loginController extends Controller
     {
         $token =env('JWT_SECRET','vqILwvJW6Vxup3KMGhiooseXlFwpuT60rvr71tAi2bVwpVgs3rUgnlrik54AFQDb');
         $connection = new \LdapRecord\Connection([
-            'hosts' => ['syntech2021.ddns.net'],
+            'hosts' => ['192.168.1.73'],
         ]);
 
-        if ($connection->auth()->attempt($request->username, $request->password)) {
+        if ($connection->auth()->attempt($request->username.'@syntech.intra', $request->password)) {
             return [
                 'connection' => 'Success',
                 'username' => $request->username,
