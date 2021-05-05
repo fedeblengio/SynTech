@@ -20,6 +20,7 @@ class CreateUsuariosTable extends Migration
             $table->string('nombre');
             $table->string('email')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
