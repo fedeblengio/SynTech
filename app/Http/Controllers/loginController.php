@@ -6,6 +6,7 @@ use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use LdapRecord\Connection;
+use App\Models\usuarios;
 
 class loginController extends Controller
 {
@@ -37,7 +38,10 @@ class loginController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-
+    public function traerNombreUsuario($request){
+        $u = usuarios::where('username', $request->username)->first();
+        return $u->nombre;
+    }
 
     public function connect(Request $request)
     {
@@ -45,11 +49,12 @@ class loginController extends Controller
         $connection = new \LdapRecord\Connection([
             'hosts' => ['192.168.1.73'],
         ]);
-
+            $usuario = self::traerNombreUsuario($request);
+            
         if ($connection->auth()->attempt($request->username.'@syntech.intra', $request->password)) {
             return [
                 'connection' => 'Success',
-                'username' => $request->username,
+                'username' => $usuario,
                 'token' => $token
                  ];
         }else {
@@ -102,4 +107,6 @@ class loginController extends Controller
     {
         //
     }
+
+
 }
