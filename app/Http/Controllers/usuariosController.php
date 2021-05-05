@@ -92,7 +92,7 @@ class usuariosController extends Controller
         $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
         $user->delete();
 		
-		$userDB = usuario::where('nombre='.$request->cn.',ou='.$request->ou.')->First();
+		$userDB = usuarios::find($request->username);
 		$userDB->delete();
         return "Usuario Eliminado";
 
