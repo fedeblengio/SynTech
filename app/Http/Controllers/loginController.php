@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use LdapRecord\Connection;
 
 class loginController extends Controller
@@ -40,7 +41,7 @@ class loginController extends Controller
 
     public function connect(Request $request)
     {
-        $token =env('JWT_SECRET','vqILwvJW6Vxup3KMGhiooseXlFwpuT60rvr71tAi2bVwpVgs3rUgnlrik54AFQDb');
+        $token = Str::random(60);
         $connection = new \LdapRecord\Connection([
             'hosts' => ['192.168.1.73'],
         ]);
@@ -51,10 +52,10 @@ class loginController extends Controller
                 'username' => $request->username,
                 'token' => $token
                  ];
-        } else {
-            // Invalid credentials.
-            return "Credenciales Erroneas";
+        }else {
+            return response()->json(['error' => 'Unauthenticated.'], 401);
         }
+
     }
 
     /**
