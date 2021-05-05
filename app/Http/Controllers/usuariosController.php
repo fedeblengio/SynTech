@@ -10,9 +10,11 @@ class usuariosController extends Controller
    
     public function index(Request $request)
     {
-        $allUsers =  User::all();
-        return $allUsers;
+        return response()->json(usuarios::all());
     }
+
+    
+
     public function agregarUsuarioDB(Request $request){
         $usuario = new usuarios;
 
@@ -51,51 +53,26 @@ class usuariosController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+   
     public function store()
     {
 
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
-     */
     public function show(Request $request)
     {
-        $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
-        $nombre= $user->getName();
-        $ou= $user->getParentDn();
-
-        return "Nombre: ".$nombre." , ".$ou;
+        $cliente = usuarios::where('username',$request->sammaccountname)->first();
+        return response()->json($cliente);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
-     */
+   
     public function edit(Request $request)
     {
 
 
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
-     */
+   
     public function update(Request $request)
     {
         $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
@@ -109,12 +86,7 @@ class usuariosController extends Controller
 
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
-     */
+  
     public function destroy(Request $request)
     {
         $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
