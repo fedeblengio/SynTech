@@ -61,8 +61,8 @@ class usuariosController extends Controller
 
     public function show(Request $request)
     {
-        $cliente = usuarios::where('username',$request->sammaccountname)->first();
-        return response()->json($cliente);
+        $userDB = usuarios::find($request->username);
+        return response()->json($userDB);
     }
 
    
