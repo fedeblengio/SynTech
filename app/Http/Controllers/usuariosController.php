@@ -61,7 +61,7 @@ class usuariosController extends Controller
 
     public function show(Request $request)
     {
-        $userDB = usuarios::find($request->username);
+        $userDB = usuarios::where('username', $request->username)->first();
         return response()->json($userDB);
     }
 
@@ -93,7 +93,7 @@ class usuariosController extends Controller
     
        /*  $user->userAccountControl = 2;
         $user->refresh(); */
-        
+
         $user->delete();
         $u = usuarios::where('username', $request->username)->first();
         $u->delete();
