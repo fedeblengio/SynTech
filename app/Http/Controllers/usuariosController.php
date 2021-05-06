@@ -90,11 +90,13 @@ class usuariosController extends Controller
     public function destroy(Request $request)
     {
         $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
-        $user->delete();
-		
-		$userDB = usuarios::find($request->username);
-		$userDB->delete();
+    
+        $user->userAccountControl = 2;
+        $user->refresh();
+        
+        $u = usuarios::where('username', $request->username)->first();
+        $u->delete();
+    
         return "Usuario Eliminado";
-
     }
 }
