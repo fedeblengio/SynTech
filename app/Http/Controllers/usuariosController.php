@@ -91,9 +91,10 @@ class usuariosController extends Controller
     {
         $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
     
-        $user->userAccountControl = 2;
-        $user->refresh();
+       /*  $user->userAccountControl = 2;
+        $user->refresh(); */
         
+        $user->delete();
         $u = usuarios::where('username', $request->username)->first();
         $u->delete();
     
