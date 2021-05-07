@@ -21,6 +21,10 @@ Ejecutar: # ```docker-compose up```
 
 - ```php artisan ldap:test```
 
+- cd /etc/ldap/
+
+- su sudo
+- echo 'TLS_REQCERT never' > ldap.conf
 
 - ```php artisan serve```
 
