@@ -75,14 +75,29 @@ class usuariosController extends Controller
    
     public function update(Request $request)
     {
+
+        $usuarios = usuarios::where('nombre', $request->cn)->first();
+       
+        
         $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
-
         $user->unicodePwd = $request->unicodePwd;
-
+        
         $user->save();
+        $user->refresh();
+     
+        /* Cambiar cn ad */
+
+    /*  $user->cn = $request->newcn;
+        $user->rename();
+         */
+        
+        
+        $usuarios->nombre = $request->newcn;
+        $usuarios->email = $request->email;
+
+        $usuarios->save();
 
         return "Usuario Modificado";
-
 
     }
 
