@@ -43,7 +43,7 @@ class usuariosController extends Controller
                 $usuarioDB -> save();
         
                 self::agregarUsuarioAD($request);
-                return response()->json(['status' => 'OK'], 200);
+                return response()->json(['status' => 'Success'], 200);
             }
            
           
@@ -117,13 +117,9 @@ class usuariosController extends Controller
         $user->rename();
          */
         
-        
-        $usuarios->nombre = $request->newcn;
-        $usuarios->email = $request->email;
+      
 
-        $usuarios->save();
-
-        return "Usuario Modificado";
+        return response()->json(['status' => 'Success'], 200);
 
     }
 
