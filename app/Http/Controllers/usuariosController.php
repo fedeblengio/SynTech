@@ -15,19 +15,48 @@ class usuariosController extends Controller
 
     
 
-    public function agregarUsuarioDB(Request $request){
-        $usuario = new usuarios;
+    public function create(Request $request){
+        
+       
+            
+            $usuarioAD = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra'); 
+            $usuarioDB = usuarios::where('username',$request->samaccountname)->first();      
+            $usuarioDB2 = usuarios::where('email',$request->userPrincipalName)->first();
+          
+            
+            if($usuarioAD){      
+                return response()->json(['error' => 'Forbidden'], 403);
+                $this->exit();
+            }
+            if ($usuarioDB2) {
+                return response()->json(['error' => 'Forbidden'], 403);
+                $this->exit();
+            }      
+            if ($usuarioDB) {
+                return response()->json(['error' => 'Forbidden'], 403);          
+            }else{
+                $usuarioDB = new usuarios;
+                $usuarioDB -> username = $request->samaccountname;
+                $usuarioDB -> nombre = $request->cn;
+                $usuarioDB -> email = $request->userPrincipalName;            
+                $usuarioDB-> ou= $request->ou;
+                $usuarioDB -> save();
+        
+                self::agregarUsuarioAD($request);
+                return response()->json(['status' => 'OK'], 200);
+            }
+           
+          
+       
 
-            $usuario -> username = $request->samaccountname;
-            $usuario -> nombre = $request->cn;
-            $usuario -> email = $request->userPrincipalName;
-            $usuario-> ou= $request->ou;
-
-            $usuario -> save();
+       
+        
+            
     }
 
-    public function create(Request $request)
+    public function agregarUsuarioAD(Request $request)
     {
+      
         $user = (new User)->inside('ou='.$request->ou.',dc=syntech,dc=intra');
 
         $user->cn = $request->cn;
@@ -43,11 +72,8 @@ class usuariosController extends Controller
         // Enable the user.
         $user->userAccountControl = 66048;
 
-
         try {
-            self::agregarUsuarioDB($request);
             $user->save();
-            return "Usuario creado";
         } catch (\LdapRecord\LdapRecordException $e) {
             return "Fallo al crear usuario ".$e;
         }
