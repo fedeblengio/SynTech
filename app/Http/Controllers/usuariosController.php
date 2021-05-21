@@ -1,57 +1,56 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\usuarios;
 use Illuminate\Http\Request;
 use LdapRecord\Models\ActiveDirectory\User;
 
 class usuariosController extends Controller
 {
-   
-    public function index(Request $request)
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
     {
         return response()->json(usuarios::all());
     }
 
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create(Request $request)
+    {
+        $usuarioAD = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra'); 
+        $usuarioDB = usuarios::where('username',$request->samaccountname)->first();      
+        $usuarioDB2 = usuarios::where('email',$request->userPrincipalName)->first();
+      
+        
+        if($usuarioAD){      
+            return response()->json(['error' => 'Forbidden'], 403);
+            $this->exit();
+        }
+        if ($usuarioDB2) {
+            return response()->json(['error' => 'Forbidden'], 403);
+            $this->exit();
+        }      
+        if ($usuarioDB) {
+            return response()->json(['error' => 'Forbidden'], 403);          
+        }else{
+            $usuarioDB = new usuarios;
+            $usuarioDB -> username = $request->samaccountname;
+            $usuarioDB -> nombre = $request->cn;
+            $usuarioDB -> email = $request->userPrincipalName;            
+            $usuarioDB-> ou= $request->ou;
+            $usuarioDB -> save();
     
-
-    public function create(Request $request){
-        
-       
-            
-            $usuarioAD = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra'); 
-            $usuarioDB = usuarios::where('username',$request->samaccountname)->first();      
-            $usuarioDB2 = usuarios::where('email',$request->userPrincipalName)->first();
-          
-            
-            if($usuarioAD){      
-                return response()->json(['error' => 'Forbidden'], 403);
-                $this->exit();
-            }
-            if ($usuarioDB2) {
-                return response()->json(['error' => 'Forbidden'], 403);
-                $this->exit();
-            }      
-            if ($usuarioDB) {
-                return response()->json(['error' => 'Forbidden'], 403);          
-            }else{
-                $usuarioDB = new usuarios;
-                $usuarioDB -> username = $request->samaccountname;
-                $usuarioDB -> nombre = $request->cn;
-                $usuarioDB -> email = $request->userPrincipalName;            
-                $usuarioDB-> ou= $request->ou;
-                $usuarioDB -> save();
-        
-                self::agregarUsuarioAD($request);
-                return response()->json(['status' => 'Success'], 200);
-            }
-           
-          
-       
-
-       
-        
-            
+            self::agregarUsuarioAD($request);
+            return response()->json(['status' => 'Success'], 200);
+        }
     }
 
     public function agregarUsuarioAD(Request $request)
@@ -79,29 +78,49 @@ class usuariosController extends Controller
         }
     }
 
-   
-    public function store()
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
     {
-
+        //
     }
 
-    public function show(Request $request)
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\usuarios  $usuarios
+     * @return \Illuminate\Http\Response
+     */
+    public function show(request $request)
     {
         $userDB = usuarios::where('username', $request->username)->first();
         return response()->json($userDB);
     }
 
-   
-    public function edit(Request $request)
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\usuarios  $usuarios
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(usuarios $usuarios)
     {
-
-
+        //
     }
 
-   
-    public function update(Request $request)
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\usuarios  $usuarios
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, usuarios $usuarios)
     {
-
         $usuarios = usuarios::where('nombre', $request->cn)->first();
        
         
@@ -120,21 +139,26 @@ class usuariosController extends Controller
       
 
         return response()->json(['status' => 'Success'], 200);
-
     }
 
-  
-    public function destroy(Request $request)
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\usuarios  $usuarios
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(request $request)
     {
         $user = User::find('cn='.$request->cn.',ou='.$request->ou.',dc=syntech,dc=intra');
     
-       /*  $user->userAccountControl = 2;
-        $user->refresh(); */
-
-        $user->delete();
-        $u = usuarios::where('username', $request->username)->first();
-        $u->delete();
-    
-        return "Usuario Eliminado";
+        /*  $user->userAccountControl = 2;
+         $user->refresh(); */
+ 
+         $user->delete();
+         $u = usuarios::where('username', $request->username)->first();
+         $u->delete();
+     
+         return "Usuario Eliminado";
+     }
     }
-}
+

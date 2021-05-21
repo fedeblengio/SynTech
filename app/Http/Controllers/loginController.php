@@ -1,12 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use LdapRecord\Models\ActiveDirectory\User;
+use App\Models\token;
+use App\Models\usuarios;
 use Illuminate\Http\Request;
+use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Support\Str;
 use LdapRecord\Connection;
-use App\Models\usuarios;
+use Carbon\Carbon;
+
 
 class loginController extends Controller
 {
@@ -17,42 +19,21 @@ class loginController extends Controller
         return response()->json($allUsers);
     }
 
-   
-    public function create()
-    {
-      
-    }
-
-    public function traerDatos($request){
-        $u = usuarios::where('username', $request->username)->first();
-       
-        $datos=[
-            "username" => $u->nombre,
-            "ou" => $u->ou
-        ];
-        return $datos;
-    }
-
-
-
-
-    
     public function connect(Request $request)
     {
-        $token = Str::random(60);
+        
         $connection = new Connection([
             'hosts' => ['192.168.1.73'],
         ]);
 
-        $datos = self::traerDatos($request);
+        $datos = self::traerDatos($request); 
 
         $connection-> connect();
 
         if ($connection->auth()->attempt($request->username.'@syntech.intra', $request->password, $stayBound = true)) {
             return [
                 'connection' => 'Success',
-                'datos' => $datos,
-                'token' => $token
+                 'datos' => $datos, 
                  ];
         }else {
             return response()->json(['error' => 'Unauthenticated.'], 401);
@@ -60,32 +41,50 @@ class loginController extends Controller
 
     }
 
+    public function traerDatos($request){
+
+
+        $u = usuarios::where('username', $request->username)->first(); 
+
+        $datos=[
+            "username" => $u->username,
+            "nombre" => $u->nombre,
+            "ou" => $u->ou
+        ];
+
+        $base64data = base64_encode(json_encode($datos));
+        $tExist = token::where('token', $base64data)->first();
+        
+       
+        if($tExist){
+            $tExist->delete();
+            self::guardarToken($base64data);
+
+        }else{
+            self::guardarToken($base64data);
+        }
+
+        return  $base64data;
+    }
+
+
+
+
+    public function guardarToken($token){
+        $t = new token;
+        $t->token=$token;
+        $t->fecha_vencimiento=Carbon::now()->addMinutes(60);
+        $t->save();
+    }
    
 
 
 
-    public function show(User $user)
-    {
-       
-    }
 
-    
-    public function edit(User $user)
-    {
-        
-    }
 
-    
-    public function update(Request $request, User $user)
-    {
-        
-    }
+
+
+
 
    
-    public function destroy(User $user)
-    {
-       
-    }
-
-
 }

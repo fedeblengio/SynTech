@@ -9,7 +9,6 @@ use Illuminate\Notifications\Notifiable;
 use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 use LdapRecord\Laravel\Auth\AuthenticatesWithLdap;
 
-
 class User extends Authenticatable implements LdapAuthenticatable
 {
     use HasFactory, Notifiable, AuthenticatesWithLdap;
@@ -20,7 +19,9 @@ class User extends Authenticatable implements LdapAuthenticatable
      * @var array
      */
     protected $fillable = [
-        'name', /* 'email', */ 'password',
+        'name',
+        'email',
+        'password',
     ];
 
     /**
@@ -29,7 +30,8 @@ class User extends Authenticatable implements LdapAuthenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -38,6 +40,6 @@ class User extends Authenticatable implements LdapAuthenticatable
      * @var array
      */
     protected $casts = [
-       /*  'email_verified_at' => 'datetime', */
+        'email_verified_at' => 'datetime',
     ];
 }

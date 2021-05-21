@@ -23,9 +23,9 @@ Ejecutar: # ```docker-compose up```
 
 - cd /etc/ldap/
 
-- su sudo
+- sudo su
 - echo 'TLS_REQCERT never' > ldap.conf
-
+- chmod -R 777 /app/storage/logs/*
 - ```php artisan serve```
 
 # Entrar A Mysql

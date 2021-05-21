@@ -38,7 +38,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'ldap',
+            'provider' => 'ldap', // Changed to 'ldap'
         ],
 
         'api' => [
@@ -74,7 +74,7 @@ return [
                 'sync_passwords' => false,
                 'sync_attributes' => [
                     'name' => 'cn',
-                    /* 'email' => 'mail', */
+                    'email' => 'mail',
                 ],
             ],
         ],
