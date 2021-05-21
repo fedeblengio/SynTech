@@ -15,7 +15,9 @@ services:
   app:
     container_name: laravel_app
     tty: true
-    image: docker.io/bitnami/laravel:8
+    build:
+      context: ./
+      dockerfile: Dockerfile 
     environment:
       - DB_HOST=mariadb
       - DB_USERNAME=laravel
@@ -24,6 +26,6 @@ services:
     depends_on:
       - mariadb
     ports:
-      - 3000:3000
+      - 8000:8000
     volumes:
-      - ./:/app
+      - ./:/var/www/html
