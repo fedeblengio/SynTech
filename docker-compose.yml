@@ -1,31 +1,14 @@
 version: '2'
 
 services:
-  mariadb:
-    container_name: laravel_mysql
-    image: docker.io/bitnami/mariadb:10.2
-    ports:
-      - "3308:3306"
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - MARIADB_USER=laravel
-      - MARIADB_DATABASE=laravel
-      - MARIADB_PASSWORD=laravel
-
-  app:
-    container_name: laravel_app
+  app2:
+    container_name: laravel_app2
+    restart: unless-stopped
     tty: true
     build:
       context: ./
       dockerfile: Dockerfile 
-    environment:
-      - DB_HOST=mariadb
-      - DB_USERNAME=laravel
-      - DB_DATABASE=laravel
-      - DB_PASSWORD=laravel
-    depends_on:
-      - mariadb
     ports:
-      - 8000:8000
+      - 8001:8000
     volumes:
       - ./:/var/www/html
