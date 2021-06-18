@@ -26,13 +26,19 @@ Route::get('/test', function (){
 });
 
 
+//foros
+Route::get('/foros','App\Http\Controllers\ProfesorEscribeForo@index');
+Route::get('/foro','App\Http\Controllers\ProfesorEscribeForo@show');
+Route::post('/foro','App\Http\Controllers\ProfesorEscribeForo@store');
+Route::put('/foro','App\Http\Controllers\ProfesorEscribeForo@update');
+Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy');
 
-Route::get('/usuarios','App\Http\Controllers\usuariosController@index');
-Route::get('/usuario','App\Http\Controllers\usuariosController@show');
 
-Route::post('/usuario','App\Http\Controllers\usuariosController@create')->middleware('verificar_token');
-Route::delete('/usuario','App\Http\Controllers\usuariosController@destroy')->middleware('verificar_token');
-Route::put('/usuario','App\Http\Controllers\usuariosController@update')->middleware('verificar_token');
+Route::get('/profesor-grupo','App\Http\Controllers\ProfesorGrupo@listarProfesorGrupo');
 
 
-Route::post('/usuariosintoken','App\Http\Controllers\usuariosController@create');
+Route::get('/alumno','App\Http\Controllers\alumnos@show');
+
+Route::get('/profesor-foro','App\Http\Controllers\ProfesorEscribeForo@index');
+
+Route::get('/foro-grupo','App\Http\Controllers\ProfesorGrupo@listarDatosForo');
