@@ -30,7 +30,7 @@ class ProfesorGrupo extends Controller
     public function listarDatosForo(Request $request)
     {
         $datos_foro = DB::table('datosForo')
-        ->select('idForo', 'nombre', 'mensaje', 'datos', 'datosForo.created_at')
+        ->select('id','idForo', 'nombre', 'mensaje','titulo', 'datos', 'datosForo.created_at')
         ->join('usuarios', 'idUsuario', '=', 'username')
         ->where('idForo', $request->idForo)
         ->get();
