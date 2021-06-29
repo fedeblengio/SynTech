@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Storage;
 use App\Models\datosForo;
 use App\Models\Foro;
 use Illuminate\Http\Request;
@@ -32,20 +33,27 @@ class ProfesorEscribeForo extends Controller
                 if($request->hasFile("archivo")){
                     $file=$request->archivo;
                     
-                    $nombre = "pdf_".time().".".$file->guessExtension();
+                    $nombre = time()."_".$file->getClientOriginalName();
+
+                    /* $carpeta = Storage::makeDirectory(time()."/pdf");
+                    $carpeta2 = Storage::makeDirectory(time()."/docx"); */
         
-                    $ruta = public_path("pdf/".$nombre);
-                    $ruta2 = public_path("docx/".$nombre);
-                     /* $request->archivo->store('public'); */
+                   /*  $ruta = public_path($carpeta,$nombre);
+                    $ruta2 = public_path($carpeta2,$nombre); */
+                     
         
                     if($file->guessExtension()=="pdf"){
-                        copy($file, $ruta);
-                        $datosForo->datos = $ruta;
-                        $datosForo->save();
+                        /* copy($file, $ruta); */
+                        Storage::disk('pdf')->put($nombre, fopen($request->archivo, 'r+'));
+                       /*  $request->archivo->store(time());
+                        $datosForo->datos = time();
+                        $datosForo->save(); */
                         return response()->json(['status' => 'Success'], 200);
                         if($file->guessExtension()=="docx"){
-                            copy($file, $ruta2);
-                            $datosForo->datos = $ruta2;
+                          
+                           /*  copy($file, $ruta2); */
+                           $request->archivo->store(time());
+                            $datosForo->datos = time();
                             $datosForo->save();
                         return response()->json(['status' => 'Success'], 200);
                         }
