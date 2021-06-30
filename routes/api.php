@@ -29,9 +29,11 @@ Route::get('/test', function (){
 //foros
 Route::get('/foros','App\Http\Controllers\ProfesorEscribeForo@index');
 Route::get('/foro','App\Http\Controllers\ProfesorEscribeForo@show');
+Route::get('/archivo','App\Http\Controllers\ProfesorEscribeForo@traerArchivo');
 Route::post('/foro','App\Http\Controllers\ProfesorEscribeForo@store');
 Route::put('/foro','App\Http\Controllers\ProfesorEscribeForo@update');
 Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy');
+
 
 
 Route::get('/profesor-grupo','App\Http\Controllers\ProfesorGrupo@listarProfesorGrupo');

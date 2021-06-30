@@ -14,6 +14,7 @@ class ProfesorEscribeForo extends Controller
         return response()->json(ProfesorForoGrupo::where('idMateria', $request->idMateria)->where('idGrupo', $request->idGrupo)->first());
     }
 
+
     public function show(Request $request)
     {
         $mostrarMensajes=datosForo::all()->where('idForo', $request->idForo);
@@ -22,7 +23,7 @@ class ProfesorEscribeForo extends Controller
 
     public function store(Request $request)
     {
-        /* try { */
+        try {
                 $datosForo = new datosForo;
                 $datosForo->idForo = $request->idForo;
                 $datosForo->idUsuario = $request->idUsuario;
@@ -34,24 +35,13 @@ class ProfesorEscribeForo extends Controller
                     $file=$request->archivo;
                     
                     $nombre = time()."_".$file->getClientOriginalName();
-
-                    /* $carpeta = Storage::makeDirectory(time()."/pdf");
-                    $carpeta2 = Storage::makeDirectory(time()."/docx"); */
-        
-                   /*  $ruta = public_path($carpeta,$nombre);
-                    $ruta2 = public_path($carpeta2,$nombre); */
-                     
         
                     if($file->guessExtension()=="pdf"){
-                        /* copy($file, $ruta); */
-                        Storage::disk('pdf')->put($nombre, fopen($request->archivo, 'r+'));
-                       /*  $request->archivo->store(time());
-                        $datosForo->datos = time();
-                        $datosForo->save(); */
+                        Storage::disk('ftp')->put($nombre, fopen($request->archivo, 'r+'));
+                        $datosForo->datos = $nombre;
+                        $datosForo->save();
                         return response()->json(['status' => 'Success'], 200);
-                        if($file->guessExtension()=="docx"){
-                          
-                           /*  copy($file, $ruta2); */
+                    if($file->guessExtension()=="docx"){
                            $request->archivo->store(time());
                             $datosForo->datos = time();
                             $datosForo->save();
@@ -60,17 +50,22 @@ class ProfesorEscribeForo extends Controller
                     }else{
                         return response()->json(['status' => 'Error'], 406);
                     } 
-                //* * } */
+                 } 
 
-                /* $datosForo->datos = $request->archivo; */
                 
-               /*  return response()->json(['status' => 'Success'], 200); */
-      /*   } catch (\Throwable $th) {
-                return response()->json($th);
-             }    */
+                
+             
+       } catch (\Throwable $th) {
+            return response()->json(['status' => 'Error'], 406);
+             }
 
     }
-}
+
+    public function traerArchivo(Request $request)
+    {
+        return Storage::disk('ftp')->get($request->archivo);
+    }
+
 
     public function update(Request $request)
     {
