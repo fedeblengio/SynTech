@@ -62,6 +62,26 @@ return [
             'passive'  => true, 
         ],
 
+        'tarea' => [
+            'driver' => 'ftp',
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USERNAME'),
+            'password' => env('FTP_PASSWORD'),
+            'root' => 'tarea', // for example: /var/www/html/dev/images
+            'ssl' => false,
+            'passive'  => true, 
+        ],
+
+        'tarea' => [
+            'driver' => 'ftp',
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USERNAME'),
+            'password' => env('FTP_PASSWORD'),
+            'root' => 'alumno', // for example: /var/www/html/dev/images
+            'ssl' => false,
+            'passive'  => true, 
+        ],
+
         'cache' => [
             'store' => 'memcached',
             'expire' => 600,

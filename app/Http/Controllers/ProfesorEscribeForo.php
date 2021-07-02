@@ -24,41 +24,37 @@ class ProfesorEscribeForo extends Controller
     public function store(Request $request)
     {
         try {
-                $datosForo = new datosForo;
-                $datosForo->idForo = $request->idForo;
-                $datosForo->idUsuario = $request->idUsuario;
-                $datosForo->titulo = $request->titulo;
-                $datosForo->mensaje = $request->mensaje;
-                
-
+            $nombre="";
                 if($request->hasFile("archivo")){
                     $file=$request->archivo;
-                    
-                    $nombre = time()."_".$file->getClientOriginalName();
-        
+                   
                     if($file->guessExtension()=="pdf"){
-                        Storage::disk('ftp')->put($nombre, fopen($request->archivo, 'r+'));
-                        $datosForo->datos = $nombre;
-                        $datosForo->save();
-                        return response()->json(['status' => 'Success'], 200);
-                    if($file->guessExtension()=="docx"){
-                           $request->archivo->store(time());
-                            $datosForo->datos = time();
-                            $datosForo->save();
-                        return response()->json(['status' => 'Success'], 200);
-                        }
-                    }else{
-                        return response()->json(['status' => 'Error'], 406);
-                    } 
-                 } 
+                        $nombre = time()."_".$file->getClientOriginalName();                       
+                        Storage::disk('ftp')->put($nombre, fopen($request->archivo, 'r+'));                  
+                       
+                    }
 
+                }
+                self::subirBD($request, $nombre);
+                return response()->json(['status' => 'Success'], 200);            
                 
-                
-             
-       } catch (\Throwable $th) {
-            return response()->json(['status' => 'Error'], 406);
-             }
+             }catch (\Throwable $th) {
+                    return response()->json(['status' => 'Error'], 406);
+                     }
+    }
 
+
+
+
+    public function subirBD($request, $nombre){
+        $datosForo = new datosForo;
+        $datosForo->idForo = $request->idForo;
+        $datosForo->idUsuario = $request->idUsuario;
+        $datosForo->titulo = $request->titulo;
+        $datosForo->mensaje = $request->mensaje;
+        $datosForo->datos = $nombre;
+        $datosForo->save();
+           
     }
 
     public function traerArchivo(Request $request)
