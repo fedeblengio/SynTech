@@ -50,16 +50,16 @@ Route::get('/foro-grupo','App\Http\Controllers\ProfesorGrupo@listarDatosForo');
 
 
 //tareas
-Route::get('/traearTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traearTareasGrupo');
+Route::get('/traerTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traerTareasGrupo');
 Route::get('/traerArchivo','App\Http\Controllers\ProfesorCreaTarea@traerArchivo');
-Route::post('/tarea','App\Http\Controllers\ProfesorCreaTare@store');
-
+Route::post('/tarea','App\Http\Controllers\ProfesorCreaTarea@store');
+Route::get('/tareas','App\Http\Controllers\ProfesorCreaTarea@show');
 
 //alumnos
-Route::get('/alumnoEntrea','App\Http\Controllers\AlumnoEntrega@index');
-Route::get('/tareaAlumno','App\Http\Controllers\AlumnoEntrega@traerTareasMateria');
-Route::post('/alumnoEntrega','App\Http\Controllers\AlumnoEntrega@store');
-Route::get('/archivoAlumno','App\Http\Controllers\AlumnoEntrega@traerArchivo');
-Route::put('/calificar','App\Http\Controllers\AlumnoEntrega@update');
+Route::get('/alunos','App\Http\Controllers\AlumnoEntregaTarea@index');
+Route::get('/alumno','App\Http\Controllers\AlumnoEntregaTarea@traerTareasMateria');
+Route::post('/alumno','App\Http\Controllers\AlumnoEntregaTarea@store');
+Route::get('/archivoAlumno','App\Http\Controllers\AlumnoEntregaTarea@traerArchivo');
+Route::put('/alumno','App\Http\Controllers\AlumnoEntregaTarea@update');
 
 

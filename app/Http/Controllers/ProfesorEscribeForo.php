@@ -79,7 +79,7 @@ class ProfesorEscribeForo extends Controller
 
     public function destroy(Request $request)
     {
-        $eliminarDatosForo = datosForo::where('idDatos', $request->idDatos)->first();
+        $eliminarDatosForo = datosForo::where('id', $request->idDatos)->first();
         try {
             $eliminarDatosForo->delete();
             return response()->json(['status' => 'Success'], 200);

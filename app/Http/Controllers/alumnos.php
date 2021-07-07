@@ -12,9 +12,9 @@ class alumnos extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+      
     }
 
     /**
@@ -36,18 +36,7 @@ class alumnos extends Controller
      */
     public function show(Request $request)
     {
-/* 
-        select grupos_tienen_profesor.idMateria , materias.nombre , grupos_tienen_profesor.idGrupo, idAlumnos from  alumnos_pertenecen_grupos 
-        JOIN  grupos_tienen_profesor ON alumnos_pertenecen_grupos.idGrupo = grupos_tienen_profesor.idGrupo 
-        JOIN materias ON materias.id= grupos_tienen_profesor.idMateria;
 
-        $profesor_materia = DB::table('profesor_dicta_materia')
-        ->select('usuarios.username AS cedulaProfesor', 'usuarios.nombre AS nombreProfesor', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria')
-        ->join('materias', 'materias.id', '=', 'profesor_dicta_materia.idMateria')
-        ->join('usuarios', 'usuarios.username', '=', 'profesor_dicta_materia.idProfesor')
-        ->get();
-
-        return response()->json(DB::table('vista_alumno_grupo_profesor')->where("idAlumnos", $request->idAlumno)->get()); */
 
         $alumno_grupo_profesor = DB::table('alumnos_pertenecen_grupos')
         ->select('grupos_tienen_profesor.idMateria', 'materias.nombre', 'grupos_tienen_profesor.idGrupo', 'idAlumnos')

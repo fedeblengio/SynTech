@@ -72,7 +72,7 @@ return [
             'passive'  => true, 
         ],
 
-        'tarea' => [
+        'alumno' => [
             'driver' => 'ftp',
             'host' => env('FTP_HOST'),
             'username' => env('FTP_USERNAME'),

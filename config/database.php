@@ -46,9 +46,9 @@ return [
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', 'syntechdatabase.ddns.net'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'laravel'),
+            'host' => env('DB_HOST'),
+            'port' => env('DB_PORT'),
+            'database' => env('DB_DATABASE'),
             'username' => env('DB_USERNAME', 'test'),
             'password' => env('DB_PASSWORD', 'test'),
             'unix_socket' => env('DB_SOCKET', ''),
