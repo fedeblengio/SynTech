@@ -69,7 +69,7 @@ class TrayectoSitioTest extends TestCase
 
         $response = $this->withHeaders([
             'token' => $token,
-        ])->getJson('/api/foro', $data);
+        ])->getJson('/api/foros', $data);
         
         $response->assertStatus(200);
     }
