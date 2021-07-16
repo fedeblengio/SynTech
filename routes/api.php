@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
-use App\User;
-use App\Http\Controllers;
-use Carbon\Carbon;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -32,8 +30,7 @@ Route::put('/usuario','App\Http\Controllers\usuariosController@update')->middlew
 //foros
 Route::get('/foros','App\Http\Controllers\ProfesorEscribeForo@index')->middleware('verificar_token');
 Route::get('/foro','App\Http\Controllers\ProfesorEscribeForo@show')->middleware('verificar_token');
-Route::get('/archivo','App\Http\Controllers\ProfesorEscribeForo@traerArchivo')->middleware('verificar_token');
-Route::post('/foro','App\Http\Controllers\ProfesorEscribeForo@store')->middleware('verificar_token');
+Route::post('/foro','App\Http\Controllers\ProfesorEscribeForo@store');
 Route::put('/foro','App\Http\Controllers\ProfesorEscribeForo@update')->middleware('verificar_token');
 Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy')->middleware('verificar_token');
 
@@ -43,9 +40,9 @@ Route::get('/profesor-grupo','App\Http\Controllers\ProfesorGrupo@listarProfesorG
 
 Route::get('/alumno','App\Http\Controllers\alumnos@show')->middleware('verificar_token');
 
-Route::get('/profesor-foro','App\Http\Controllers\ProfesorEscribeForo@index')->middleware('verificar_token');
+Route::get('/profesor-foro','App\Http\Controllers\ProfesorEscribeForo@index');
 
-Route::get('/foro-grupo','App\Http\Controllers\ProfesorGrupo@listarDatosForo')->middleware('verificar_token');
+Route::get('/foro-grupo','App\Http\Controllers\ProfesorGrupo@listarDatosForo');
 
 
 

@@ -30,10 +30,8 @@ class ProfesorEscribeForo extends Controller
                    
                     if($file->guessExtension()=="pdf"){
                         $nombre = time()."_".$file->getClientOriginalName();                       
-                        Storage::disk('ftp')->put($nombre, fopen($request->archivo, 'r+'));                  
-                       
+                        Storage::disk('ftp')->put($nombre, fopen($request->archivo, 'r+'));              
                     }
-
                 }
                 self::subirBD($request, $nombre);
                 return response()->json(['status' => 'Success'], 200);            
@@ -87,11 +85,4 @@ class ProfesorEscribeForo extends Controller
             return response()->json(['status' => 'Bad Request'], 400);
         }
     }
-
-
-
-
-
-
-
 }

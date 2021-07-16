@@ -1,9 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\GruposProfesores;
 use Illuminate\Support\Facades\DB;
-
 use Illuminate\Http\Request;
 
 class ProfesorGrupo extends Controller
@@ -21,12 +19,6 @@ class ProfesorGrupo extends Controller
         return response()->json($profesor_grupo);
     }
 
-    /* Select usuarios.username ,usuarios.nombre Profesor,materias.id idMateria ,materias.nombre Materia , grupos.idGrupo , grupos.nombreCompleto , grupos.anioElectivo 
-    from grupos_tienen_profesor 
-    JOIN grupos ON grupos.idGrupo=grupos_tienen_profesor.idGrupo 
-    JOIN materias ON grupos_tienen_profesor.idMateria=materias.id 
-    JOIN usuarios ON usuarios.username=grupos_tienen_profesor.idProfesor; */
-
     public function listarDatosForo(Request $request)
     {
         $datos_foro = DB::table('datosForo')
@@ -38,11 +30,3 @@ class ProfesorGrupo extends Controller
         return response()->json($datos_foro);
     }
 }
-
-/* Select idForo, nombre , mensaje , datos , created_at from datosForo JOIN usuarios ON idUsuario=username; */
-
-/* $profesor_materia = DB::table('profesor_dicta_materia')
-->select('usuarios.username AS cedulaProfesor', 'usuarios.nombre AS nombreProfesor', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria')
-->join('materias', 'materias.id', '=', 'profesor_dicta_materia.idMateria')
-->join('usuarios', 'usuarios.username', '=', 'profesor_dicta_materia.idProfesor')
-->get(); */

@@ -1,7 +1,6 @@
 <?php
 
 namespace Tests\Feature;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -13,11 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class FuncionesSitioTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
     public function test_listar_profesor_grupo()
     {
         $this->withoutExceptionHandling();
@@ -26,7 +20,6 @@ class FuncionesSitioTest extends TestCase
             'idProfesor'   => '55555555'
         ]);
              
-
         $profesor = new ProfesorGrupo();
         $resultado = $profesor->listarProfesorGrupo($request);
         $salida1 = json_encode($resultado);
@@ -153,6 +146,4 @@ class FuncionesSitioTest extends TestCase
         var_dump($salida1);
         $this->assertTrue(true);
     }  
-
-
 }

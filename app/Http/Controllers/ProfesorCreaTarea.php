@@ -24,8 +24,9 @@ class ProfesorCreaTarea extends Controller
 
     public function traerTareasGrupo(Request $request){
         $tarea_grupo = DB::table('profesor_crea_tareas')
-        ->select('profesor_crea_tareas.idGrupo AS Grupo', 'profesor_crea_tareas.idTareas AS Tareas', 'profesor_crea_tareas.IdMateria AS idMateria', 'tareas.descripcion AS tareaDescripcion', 'tareas.fecha_vencimiento AS tareaVencimiento', 'tareas.archivo AS tareaArchivo')
+        ->select('profesor_crea_tareas.idGrupo AS Grupo', 'profesor_crea_tareas.idTareas AS Tareas', 'profesor_crea_tareas.IdMateria AS idMateria', 'materias.nombre AS nombreMateria', 'tareas.titulo AS tareasTitulo', 'tareas.descripcion AS tareaDescripcion', 'tareas.fecha_vencimiento AS tareaVencimiento', 'tareas.archivo AS tareaArchivo')
         ->join('tareas', 'tareas.id', '=', 'profesor_crea_tareas.idTareas')
+        ->join('materias', 'materias.id', '=', 'profesor_crea_tareas.idMateria')
         ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
         ->where('profesor_crea_tareas.idMateria', $request->idMateria)
         ->get();
@@ -41,7 +42,7 @@ class ProfesorCreaTarea extends Controller
 
     public function store(Request $request)
     {
-      /*   try { */
+       try { 
             $nombre="";
                 if($request->hasFile("archivo")){
                     $file=$request->archivo;
@@ -54,16 +55,16 @@ class ProfesorCreaTarea extends Controller
 
                 }
                 self::subirTarea($request, $nombre);
-                return response()->json(['status' => 'Success'], 200);            
-             /*    
-             }catch (\Throwable $th) { */
+                return response()->json(['status' => 'Success'], 200);         
+             }catch (\Throwable $th) {
                     return response()->json(['status' => 'Error'], 406);
-            /*  } */
+            } 
     }
 
     public function subirTarea($request, $nombre)
     {
                 $tarea = new Tarea;
+                $tarea->titulo = $request->titulo;
                 $tarea->descripcion = $request->descripcion;
                 $tarea->fecha_vencimiento = $request->fecha_vencimiento;
                 $tarea->archivo = $nombre;
@@ -92,6 +93,7 @@ class ProfesorCreaTarea extends Controller
         $modificarDatosTarea = Tarea::where('id', $request->id)->first();
        
         try {
+            $modificarDatosTarea->titulo = $request->titulo;
             $modificarDatosTarea->descripcion = $request->descripcion;
             $modificarDatosTarea->fecha_vencimiento = $request->fecha_vencimiento;
             $modificarDatosTarea->save();

@@ -9,12 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class TrayectoSitioTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-    public function test_login()
+ /*    public function test_login()
     {
 
         $data = ['username' => '55555555','password'=>'1'];
@@ -87,7 +82,7 @@ class TrayectoSitioTest extends TestCase
         $response->assertStatus(200);
     }
 
-   /*  public function test_cambiar_contraseña()
+    public function test_cambiar_contraseña()
     {
         $token = "c3ludGVjaDIwMjEuZGRucy5uZXQ=";
         $data = ['username' => '44444444' , 'newPassword' => '2'];
@@ -98,7 +93,7 @@ class TrayectoSitioTest extends TestCase
         ])->putJson('/api/usuario', $data);
         
         $response->assertStatus(200);
-    } */
+    } 
 
     public function test_profesor_alumno_grupo()
     {
@@ -139,6 +134,6 @@ class TrayectoSitioTest extends TestCase
         ])->deleteJson('/api/foro', $data);
         
         $response->assertStatus(200);
-    }
+    } */
 
 }
