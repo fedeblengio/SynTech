@@ -22,16 +22,18 @@ class ProfesorEscribeForo extends Controller
     }
 
     public function store(Request $request)
+    
     {
+
         try {
             $nombre="";
                 if($request->hasFile("archivo")){
                     $file=$request->archivo;
                    
-                    if($file->guessExtension()=="pdf"){
+                    /* if($file->guessExtension()=="pdf" || $file->guessExtension()=="jpg" ){ */
                         $nombre = time()."_".$file->getClientOriginalName();                       
                         Storage::disk('ftp')->put($nombre, fopen($request->archivo, 'r+'));              
-                    }
+                    /* } */
                 }
                 self::subirBD($request, $nombre);
                 return response()->json(['status' => 'Success'], 200);            
@@ -39,8 +41,39 @@ class ProfesorEscribeForo extends Controller
              }catch (\Throwable $th) {
                     return response()->json(['status' => 'Error'], 406);
                      }
-    }
 
+
+
+        /* try{
+
+            $nombre = "";
+
+            if($request->hasFile("archivo")){
+                foreach($request->file('archivo') as $key => $file){
+                     
+                   
+                    if($file->guessExtension()=="pdf"){
+                        $nombre = time()."_".$file->getClientOriginalName();                       
+                        Storage::disk('ftp')->put($nombre, fopen($file, 'r+'));              
+                    }
+
+                    self::subirBD($request, $nombre);
+                    
+                }
+                
+            }
+              else{
+                self::subirBD($request, $nombre);
+                }
+
+               return response()->json(['status' => 'Success'], 200);
+                
+            }catch (\Throwable $th) {
+            return response()->json(['status' => 'Error'], 406);
+         }
+    } */
+}
+        
 
 
 

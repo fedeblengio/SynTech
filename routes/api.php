@@ -25,6 +25,8 @@ Route::get('/test', function (){
 
 
 //usuarios
+Route::post('/imagen-perfil','App\Http\Controllers\loginController@cargarImagen')->middleware('verificar_token');
+Route::get('/traerImagen','App\Http\Controllers\loginController@traerImagen');
 Route::put('/usuario','App\Http\Controllers\usuariosController@update')->middleware('verificar_token');
 
 //foros
@@ -44,11 +46,11 @@ Route::get('/profesor-foro','App\Http\Controllers\ProfesorEscribeForo@index');
 
 Route::get('/foro-grupo','App\Http\Controllers\ProfesorGrupo@listarDatosForo');
 
-
+Route::get('/traerArchivo','App\Http\Controllers\ProfesorEscribeForo@traerArchivo');
 
 //tareas
 Route::get('/traerTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traerTareasGrupo')->middleware('verificar_token');
-Route::get('/traerArchivo','App\Http\Controllers\ProfesorCreaTarea@traerArchivo')->middleware('verificar_token');
+Route::get('/traerArchivoTarea','App\Http\Controllers\ProfesorCreaTarea@traerArchivo');
 Route::post('/tarea','App\Http\Controllers\ProfesorCreaTarea@store')->middleware('verificar_token');
 Route::get('/tareas','App\Http\Controllers\ProfesorCreaTarea@show')->middleware('verificar_token');
 

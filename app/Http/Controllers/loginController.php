@@ -7,6 +7,8 @@ use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Support\Str;
 use LdapRecord\Connection;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 
 class loginController extends Controller
@@ -41,7 +43,8 @@ class loginController extends Controller
         $datos = [
             "username" => $u->username,
             "nombre" => $u->nombre,
-            "ou" => $u->ou
+            "ou" => $u->ou,
+            "imagen_perfil" => $u->imagen_perfil
         ];
         $base64data = base64_encode(json_encode($datos));
         $tExist = token::where('token', $base64data)->first();
@@ -57,7 +60,52 @@ class loginController extends Controller
     {
         $t = new token;
         $t->token = $token;
-        $t->fecha_vencimiento = Carbon::now()->addMinutes(60);
+        $t->fecha_vencimiento = Carbon::now()->addMinutes(120);
         $t->save();
     }
+
+
+    public function cargarImagen(Request $request)
+    {
+       try { 
+            $nombre="";
+                if($request->hasFile("archivo")){
+                    $file=$request->archivo;
+                    
+                        $nombre = time()."_".$file->getClientOriginalName();                       
+                        Storage::disk('ftp')->put($nombre, fopen($request->archivo, 'r+'));                  
+                       
+
+                }
+                self::subirImagen($request, $nombre);
+                return response()->json(['status' => 'Success'], 200);         
+             }catch (\Throwable $th) {
+                    return response()->json(['status' => 'Error'], 406);
+            } 
+    }
+
+    public function subirImagen($request, $nombre)
+    {
+        try { 
+            $usuarios = usuarios::where('username', $request->username)->first();
+            if($usuarios){
+                DB::update('UPDATE usuarios SET imagen_perfil="' . $request->imagen_perfil . '" WHERE username="' . $request->username . '";');  
+            }
+            return response()->json(['status' => 'Success'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => 'Bad Request'], 400);
+        
+    }
+            
+                
+
+                
+    }
+
+    public function traerImagen(Request $request)
+    {
+        return Storage::disk('ftp')->get($request->imagen_perfil);
+    }
+
+
 }

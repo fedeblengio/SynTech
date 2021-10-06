@@ -67,7 +67,7 @@ class FuncionesSitioTest extends TestCase
         $this->withoutExceptionHandling();
 
         $request = new Request([
-            'idMateria'   => '3',
+            'idMateria'   => '2',
             'idGrupo'=>'Sitio'
         ]);
              
