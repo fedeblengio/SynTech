@@ -57,11 +57,12 @@ class ProfesorEscribeForo extends Controller
                return response()->json($p);
              
             }else if($request->ou == 'Alumno'){
-                $idGrupo = DB::table(' alumnos_pertenecen_grupos')->select('idGrupo')->where('idAlumno',$request->idUsuario)->first();
+                /* $idGrupo = DB::table('alumnos_pertenecen_grupos')->select('idGrupo')->where('idAlumnos',$request->idUsuario)->first(); */
                 $p=DB::table('profesor_estan_grupo_foro')
-                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.datos AS archivo')
+                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'archivos_foro.nombreArchivo AS archivo')
                 ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-                ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo)
+                ->join('archivos_foro', 'archivos_foro.idDato', '=', 'datosForo.id')
+                ->where('profesor_estan_grupo_foro.idGrupo', 'TB1')
                 ->get();
                return response()->json($p);
                 
