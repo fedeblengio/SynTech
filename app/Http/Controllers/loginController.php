@@ -104,7 +104,9 @@ class loginController extends Controller
 
     public function traerImagen(Request $request)
     {
-        return Storage::disk('ftp')->get($request->imagen_perfil);
+        $base64imagen = base64_encode(Storage::disk('ftp')->get($request->imagen_perfil));
+        return $base64imagen;
+       
     }
 
 

@@ -26,13 +26,14 @@ Route::get('/test', function (){
 
 //usuarios
 Route::post('/imagen-perfil','App\Http\Controllers\loginController@cargarImagen')->middleware('verificar_token');
-Route::get('/traerImagen','App\Http\Controllers\loginController@traerImagen');
+Route::get('/imagen-perfil','App\Http\Controllers\loginController@traerImagen');
 Route::put('/usuario','App\Http\Controllers\usuariosController@update')->middleware('verificar_token');
 
 //foros
 Route::get('/foros','App\Http\Controllers\ProfesorEscribeForo@index')->middleware('verificar_token');
 Route::get('/foro','App\Http\Controllers\ProfesorEscribeForo@show')->middleware('verificar_token');
-Route::post('/foro','App\Http\Controllers\ProfesorEscribeForo@store');
+Route::post('/ftpForo','App\Http\Controllers\ProfesorEscribeForo@store');
+Route::post('/foro','App\Http\Controllers\ProfesorEscribeForo@subirBD');
 Route::put('/foro','App\Http\Controllers\ProfesorEscribeForo@update')->middleware('verificar_token');
 Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy')->middleware('verificar_token');
 
