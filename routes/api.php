@@ -30,6 +30,7 @@ Route::get('/imagen-perfil','App\Http\Controllers\loginController@traerImagen');
 Route::put('/usuario','App\Http\Controllers\usuariosController@update')->middleware('verificar_token');
 
 //foros
+
 Route::get('/foros','App\Http\Controllers\ProfesorEscribeForo@index')->middleware('verificar_token');
 Route::get('/foro','App\Http\Controllers\ProfesorEscribeForo@show')->middleware('verificar_token');
 Route::post('/ftpForo','App\Http\Controllers\ProfesorEscribeForo@store');

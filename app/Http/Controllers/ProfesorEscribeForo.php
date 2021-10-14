@@ -50,26 +50,62 @@ class ProfesorEscribeForo extends Controller
     public function show(Request $request){
             if ($request->ou == 'Profesor'){
                 $p=DB::table('profesor_estan_grupo_foro')
-                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.datos AS archivo')
+                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo')
                 ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
                 ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
+                ->distinct()
                 ->get();
-               return response()->json($p);
+                $a=array();
+                
+                foreach ($p as $peti){
+                    $otraPeti= DB::table('archivos_foro')
+                    ->select('nombreArchivo AS archivo')
+                    ->where('idDato', $peti->id)
+                    ->distinct()
+                    ->get();
+
+                    $datos = [
+                        "data"=> $peti,
+                        "archivos" => $otraPeti,
+                    ];
+                    array_push($a, $datos);
+                }
+                
+                return response()->json($a); 
+               
+                
+            
              
             }else if($request->ou == 'Alumno'){
-                /* $idGrupo = DB::table('alumnos_pertenecen_grupos')->select('idGrupo')->where('idAlumnos',$request->idUsuario)->first(); */
-                $p=DB::table('profesor_estan_grupo_foro')
-                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'archivos_foro.nombreArchivo AS archivo')
-                ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-                ->join('archivos_foro', 'archivos_foro.idDato', '=', 'datosForo.id')
-                ->where('profesor_estan_grupo_foro.idGrupo', 'TB1')
+                $idGrupo=DB::table('alumnos_pertenecen_grupos')
+                ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
+                ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
                 ->get();
+                $p=DB::table('profesor_estan_grupo_foro')
+                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo')
+                ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
+                ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
+                ->get();
+
+
+               
                return response()->json($p);
                 
                
             }
 
           
+    }
+
+    public function cargarArchivos(Request $request){
+        $archivos=archivosForo::all()->where('idDato', $request->idDato);
+       /*  $files=array();
+        foreach($archivos as $a){
+            $files+= Storage::disk('ftp')->get($a->nombreArchivo);
+        } */
+        
+        return response()->json($archivos);
+        /* $file->guessExtension()=="pdf" || $file->guessExtension()=="jpg" */
     }
         
 
