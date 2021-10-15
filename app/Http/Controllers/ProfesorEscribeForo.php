@@ -33,7 +33,7 @@ class ProfesorEscribeForo extends Controller
                     $file=$request->archivo;
                    
                     /* if($file->guessExtension()=="pdf" || $file->guessExtension()=="jpg" ){ */
-                        $nombreArchivo = time()."_".$request->nombre;      
+                        $nombreArchivo = $request->nombre;      
                         Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivo, 'r+'));              
                     /* } */
                 }
@@ -57,6 +57,13 @@ class ProfesorEscribeForo extends Controller
                 ->get();
                 $dataResponse=array();
                 
+                /*foreach($peticionSQLFiltrada as $p2){
+                        if ($p2 == *.jpg){
+                            $base64imagen = base64_encode(Storage::disk('ftp')->get($p2->archivo));
+                            array_push($arrayDeImagenes,$base64imagen);
+                        }
+                        array_push($arrayDeArchivos,$p2->archivo);
+                    }*/
                 foreach ($peticionSQL as $p){
                     $peticionSQLFiltrada= DB::table('archivos_foro')
                     ->select('nombreArchivo AS archivo')
@@ -74,6 +81,7 @@ class ProfesorEscribeForo extends Controller
                         "mensaje" => $p->mensaje,
                         "titulo"=> $p->titulo,
                     ];
+                    
                     $p = [
                         "data"=> $datos,
                         "archivos"=> $arrayDeArchivos,
@@ -154,7 +162,7 @@ class ProfesorEscribeForo extends Controller
                 $archivosForo = new archivosForo;
                 $archivosForo->idDato = $idDatos[0]->id;
                 $archivosForo->idForo = $request->idForo;
-                $archivosForo->nombreArchivo = time()."_".$nombres;
+                $archivosForo->nombreArchivo = $nombres;
                 $archivosForo->save();
                 }
         }
