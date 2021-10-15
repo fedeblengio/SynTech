@@ -49,12 +49,55 @@ class ProfesorEscribeForo extends Controller
         
     public function show(Request $request){
             if ($request->ou == 'Profesor'){
-                $p=DB::table('profesor_estan_grupo_foro')
+                $peticionSQL=DB::table('profesor_estan_grupo_foro')
                 ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo')
                 ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
                 ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
                 ->distinct()
                 ->get();
+                $dataResponse=array();
+                
+                foreach ($peticionSQL as $p){
+                    $peticionSQLFiltrada= DB::table('archivos_foro')
+                    ->select('nombreArchivo AS archivo')
+                    ->where('idDato', $p->id)
+                    ->distinct()
+                    ->get();
+                    $arrayDeArchivos=array();
+                    foreach($peticionSQLFiltrada as $p2){
+                        array_push($arrayDeArchivos,$p2->archivo);
+                    }
+
+                    $datos = [
+                        "id" => $p->id,
+                        "idForo" => $p->idForo,
+                        "mensaje" => $p->mensaje,
+                        "titulo"=> $p->titulo,
+                    ];
+                    $p = [
+                        "data"=> $datos,
+                        "archivos"=> $arrayDeArchivos,
+                    ];
+                    
+                    array_push($dataResponse, $p);
+                }
+                
+                return response()->json($dataResponse); 
+               
+                
+            
+             
+            }else if($request->ou == 'Alumno'){
+                $idGrupo=DB::table('alumnos_pertenecen_grupos')
+                ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
+                ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
+                ->get();
+                $p=DB::table('profesor_estan_grupo_foro')
+                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo')
+                ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
+                ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
+                ->get();
+
                 $a=array();
                 
                 foreach ($p as $peti){
@@ -72,24 +115,6 @@ class ProfesorEscribeForo extends Controller
                 }
                 
                 return response()->json($a); 
-               
-                
-            
-             
-            }else if($request->ou == 'Alumno'){
-                $idGrupo=DB::table('alumnos_pertenecen_grupos')
-                ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
-                ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
-                ->get();
-                $p=DB::table('profesor_estan_grupo_foro')
-                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo')
-                ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-                ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
-                ->get();
-
-
-               
-               return response()->json($p);
                 
                
             }
@@ -122,14 +147,17 @@ class ProfesorEscribeForo extends Controller
         $idDatos = DB::table('datosForo')->orderBy('created_at', 'desc')->limit(1)->get('id');
         /* $nombreArchivosArray= []; */
         $nombreArchivosArray = explode(',', $request->nombre_archivos);
-        foreach ($nombreArchivosArray as $nombres){   
 
-        $archivosForo = new archivosForo;
-        $archivosForo->idDato = $idDatos[0]->id;
-        $archivosForo->idForo = $request->idForo;
-        $archivosForo->nombreArchivo = time()."_".$nombres;
-        $archivosForo->save();
-    }
+         if($request->nombre_archivos){
+                foreach ($nombreArchivosArray as $nombres){   
+
+                $archivosForo = new archivosForo;
+                $archivosForo->idDato = $idDatos[0]->id;
+                $archivosForo->idForo = $request->idForo;
+                $archivosForo->nombreArchivo = time()."_".$nombres;
+                $archivosForo->save();
+                }
+        }
         return response()->json(['status' => 'Success'], 200);
     }
 
