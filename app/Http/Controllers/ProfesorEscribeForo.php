@@ -71,8 +71,16 @@ class ProfesorEscribeForo extends Controller
                     ->distinct()
                     ->get();
                     $arrayDeArchivos=array();
+                    $arrayImagenes=array();
+                    
                     foreach($peticionSQLFiltrada as $p2){
-                        array_push($arrayDeArchivos,$p2->archivo);
+                    
+                        $resultado = strpos($p2->archivo,".pdf");
+                        if($resultado){
+                            array_push($arrayDeArchivos,$p2->archivo);
+                        }else{
+                            array_push($arrayImagenes,base64_encode(Storage::disk('ftp')->get($p2->archivo)));
+                        }
                     }
 
                     $datos = [
@@ -85,6 +93,7 @@ class ProfesorEscribeForo extends Controller
                     $p = [
                         "data"=> $datos,
                         "archivos"=> $arrayDeArchivos,
+                        "imagenes"=> $arrayImagenes,
                     ];
                     
                     array_push($dataResponse, $p);
