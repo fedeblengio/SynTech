@@ -2,7 +2,7 @@
 
 
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\DB;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -19,8 +19,7 @@ Route::post('/login','App\Http\Controllers\loginController@connect');
 
 
 Route::get('/test', function (){
-
- return "Estas en /test";
+return "Estas en test";
 });
 
 

@@ -48,12 +48,17 @@ class ProfesorEscribeForo extends Controller
 
         
     public function show(Request $request){
+        $imgPerfil=DB::table('usuarios')
+                ->select('imagen_perfil')
+                ->where('username', $request->idUsuario)
+                ->get();
+        $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
             if ($request->ou == 'Profesor'){
                 $peticionSQL=DB::table('profesor_estan_grupo_foro')
-                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo')
+                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo','datosForo.created_at AS fecha')
                 ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
                 ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
-                ->distinct()
+                ->orderBy('id','desc')
                 ->get();
                 $dataResponse=array();
                 
@@ -85,9 +90,11 @@ class ProfesorEscribeForo extends Controller
 
                     $datos = [
                         "id" => $p->id,
+                        "profile_picture" => $img,
                         "idForo" => $p->idForo,
                         "mensaje" => $p->mensaje,
                         "titulo"=> $p->titulo,
+                        "fecha" => $p->fecha
                     ];
                     
                     $p = [
@@ -109,35 +116,59 @@ class ProfesorEscribeForo extends Controller
                 ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
                 ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
                 ->get();
-                $p=DB::table('profesor_estan_grupo_foro')
-                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo')
+                $peticionSQL=DB::table('profesor_estan_grupo_foro')
+                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo','datosForo.created_at AS fecha')
                 ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
                 ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
+                ->orderBy('id','desc')
                 ->get();
 
-                $a=array();
+                $dataResponse=array();
                 
-                foreach ($p as $peti){
-                    $otraPeti= DB::table('archivos_foro')
+                foreach ($peticionSQL as $p){
+                    $peticionSQLFiltrada= DB::table('archivos_foro')
                     ->select('nombreArchivo AS archivo')
-                    ->where('idDato', $peti->id)
+                    ->where('idDato', $p->id)
                     ->distinct()
                     ->get();
+                    $arrayDeArchivos=array();
+                    $arrayImagenes=array();
+                    
+                    foreach($peticionSQLFiltrada as $p2){
+                    
+                        $resultado = strpos($p2->archivo,".pdf");
+                        if($resultado){
+                            array_push($arrayDeArchivos,$p2->archivo);
+                        }else{
+                            array_push($arrayImagenes,base64_encode(Storage::disk('ftp')->get($p2->archivo)));
+                        }
+                    }
 
                     $datos = [
-                        "data"=> $peti,
-                        "archivos" => $otraPeti,
+                        "id" => $p->id,
+                        "profile_picture" => $img,
+                        "idForo" => $p->idForo,
+                        "mensaje" => $p->mensaje,
+                        "titulo"=> $p->titulo,
+                        "fecha" => $p->fecha
                     ];
-                    array_push($a, $datos);
-                }
-                
-                return response()->json($a); 
+                    
+                    $p = [
+                        "data"=> $datos,
+                        "archivos"=> $arrayDeArchivos,
+                        "imagenes"=> $arrayImagenes,
+                    ];
+                    
+                    array_push($dataResponse, $p);
                 
                
-            }
+             }
+             return response()->json($dataResponse); 
 
-          
-    }
+       }
+    
+        }
+
 
     public function cargarArchivos(Request $request){
         $archivos=archivosForo::all()->where('idDato', $request->idDato);
