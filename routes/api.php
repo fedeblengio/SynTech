@@ -19,7 +19,14 @@ Route::post('/login','App\Http\Controllers\loginController@connect');
 
 
 Route::get('/test', function (){
-return "Estas en test";
+    $peticionSQL=DB::table('profesor_estan_grupo_foro')
+    ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo','datosForo.created_at AS fecha', 'datosForo.idUsuario AS autorPost')
+    ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
+    ->where('profesor_estan_grupo_foro.idProfesor', '49895209')
+    ->orderBy('id','desc')
+    ->get();
+
+    return $peticionSQL;
 });
 
 
@@ -48,6 +55,9 @@ Route::get('/profesor-foro','App\Http\Controllers\ProfesorEscribeForo@index');
 Route::get('/foro-grupo','App\Http\Controllers\ProfesorGrupo@listarDatosForo');
 
 Route::get('/traerArchivo','App\Http\Controllers\ProfesorEscribeForo@traerArchivo');
+
+Route::get('/listarMaterias','App\Http\Controllers\ProfesorGrupo@listarMateriasdeGrupo');
+
 
 //tareas
 Route::get('/traerTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traerTareasGrupo')->middleware('verificar_token');

@@ -48,27 +48,21 @@ class ProfesorEscribeForo extends Controller
 
         
     public function show(Request $request){
-        $imgPerfil=DB::table('usuarios')
+ /*        $imgPerfil=DB::table('usuarios')
                 ->select('imagen_perfil')
                 ->where('username', $request->idUsuario)
                 ->get();
-        $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
+        $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil)); */
             if ($request->ou == 'Profesor'){
                 $peticionSQL=DB::table('profesor_estan_grupo_foro')
-                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo','datosForo.created_at AS fecha')
+                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo','datosForo.created_at AS fecha','datosForo.idUsuario as postAuthor')
                 ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
                 ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
                 ->orderBy('id','desc')
                 ->get();
                 $dataResponse=array();
                 
-                /*foreach($peticionSQLFiltrada as $p2){
-                        if ($p2 == *.jpg){
-                            $base64imagen = base64_encode(Storage::disk('ftp')->get($p2->archivo));
-                            array_push($arrayDeImagenes,$base64imagen);
-                        }
-                        array_push($arrayDeArchivos,$p2->archivo);
-                    }*/
+                
                 foreach ($peticionSQL as $p){
                     $peticionSQLFiltrada= DB::table('archivos_foro')
                     ->select('nombreArchivo AS archivo')
@@ -77,7 +71,12 @@ class ProfesorEscribeForo extends Controller
                     ->get();
                     $arrayDeArchivos=array();
                     $arrayImagenes=array();
-                    
+                    $postAuthor= $p->postAuthor;
+                    $imgPerfil=DB::table('usuarios')
+                    ->select('imagen_perfil')
+                    ->where('username', $postAuthor)
+                    ->get();
+                    $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
                     foreach($peticionSQLFiltrada as $p2){
                     
                         $resultado = strpos($p2->archivo,".pdf");
@@ -90,7 +89,7 @@ class ProfesorEscribeForo extends Controller
 
                     $datos = [
                         "id" => $p->id,
-                        "profile_picture" => $img,
+                        "profile_picture"=>$img,
                         "idForo" => $p->idForo,
                         "mensaje" => $p->mensaje,
                         "titulo"=> $p->titulo,
@@ -117,7 +116,7 @@ class ProfesorEscribeForo extends Controller
                 ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
                 ->get();
                 $peticionSQL=DB::table('profesor_estan_grupo_foro')
-                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo','datosForo.created_at AS fecha')
+                ->select('datosForo.id AS id','datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo','datosForo.created_at AS fecha','datosForo.idUsuario AS postAuthor')
                 ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
                 ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
                 ->orderBy('id','desc')
@@ -133,6 +132,12 @@ class ProfesorEscribeForo extends Controller
                     ->get();
                     $arrayDeArchivos=array();
                     $arrayImagenes=array();
+                    $postAuthor= $p->postAuthor;
+                    $imgPerfil=DB::table('usuarios')
+                    ->select('imagen_perfil')
+                    ->where('username', $postAuthor)
+                    ->get();
+                    $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
                     
                     foreach($peticionSQLFiltrada as $p2){
                     
@@ -146,7 +151,7 @@ class ProfesorEscribeForo extends Controller
 
                     $datos = [
                         "id" => $p->id,
-                        "profile_picture" => $img,
+                        "profile_picture"=>$img,
                         "idForo" => $p->idForo,
                         "mensaje" => $p->mensaje,
                         "titulo"=> $p->titulo,

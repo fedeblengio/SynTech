@@ -29,4 +29,24 @@ class ProfesorGrupo extends Controller
 
         return response()->json($datos_foro);
     }
+
+    public function listarMateriasdeGrupo(Request $request)
+    {
+        $idGrupo=DB::table('alumnos_pertenecen_grupos')
+        ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
+        ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
+        ->get();
+
+        $materias=DB::table('grupos_tienen_profesor')
+        ->select('grupos_tienen_profesor.idMateria AS idMateria', 'materias.nombre AS Materia', 'grupos_tienen_profesor.idGrupo AS idGrupo', 'grupos_tienen_profesor.idProfesor AS idProfesor' )
+        ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
+        ->where('grupos_tienen_profesor.idGrupo', $idGrupo[0]->idGrupo)
+        ->get();
+
+        return response()->json($materias);
+    }
+
+
 }
+
+
