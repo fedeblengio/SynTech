@@ -89,7 +89,7 @@ class loginController extends Controller
         try { 
             $usuarios = usuarios::where('username', $request->username)->first();
             if($usuarios){
-                DB::update('UPDATE usuarios SET imagen_perfil="' . $request->imagen_perfil . '" WHERE username="' . $request->username . '";');  
+                DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE username="' . $request->username . '";');  
             }
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
