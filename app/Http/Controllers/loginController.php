@@ -37,17 +37,21 @@ class loginController extends Controller
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }
     }
+
     public function traerDatos($request)
     {
         $u = usuarios::where('username', $request->username)->first();
+
         $datos = [
             "username" => $u->username,
             "nombre" => $u->nombre,
             "ou" => $u->ou,
             "imagen_perfil" => $u->imagen_perfil
         ];
+
         $base64data = base64_encode(json_encode($datos));
         $tExist = token::where('token', $base64data)->first();
+
         if ($tExist) {
             $tExist->delete();
             self::guardarToken($base64data);
@@ -56,6 +60,7 @@ class loginController extends Controller
         }
         return  $base64data;
     }
+
     public function guardarToken($token)
     {
         $t = new token;
@@ -63,7 +68,6 @@ class loginController extends Controller
         $t->fecha_vencimiento = Carbon::now()->addMinutes(120);
         $t->save();
     }
-
 
     public function cargarImagen(Request $request)
     {
@@ -110,7 +114,6 @@ class loginController extends Controller
     {
         $base64imagen = base64_encode(Storage::disk('ftp')->get($request->imagen_perfil));
         return $base64imagen;
-       
     }
 
 
