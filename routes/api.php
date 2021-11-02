@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\DB;
 */
 // TESTING CODE SIMPLE NOTE
 Route::get('/test', function (){
-    $peticionSQL= DB::table('grupos_tienen_profesor')
-    ->select('usuarios.username' ,'usuarios.nombre AS Profesor','materias.id AS idMateria' ,'materias.nombre AS Materia' , 'grupos.idGrupo' , 'grupos.nombreCompleto' , 'grupos.anioElectivo')
-    ->join('grupos', 'grupos.idGrupo', '=', 'grupos_tienen_profesor.idGrupo')
-    ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
-    ->join('usuarios', 'usuarios.username', '=', 'grupos_tienen_profesor.idProfesor')
-    ->where('username', '49895209')
+    $peticionSQL= DB::table('profesor_crea_tareas')
+    ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario' ,'profesor_crea_tareas.idGrupo')
+    ->join('alumno_entrega_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+    ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username')   
+    ->where('profesor_crea_tareas.idGrupo','TB1')
+    ->orderBy('profesor_crea_tareas.idTareas', 'desc')
     ->get();
 
     return $peticionSQL;
@@ -63,19 +63,25 @@ Route::get('/listarMaterias','App\Http\Controllers\ProfesorGrupo@listarMateriasG
 //
 // GRUPOS MATERIA DADO UN PROFESOR
 Route::get('/profesor-grupo','App\Http\Controllers\ProfesorGrupo@listarProfesorGrupo')->middleware('verificar_token');
-//
+// TAREAS
 
+Route::post('/tarea','App\Http\Controllers\ProfesorCreaTarea@tareas')->middleware('verificar_token');
+Route::get('/tareas','App\Http\Controllers\ProfesorCreaTarea@listarTareas')->middleware('verificar_token');
 
+// ENTREGAS 
+Route::get('/entregas-grupo','App\Http\Controllers\AlumnoEntregaTarea@listarEntregas')->middleware('verificar_token');
+Route::get('/entregas-alumno','App\Http\Controllers\AlumnoEntregaTarea@entregaAlumno')->middleware('verificar_token');
+Route::put('/entregas-correccion','App\Http\Controllers\AlumnoEntregaTarea@corregirEntrega')->middleware('verificar_token');
 
 
 // ENDPOINTS EQUISDES // USELESS NO BORRAR
 
 //TAREA 
-Route::get('/traerTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traerTareasGrupo')->middleware('verificar_token');
-Route::get('/traerArchivoTarea','App\Http\Controllers\ProfesorCreaTarea@traerArchivo');
-Route::post('/tarea','App\Http\Controllers\ProfesorCreaTarea@store')->middleware('verificar_token');
-Route::get('/tareas','App\Http\Controllers\ProfesorCreaTarea@show')->middleware('verificar_token');
+/* Route::get('/traerTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traerTareasGrupo')->middleware('verificar_token');
+Route::get('/traerArchivoTarea','App\Http\Controllers\ProfesorCreaTarea@traerArchivo'); */
 
+/* Route::get('/tareas','App\Http\Controllers\ProfesorCreaTarea@show')->middleware('verificar_token');
+ */
 // ALUMNOS 
 Route::get('/alumnosTarea','App\Http\Controllers\AlumnoEntregaTarea@index')->middleware('verificar_token');
 Route::get('/alumnoTarea','App\Http\Controllers\AlumnoEntregaTarea@traerTareasMateria')->middleware('verificar_token');
