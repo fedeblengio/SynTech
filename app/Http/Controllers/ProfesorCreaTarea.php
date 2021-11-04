@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Tarea;
 use App\Models\AlumnoEntrega;
@@ -161,6 +161,9 @@ class ProfesorCreaTarea extends Controller
             ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
             ->get();
 
+        
+
+       /* 
         $peticionSQL = DB::table('profesor_crea_tareas')
             ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS nombreMateria', 'tareas.titulo AS titulo', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS nombreUsuario')
             ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
@@ -170,8 +173,51 @@ class ProfesorCreaTarea extends Controller
             ->where('profesor_crea_tareas.idGrupo',  $idGrupo[0]->idGrupo)
             ->orderBy('profesor_crea_tareas.idTareas', 'desc')
             ->get();
+         */
+        $variable =  $request->idUsuario;
+        $variable2 = $idGrupo[0]->idGrupo;
+        $peticionSQL = DB::select(
+            DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.username = A.idProfesor WHERE B.idAlumnos IS NULL ;'),
+            array('variable' => $variable,'variable2' => $variable2)
+            
+        );
+    
+        $tarea=array();
+        foreach ($peticionSQL as $t) {
+            
+            
+            $fecha_actual = Carbon::now();
+            $fecha_vencimiento = Carbon::parse($t->fecha_vencimiento);
+            $booelan = true;
+    
+                if($fecha_vencimiento->gt($fecha_actual)){
+                    $booelan = false;
+                 }else{
+                    $booelan = true;
+                 }
 
-        return response()->json($peticionSQL);
+                 $datos = [
+                    'idTarea'=> $t->idTareas,
+                    'idMateria'=> $t->idMateria,
+                    'Materia'=> $t->materia,
+                    'idGrupo'=> $t->idGrupo,
+                    'idProfesor'=> $t->idProfesor,
+                    'Profesor'=> $t->Profesor,
+                    'fecha_vencimiento'=> $t->fecha_vencimiento,
+                    'titulo'=> $t->titulo,
+                    'descripcion'=> $t->descripcion,
+                    'vencido' => $booelan,
+                ];
+
+            array_push($tarea,$datos);
+    
+           
+        }
+         
+            
+        
+
+        return response()->json($tarea);
     }
 
 
