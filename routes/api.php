@@ -14,30 +14,27 @@ use Illuminate\Support\Facades\DB;
 */
 // TESTING CODE SIMPLE NOTE
 Route::get('/test', function () {
-    /*    $peticionSQL= DB::table('profesor_crea_tareas')
-    ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS nombreMateria', 'tareas.titulo AS titulo', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS nombreUsuario')
-    ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
-    ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
-    ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
-    ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.username')
-    ->join('alumno_entrega_tareas', 'profesor_crea_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
-    ->whereExists(function ($query) {
-        $query->select(DB::raw(1))
-              ->from('alumno_entrega_tareas')
-              ->where('alumno_entrega_tareas.idAlumnos', '49895206')
-              ->whereColumn('alumno_entrega_tareas.idTareas', 'profesor_crea_tareas.idTareas');
-    }) */
-    /*  ->where('profesor_crea_tareas.idGrupo', 'TB1') */
-    /* ->orderBy('profesor_crea_tareas.idTareas', 'desc')
-    ->get(); */
-    $variable = '49895205';
-    $variable2 = 'TB1';
-    $resultado = DB::select(
-        DB::raw('SELECT A.idTareas , A.idMateria ,D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento    FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.username = A.idProfesor WHERE B.idAlumnos IS NULL ;'),
-        array('variable' => $variable,'variable2' => $variable2)
-        
-    );
-    return response()->json($resultado);
+  $b = DB::table('re_hacer_tareas')
+  ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario' ,'profesor_crea_tareas.idGrupo' ,'profesor_crea_tareas.idProfesor' ,'profesor_crea_tareas.idMateria')
+  ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+  ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')   
+  ->join('tareas', 're_hacer_tareas.idTareas', '=', 'tareas.id')  
+  ->where('profesor_crea_tareas.idGrupo','TB1')
+  ->where('re_hacer_tareas.idTareas',12)
+  ->where('profesor_crea_tareas.idMateria',1)
+  ->orderBy('re_hacer_tareas.created_at', 'desc')
+  ->get();
+ $a= DB::table('alumno_entrega_tareas')
+  ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario' ,'profesor_crea_tareas.idGrupo' ,'profesor_crea_tareas.idProfesor' ,'profesor_crea_tareas.idMateria')
+  ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+  ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username') 
+  ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')   
+  ->where('profesor_crea_tareas.idGrupo','TB1')
+  ->where('alumno_entrega_tareas.idTareas',12)
+  ->where('profesor_crea_tareas.idMateria',1)
+  ->orderBy('alumno_entrega_tareas.created_at', 'desc')
+  ->get();
+    return response()->json($a);
   /*   return $peticionSQL; */
 });
 //
@@ -82,8 +79,10 @@ Route::get('/listarMaterias', 'App\Http\Controllers\ProfesorGrupo@listarMaterias
 Route::get('/profesor-grupo', 'App\Http\Controllers\ProfesorGrupo@listarProfesorGrupo')->middleware('verificar_token');
 // TAREAS
 
+Route::get('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@traerTarea')->middleware('verificar_token');
 Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@tareas')->middleware('verificar_token');
 Route::get('/tareas', 'App\Http\Controllers\ProfesorCreaTarea@listarTareas')->middleware('verificar_token');
+Route::post('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@seleccion')->middleware('verificar_token');
 
 // ENTREGAS 
 Route::get('/entregas-grupo', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregas')->middleware('verificar_token');

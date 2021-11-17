@@ -141,18 +141,107 @@ class ProfesorCreaTarea extends Controller
     /*                                                      */
     public function consultaProfesor(Request $request)
     {
+        if($request->idMateria){ 
         $peticionSQL = DB::table('profesor_crea_tareas')
-            ->select('tareas.id AS idTareas', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento')
+            ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento')
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
             ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
             ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.username')
             ->where('profesor_crea_tareas.idProfesor', $request->idUsuario)
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
             ->orderBy('profesor_crea_tareas.idTareas', 'desc')
             ->get();
 
         return response()->json($peticionSQL);
+    }else{
+        $peticionSQL = DB::table('profesor_crea_tareas')
+        ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento')
+        ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
+        ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
+        ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
+        ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.username')
+        ->where('profesor_crea_tareas.idProfesor', $request->idUsuario)
+        ->orderBy('profesor_crea_tareas.idTareas', 'desc')
+        ->get();
+
+        return response()->json($peticionSQL);
     }
+    }
+
+    public function traerTarea(Request $request){
+        $peticionSQL = DB::table('tareas')
+        ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento', 'tareas.titulo', 'tareas.descripcion')
+        ->join('profesor_crea_tareas', 'tareas.id', '=', 'profesor_crea_tareas.idTareas')
+        ->where('tareas.id', $request->idTarea)
+        ->get();
+
+
+        $dataResponse = array();
+
+        foreach ($peticionSQL as $p) {
+
+            $peticionSQLFiltrada = DB::table('archivos_tarea')
+                ->select('id AS idArchivo','nombreArchivo AS archivo')
+                ->where('idTarea', $p->idTarea)
+                ->distinct()
+                ->get();
+
+            $arrayDeArchivos = array();
+            $arrayImagenes = array();
+            $postAuthor = $p->idProfesor;
+
+            $imgPerfil = DB::table('usuarios')
+                ->select('imagen_perfil')
+                ->where('username', $postAuthor)
+                ->get();
+
+                $nombreProfesor = DB::table('usuarios')
+                ->select('nombre')
+                ->where('username', $postAuthor)
+                ->get();
+
+            $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
+
+            foreach ($peticionSQLFiltrada as $p2) {
+
+                $resultado = strpos($p2->archivo, ".pdf");
+                if ($resultado) {
+                    array_push($arrayArchivos, $p2);
+                } else {
+
+                    array_push($arrayImagenes, $p2);
+                }
+            }
+
+            
+            $datos = [
+                "idTarea" => $p->idTarea,
+                "profile_picture" => $img,
+                "idProfesor" => $p->idProfesor,
+                "nombreProfesor" => $nombreProfesor[0]->nombre,
+                "idMateria" => $p->idMateria,
+                "fechaVencimiento" => $p->fecha_vencimiento,
+                "titulo" => $p->titulo,
+                "descripcion" => $p->descripcion,
+            ];
+
+            $p = [
+                "datos" => $datos,
+                "archivos" => $arrayDeArchivos,
+                "imagenes" => $arrayImagenes,
+            ];
+
+            array_push($dataResponse, $p);
+        }
+        return response()->json($dataResponse[0]);
+
+
+
+    }
+
+
 
     public function consultaAlumno(Request $request)
     {
@@ -161,28 +250,28 @@ class ProfesorCreaTarea extends Controller
             ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
             ->get();
 
-        
+        $variable =  $request->idUsuario;
+        $variable2 = $idGrupo[0]->idGrupo;
+        $peticionSQL = DB::select(
+            DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.username = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
+            array('variable' => $variable,'variable2' => $variable2)
+            
+        );
 
-       /* 
-        $peticionSQL = DB::table('profesor_crea_tareas')
-            ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS nombreMateria', 'tareas.titulo AS titulo', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS nombreUsuario')
+        $peticionSQL2 = DB::table('profesor_crea_tareas')
+            ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
+            ->join('alumno_entrega_tareas', 'profesor_crea_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
             ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
             ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.username')
             ->where('profesor_crea_tareas.idGrupo',  $idGrupo[0]->idGrupo)
+            ->where('alumno_entrega_tareas.re_hacer', "1")
             ->orderBy('profesor_crea_tareas.idTareas', 'desc')
             ->get();
-         */
-        $variable =  $request->idUsuario;
-        $variable2 = $idGrupo[0]->idGrupo;
-        $peticionSQL = DB::select(
-            DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.username = A.idProfesor WHERE B.idAlumnos IS NULL ;'),
-            array('variable' => $variable,'variable2' => $variable2)
-            
-        );
     
         $tarea=array();
+        $re_hacer_tarea=array();
         foreach ($peticionSQL as $t) {
             
             
@@ -209,15 +298,30 @@ class ProfesorCreaTarea extends Controller
                     'vencido' => $booelan,
                 ];
 
-            array_push($tarea,$datos);
+                array_push($tarea,$datos);
     
-           
-        }
-         
-            
-        
+            }
 
-        return response()->json($tarea);
+            foreach ($peticionSQL2 as $p) {
+                $reHacer = [
+                    'idTarea'=> $p->idTareas,
+                    'idMateria'=> $p->idMateria,
+                    'Materia'=> $p->materia,
+                    'idGrupo'=> $p->idGrupo,
+                    'idProfesor'=> $p->idProfesor,
+                    'Profesor'=> $p->Profesor,
+                    'titulo'=> $p->titulo,
+                    'descripcion'=> $p->descripcion,
+                ];
+
+                array_push($re_hacer_tarea,$reHacer);
+            }    
+         $tareas=[
+             'tareas'=>$tarea,
+             're_hacer'=>$re_hacer_tarea,
+         ];
+
+        return response()->json($tareas);
     }
 
 
