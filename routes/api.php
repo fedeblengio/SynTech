@@ -43,7 +43,7 @@ Route::get('/test', function () {
 
 // FTP SAVE FILE
 Route::post('/FTP', 'App\Http\Controllers\ProfesorEscribeForo@guardarArchivoFTP')->middleware('verificar_token');
-Route::get('/traerArchivo', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo')->middleware('verificar_token');
+Route::get('/traerArchivo', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo')->middleware('verificar_token'); 
 //
 
 // LOGIN
@@ -66,7 +66,7 @@ Route::get('/foros', 'App\Http\Controllers\ProfesorEscribeForo@index')->middlewa
 Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show')->middleware('verificar_token');
 Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@guardarPublicacionBD')->middleware('verificar_token');
 /* Route::put('/foro','App\Http\Controllers\ProfesorEscribeForo@update')->middleware('verificar_token'); */
-/* Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy')->middleware('verificar_token'); */
+Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy')->middleware('verificar_token'); 
 //
 
 
@@ -81,13 +81,21 @@ Route::get('/profesor-grupo', 'App\Http\Controllers\ProfesorGrupo@listarProfesor
 
 Route::get('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@traerTarea')->middleware('verificar_token');
 Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@tareas')->middleware('verificar_token');
+Route::delete('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@destroy')->middleware('verificar_token');
 Route::get('/tareas', 'App\Http\Controllers\ProfesorCreaTarea@listarTareas')->middleware('verificar_token');
 Route::post('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@seleccion')->middleware('verificar_token');
 
 // ENTREGAS 
 Route::get('/entregas-grupo', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregas')->middleware('verificar_token');
+Route::get('/entregas-alumnos', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregasAlumno')->middleware('verificar_token');
 Route::get('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@entregaAlumno')->middleware('verificar_token');
 Route::put('/entregas-correccion', 'App\Http\Controllers\AlumnoEntregaTarea@corregirEntrega')->middleware('verificar_token');
+
+// AGENDA CLASE VIRTUAL
+Route::get('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@show')->middleware('verificar_token');
+Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store')->middleware('verificar_token');
+Route::put('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@update')->middleware('verificar_token');
+Route::delete('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@destroy')->middleware('verificar_token');
 
 
 // ENDPOINTS EQUISDES // USELESS NO BORRAR

@@ -252,11 +252,19 @@ class ProfesorCreaTarea extends Controller
 
         $variable =  $request->idUsuario;
         $variable2 = $idGrupo[0]->idGrupo;
-        $peticionSQL = DB::select(
-            DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.username = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
-            array('variable' => $variable,'variable2' => $variable2)
-            
-        );
+        $variable3 = $request->idMateria;
+        if ($request->idMateria){ 
+            $peticionSQL = DB::select(
+                DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2 AND idMateria=:variable3) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.username = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
+                array('variable' => $variable,'variable2' => $variable2, 'variable3' => $variable3)    
+            );
+        }else{
+            $peticionSQL = DB::select(
+                DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.username = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
+                array('variable' => $variable,'variable2' => $variable2)    
+            );
+        }
+        
 
         $peticionSQL2 = DB::table('profesor_crea_tareas')
             ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
@@ -273,7 +281,7 @@ class ProfesorCreaTarea extends Controller
         $tarea=array();
         $re_hacer_tarea=array();
         foreach ($peticionSQL as $t) {
-            
+
             
             $fecha_actual = Carbon::now();
             $fecha_vencimiento = Carbon::parse($t->fecha_vencimiento);
@@ -343,14 +351,27 @@ class ProfesorCreaTarea extends Controller
     }
 
     public function destroy(Request $request)
-    {
-        $eliminarTarea = ProfesorTarea::where('idGrupo', $request->idGrupo)->where('idTareas', $request->idTareas)->first();
-
-        try {
+    {   
+        
+        $eliminarTarea = Tarea::where('id', $request->idTareas)->first();
+       /*  $eliminarProfesorTarea = ProfesorTarea::where('idTareas', $request->idTareas)->first(); */
+        $eliminarArhivos = archivosTarea::where('idTarea', $request->idTareas)->get();
+        
+        foreach ($eliminarArhivos as $p) {
+            Storage::disk('ftp')->delete($p->nombreArchivo);
+            $arhivosId = archivosTarea::where('id', $p->id)->first();
+            $arhivosId->delete();
+     }
+       try {
+        DB::delete('delete from profesor_crea_tareas where idTareas="'.$request->idTareas.'";');
             $eliminarTarea->delete();
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
     }
+
+
+
+    
 }

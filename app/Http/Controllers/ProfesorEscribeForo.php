@@ -60,7 +60,7 @@ class ProfesorEscribeForo extends Controller
         }
     }
 
-    public function destroy(Request $request)
+/*     public function destroy(Request $request)
     {
         $eliminarDatosForo = datosForo::where('id', $request->idDatos)->first();
         try {
@@ -69,7 +69,7 @@ class ProfesorEscribeForo extends Controller
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
-    }
+    } */
 
 
 
@@ -77,7 +77,7 @@ class ProfesorEscribeForo extends Controller
     public function traerPublicacionesProfesor($request)
     {
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
-            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
+            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'datosForo.idUsuario AS idUsuario', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
             ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
             ->orderBy('id', 'desc')
@@ -119,6 +119,7 @@ class ProfesorEscribeForo extends Controller
                 "profile_picture" => $img,
                 "idForo" => $p->idForo,
                 "mensaje" => $p->mensaje,
+                "idUsuario" => $p->idUsuario,
                 "titulo" => $p->titulo,
                 "fecha" => $p->fecha
             ];
@@ -144,7 +145,7 @@ class ProfesorEscribeForo extends Controller
             ->get();
 
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
-            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.created_at AS fecha', 'datosForo.idUsuario AS postAuthor')
+            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo','datosForo.idUsuario AS idUsuario' , 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.created_at AS fecha', 'datosForo.idUsuario AS postAuthor')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
             ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
             ->orderBy('id', 'desc')
@@ -186,6 +187,7 @@ class ProfesorEscribeForo extends Controller
                 "profile_picture" => $img,
                 "idForo" => $p->idForo,
                 "mensaje" => $p->mensaje,
+                "idUsuario" => $p->idUsuario,
                 "titulo" => $p->titulo,
                 "fecha" => $p->fecha
             ];
@@ -234,5 +236,23 @@ class ProfesorEscribeForo extends Controller
     }
 
 
+    public function destroy(Request $request)
+    {
+        
+        $postForo = datosForo::where('id', $request->id)->first();
+        $arhivosForo = archivosForo::where('idDato', $request->id)->get();
+        foreach ($arhivosForo as $p) {
+            Storage::disk('ftp')->delete($p->nombreArchivo);
+            $arhivosId = archivosForo::where('id', $p->id)->first();
+            $arhivosId->delete();
+        }
+        try {
+            $postForo->delete();
+            return response()->json(['status' => 'Success'], 200); 
+        } catch (\Throwable $th) {
+            return response()->json(['status' => 'Bad Request'], 400);
+        }
+ 
+    }
 
 }
