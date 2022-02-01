@@ -321,7 +321,7 @@ class AlumnoEntregaTarea extends Controller
     {
 
         $peticionSQL = DB::table('re_hacer_tareas')
-            ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.created_at AS fecha', 're_hacer_tareas.calificacion AS calificacion', 're_hacer_tareas.mensaje AS mensaje', 'usuarios.nombre AS nombreUsuario')
+            ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.created_at AS fecha', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario')
             ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')
             ->where('re_hacer_tareas.idTareas', $request->idTareas)
             ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
@@ -355,7 +355,7 @@ class AlumnoEntregaTarea extends Controller
                 "idTareas" => $p->idTareas,
                 "profile_picture" => $img,
                 "idAlumnos" => $p->idAlumnos,
-                "mensaje" => $p->mensaje,
+              /*   "mensaje" => $p->mensaje, */
                 "calificacion" => $p->calificacion,
                 "nombreUsuario" => $p->nombreUsuario,
                 "fecha" => $p->fecha
