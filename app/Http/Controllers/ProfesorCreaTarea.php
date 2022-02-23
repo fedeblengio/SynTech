@@ -143,7 +143,7 @@ class ProfesorCreaTarea extends Controller
     {
         if($request->idMateria){ 
         $peticionSQL = DB::table('profesor_crea_tareas')
-            ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento')
+            ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo','tareas.descripcion', 'tareas.fecha_vencimiento')
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
             ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
@@ -157,7 +157,7 @@ class ProfesorCreaTarea extends Controller
         return response()->json($peticionSQL);
     }else{
         $peticionSQL = DB::table('profesor_crea_tareas')
-        ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento')
+        ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo','tareas.descripcion','tareas.fecha_vencimiento')
         ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
         ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
         ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
