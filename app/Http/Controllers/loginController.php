@@ -49,8 +49,9 @@ class loginController extends Controller
              
             if($usuarios){
                 DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE username="' . $request->idUsuario . '";');
+                if($usuarios->imagen_perfil !== "default_picture.png"){
                 Storage::disk('ftp')->delete($usuarios->imagen_perfil);
-                  
+                }  
             }
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
