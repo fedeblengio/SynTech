@@ -28,7 +28,7 @@ Ejecutar: # ```docker-compose up```
 - chmod -R 777 /app/storage/logs/*
 - ```php artisan serve```
 - composer self-update --2 // SALTA ERROR DE CANNOT ALLOCATE 1609213 la wea esa
-
+- php artisan route:clear ? si error router coso pum todo raro
 # Entrar A Mysql
 - ```docker exec -ti laravel_mysql mysql -u root```
 
