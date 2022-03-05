@@ -96,6 +96,10 @@ Route::get('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@s
 Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store')->middleware('verificar_token');
 Route::put('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@update')->middleware('verificar_token');
 Route::delete('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@destroy')->middleware('verificar_token');
+Route::get('/agenda-clase-eventos', 'App\Http\Controllers\AgendaClaseVirtualController@consultaEvento')->middleware('verificar_token');
+Route::get('/agenda-clase-grupos', 'App\Http\Controllers\AgendaClaseVirtualController@consultaGruposMateria')->middleware('verificar_token');
+
+
 
 
 // ENDPOINTS EQUISDES // USELESS NO BORRAR

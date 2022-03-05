@@ -38,12 +38,21 @@ class ProfesorEscribeForo extends Controller
 
     public function show(Request $request)
     {
+        if ($request->idMateria){
         if ($request->ou == 'Profesor') {
-          return  self::traerPublicacionesProfesor($request);
+          return  self::traerPublicacionesProfesorMateria($request);
         } else if ($request->ou == 'Alumno') {
-           return self::traerPublicacionesAlumno($request);
+           return self::traerPublicacionesAlumnoMateria($request);
+        }
+    }else{
+        if ($request->ou == 'Profesor') {
+            return  self::traerPublicacionesProfesor($request);
+          } else if ($request->ou == 'Alumno') {
+             return self::traerPublicacionesAlumno($request);
+          }
         }
     }
+
 
     
     public function update(Request $request)
@@ -135,9 +144,136 @@ class ProfesorEscribeForo extends Controller
         return response()->json($dataResponse);
     }
 
+    public function traerPublicacionesProfesorMateria($request)
+    {
+        $peticionSQL = DB::table('profesor_estan_grupo_foro')
+            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'datosForo.idUsuario AS idUsuario', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
+            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
+            ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $dataResponse = array();
+
+
+        foreach ($peticionSQL as $p) {
+            $peticionSQLFiltrada = DB::table('archivos_foro')
+                ->select('nombreArchivo AS archivo')
+                ->where('idDato', $p->id)
+                ->distinct()
+                ->get();
+
+            $arrayArchivos = array();
+            $arrayImagenes = array();
+            $postAuthor = $p->postAuthor;
+            $imgPerfil = DB::table('usuarios')
+                         ->select('imagen_perfil')
+                         ->where('username', $postAuthor)
+                         ->get();
+
+            $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
+
+
+            foreach ($peticionSQLFiltrada as $p2) {
+
+                $resultado = strpos($p2->archivo, ".pdf");
+                if ($resultado) {
+                    array_push($arrayArchivos, $p2->archivo);
+                } else {
+                    array_push($arrayImagenes, base64_encode(Storage::disk('ftp')->get($p2->archivo)));
+                }
+            }
+
+            $datos = [
+                "id" => $p->id,
+                "profile_picture" => $img,
+                "idForo" => $p->idForo,
+                "mensaje" => $p->mensaje,
+                "idUsuario" => $p->idUsuario,
+                "titulo" => $p->titulo,
+                "fecha" => $p->fecha
+            ];
+
+            $p = [
+                "data" => $datos,
+                "archivos" => $arrayArchivos,
+                "imagenes" => $arrayImagenes,
+            ];
+
+            array_push($dataResponse, $p);
+        }
+        return response()->json($dataResponse);
+    }
+
 
 
     public function traerPublicacionesAlumno($request)
+    {
+        $idGrupo = DB::table('alumnos_pertenecen_grupos')
+            ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
+            ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
+            ->get();
+
+        $peticionSQL = DB::table('profesor_estan_grupo_foro')
+            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo','datosForo.idUsuario AS idUsuario' , 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.created_at AS fecha', 'datosForo.idUsuario AS postAuthor')
+            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
+            ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $dataResponse = array();
+
+        foreach ($peticionSQL as $p) {
+
+            $peticionSQLFiltrada = DB::table('archivos_foro')
+                ->select('nombreArchivo AS archivo')
+                ->where('idDato', $p->id)
+                ->distinct()
+                ->get();
+
+            $arrayDeArchivos = array();
+            $arrayImagenes = array();
+            $postAuthor = $p->postAuthor;
+
+            $imgPerfil = DB::table('usuarios')
+                ->select('imagen_perfil')
+                ->where('username', $postAuthor)
+                ->get();
+
+            $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
+
+            foreach ($peticionSQLFiltrada as $p2) {
+
+                $resultado = strpos($p2->archivo, ".pdf");
+                if ($resultado) {
+                    array_push($arrayDeArchivos, $p2->archivo);
+                } else {
+                    array_push($arrayImagenes, base64_encode(Storage::disk('ftp')->get($p2->archivo)));
+                }
+            }
+
+            $datos = [
+                "id" => $p->id,
+                "profile_picture" => $img,
+                "idForo" => $p->idForo,
+                "mensaje" => $p->mensaje,
+                "idUsuario" => $p->idUsuario,
+                "titulo" => $p->titulo,
+                "fecha" => $p->fecha
+            ];
+
+            $p = [
+                "data" => $datos,
+                "archivos" => $arrayDeArchivos,
+                "imagenes" => $arrayImagenes,
+            ];
+
+            array_push($dataResponse, $p);
+        }
+        return response()->json($dataResponse);
+    }
+
+    public function traerPublicacionesAlumnoMateria($request)
     {
         $idGrupo = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
