@@ -20,54 +20,7 @@ class loginController extends Controller
         return response()->json($allUsers);
     }
 
-    public function connect(Request $request)
-    {
 
-        $connection = new Connection([
-            'hosts' => ['192.168.1.73'],
-        ]);
-        $datos = self::traerDatos($request);
-        $connection->connect();
-        if ($connection->auth()->attempt($request->username . '@syntech.intra', $request->password, $stayBound = true)) {
-            return [
-                'connection' => 'Success',
-                'datos' => $datos,
-            ];
-        } else {
-            return response()->json(['error' => 'Unauthenticated.'], 401);
-        }
-    }
-
-    public function traerDatos($request)
-    {
-        $u = usuarios::where('username', $request->username)->first();
-
-        $datos = [
-            "username" => $u->username,
-            "nombre" => $u->nombre,
-            "ou" => $u->ou,
-            "imagen_perfil" => $u->imagen_perfil
-        ];
-
-        $base64data = base64_encode(json_encode($datos));
-        $tExist = token::where('token', $base64data)->first();
-
-        if ($tExist) {
-            $tExist->delete();
-            self::guardarToken($base64data);
-        } else {
-            self::guardarToken($base64data);
-        }
-        return  $base64data;
-    }
-
-    public function guardarToken($token)
-    {
-        $t = new token;
-        $t->token = $token;
-        $t->fecha_vencimiento = Carbon::now()->addMinutes(120);
-        $t->save();
-    }
 
     public function cargarImagen(Request $request)
     {
@@ -92,10 +45,10 @@ class loginController extends Controller
     {
         try { 
 
-            $usuarios = usuarios::where('username', $request->username)->first();
+            $usuarios = usuarios::where('username', $request->idUsuario)->first();
              
             if($usuarios){
-                DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE username="' . $request->username . '";');
+                DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE username="' . $request->idUsuario . '";');
                 Storage::disk('ftp')->delete($usuarios->imagen_perfil);
                   
             }
