@@ -8,9 +8,11 @@ use App\Models\AlumnoEntrega;
 use App\Models\archivosEntrega;
 use App\Models\GruposProfesores;
 use App\Models\ProfesorTarea;
+use Illuminate\Support\Str;
 use App\Models\archivosTarea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Mockery\Undefined;
 
 class ProfesorCreaTarea extends Controller
 {
@@ -188,26 +190,23 @@ class ProfesorCreaTarea extends Controller
                 ->distinct()
                 ->get();
 
-            $arrayDeArchivos = array();
+            $arrayArchivos = array();
             $arrayImagenes = array();
             $postAuthor = $p->idProfesor;
 
-            $imgPerfil = DB::table('usuarios')
-                ->select('imagen_perfil')
+            $usuario = DB::table('usuarios')
+                ->select('imagen_perfil','username','nombre')
                 ->where('username', $postAuthor)
                 ->get();
 
-                $nombreProfesor = DB::table('usuarios')
-                ->select('nombre')
-                ->where('username', $postAuthor)
-                ->get();
-
-            $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
+    
+            $img = base64_encode(Storage::disk('ftp')->get($usuario[0]->imagen_perfil));
 
             foreach ($peticionSQLFiltrada as $p2) {
-
-                $resultado = strpos($p2->archivo, ".pdf");
-                if ($resultado) {
+                $resultado = Str::contains($p2->archivo, ['.pdf','.PDF','.docx']);
+              /*   $resultado = strpos($p2->archivo, ".pdf"); */
+         
+                if ($resultado != '') {
                     array_push($arrayArchivos, $p2);
                 } else {
 
@@ -220,7 +219,7 @@ class ProfesorCreaTarea extends Controller
                 "idTarea" => $p->idTarea,
                 "profile_picture" => $img,
                 "idProfesor" => $p->idProfesor,
-                "nombreProfesor" => $nombreProfesor[0]->nombre,
+                "nombreProfesor" => $usuario[0]->nombre,
                 "idMateria" => $p->idMateria,
                 "fechaVencimiento" => $p->fecha_vencimiento,
                 "titulo" => $p->titulo,
@@ -229,7 +228,7 @@ class ProfesorCreaTarea extends Controller
 
             $p = [
                 "datos" => $datos,
-                "archivos" => $arrayDeArchivos,
+                "archivos" => $arrayArchivos,
                 "imagenes" => $arrayImagenes,
             ];
 
