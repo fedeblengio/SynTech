@@ -150,6 +150,7 @@ class ProfesorEscribeForo extends Controller
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'datosForo.idUsuario AS idUsuario', 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
             ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
+            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
             ->orderBy('id', 'desc')
             ->get();
 
@@ -284,6 +285,7 @@ class ProfesorEscribeForo extends Controller
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo','datosForo.idUsuario AS idUsuario' , 'datosForo.mensaje AS mensaje', 'datosForo.titulo AS titulo', 'datosForo.created_at AS fecha', 'datosForo.idUsuario AS postAuthor')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
             ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
+            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
             ->orderBy('id', 'desc')
             ->get();
 

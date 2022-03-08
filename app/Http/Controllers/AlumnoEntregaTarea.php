@@ -289,7 +289,7 @@ class AlumnoEntregaTarea extends Controller
 
                 $resultado = strpos($p2->archivo, ".pdf");
                 if ($resultado) {
-                    array_push($arrayArchivos, $p2->archivo);
+                    array_push($arrayDeArchivos, $p2->archivo);
                 } else {
                     array_push($arrayImagenes, $p2->archivo);
                 }
