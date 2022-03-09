@@ -27,8 +27,10 @@ class ProfesorGrupo extends Controller
                  ->get();
 
         $materias=DB::table('grupos_tienen_profesor')
-                  ->select('grupos_tienen_profesor.idMateria AS idMateria', 'materias.nombre AS Materia', 'grupos_tienen_profesor.idGrupo AS idGrupo', 'grupos_tienen_profesor.idProfesor AS idProfesor' )
+                  ->select('grupos_tienen_profesor.idMateria AS idMateria', 'materias.nombre AS Materia', 'grupos_tienen_profesor.idGrupo AS idGrupo','grupos.nombreCompleto', 'grupos_tienen_profesor.idProfesor AS idProfesor', 'usuarios.nombre AS Profesor' )
                   ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
+                  ->join('grupos', 'grupos.idGrupo', '=', 'grupos_tienen_profesor.idGrupo') 
+                  ->join('usuarios', 'usuarios.username', '=', 'grupos_tienen_profesor.idProfesor')
                   ->where('grupos_tienen_profesor.idGrupo', $idGrupo[0]->idGrupo)
                   ->get();
 
