@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\DB;
 */
 // TESTING CODE SIMPLE NOTE
 Route::get('/test', function () {
-  $b = DB::table('re_hacer_tareas')
+  return 'TEST API ENDPOINT'; 
+/*   $b = DB::table('re_hacer_tareas')
   ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario' ,'profesor_crea_tareas.idGrupo' ,'profesor_crea_tareas.idProfesor' ,'profesor_crea_tareas.idMateria')
   ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
   ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')   
@@ -34,8 +35,8 @@ Route::get('/test', function () {
   ->where('profesor_crea_tareas.idMateria',1)
   ->orderBy('alumno_entrega_tareas.created_at', 'desc')
   ->get();
-    return response()->json($a);
-  /*   return $peticionSQL; */
+    return response()->json($a);*/
+  /*   return $peticionSQL; */ 
 });
 //
 
@@ -100,16 +101,6 @@ Route::get('/agenda-clase-eventos', 'App\Http\Controllers\AgendaClaseVirtualCont
 Route::get('/agenda-clase-grupos', 'App\Http\Controllers\AgendaClaseVirtualController@consultaGruposMateria')->middleware('verificar_token');
 
 
-
-
-// ENDPOINTS EQUISDES // USELESS NO BORRAR
-
-//TAREA 
-/* Route::get('/traerTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traerTareasGrupo')->middleware('verificar_token');
-Route::get('/traerArchivoTarea','App\Http\Controllers\ProfesorCreaTarea@traerArchivo'); */
-
-/* Route::get('/tareas','App\Http\Controllers\ProfesorCreaTarea@show')->middleware('verificar_token');
- */
 // ALUMNOS 
 Route::get('/alumnosTarea', 'App\Http\Controllers\AlumnoEntregaTarea@index')->middleware('verificar_token');
 Route::get('/alumnoTarea', 'App\Http\Controllers\AlumnoEntregaTarea@traerTareasMateria')->middleware('verificar_token');
@@ -119,3 +110,13 @@ Route::put('/alumnoTarea', 'App\Http\Controllers\AlumnoEntregaTarea@update')->mi
 
 
 Route::get('/alumno', 'App\Http\Controllers\alumnos@show')->middleware('verificar_token');
+
+// ENDPOINTS EQUISDES // USELESS NO BORRAR
+
+//TAREA 
+/* Route::get('/traerTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traerTareasGrupo')->middleware('verificar_token');
+Route::get('/traerArchivoTarea','App\Http\Controllers\ProfesorCreaTarea@traerArchivo'); */
+
+/* Route::get('/tareas','App\Http\Controllers\ProfesorCreaTarea@show')->middleware('verificar_token');
+ */
+
