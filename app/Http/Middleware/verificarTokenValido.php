@@ -22,11 +22,11 @@ class verificarTokenValido
             
          }else{
             $t->delete();   
-            return response()->json(['error' => 'Forbidden.'], 403);
+            return response()->json(['error' => 'Expired Token .'], 401);
          }
         
         } catch (\Throwable $th) {
-            return response()->json(['error' => 'Invalid Token'], 403);
+            return response()->json(['error' => 'Invalid Token'], 401);
         }
      
         
