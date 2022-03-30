@@ -387,9 +387,9 @@ class ProfesorEscribeForo extends Controller
         try {
             $postForo->delete();
             return response()->json(['status' => 'Success'], 200); 
-        } catch (\Throwable $th) {
+       } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
-        }
+       } 
  
     }
 

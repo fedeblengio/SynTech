@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\DB;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+// CHECK TOKEN
+Route::get('/token', function () {
+  return 'JoJo no Kimyou na Bouken Ice of Heaven';
+})->middleware('verificar_token');
 // TESTING CODE SIMPLE NOTE
 Route::get('/test', function () {
   return 'TEST API ENDPOINT'; 
@@ -58,7 +62,9 @@ Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen
 Route::get('/imagen-perfil', 'App\Http\Controllers\loginController@traerImagen')->middleware('verificar_token');
 // CAMBIAR CONTRASEÑA
 Route::put('/usuario', 'App\Http\Controllers\usuariosController@update')->middleware('verificar_token');
-//
+// CAMBIAR EMAIL Y GENERO
+Route::put('/usuario-db', 'App\Http\Controllers\usuariosController@update_db')->middleware('verificar_token');
+
 
 
 //FORO PRINCIPAL PUBLICACIONES  
@@ -90,7 +96,8 @@ Route::post('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@selecci
 Route::get('/entregas-grupo', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregas')->middleware('verificar_token');
 Route::get('/entregas-alumnos', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregasAlumno')->middleware('verificar_token');
 Route::get('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@entregaAlumno')->middleware('verificar_token');
-Route::put('/entregas-correccion', 'App\Http\Controllers\AlumnoEntregaTarea@corregirEntrega')->middleware('verificar_token');
+Route::put('/entregas-correccion', 'App\Http\Controllers\AlumnoEntregaTarea@verificar_correcion')->middleware('verificar_token');
+
 
 // AGENDA CLASE VIRTUAL
 Route::get('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@show')->middleware('verificar_token');
@@ -99,6 +106,16 @@ Route::put('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@u
 Route::delete('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@destroy')->middleware('verificar_token');
 Route::get('/agenda-clase-eventos', 'App\Http\Controllers\AgendaClaseVirtualController@consultaEvento')->middleware('verificar_token');
 Route::get('/agenda-clase-grupos', 'App\Http\Controllers\AgendaClaseVirtualController@consultaGruposMateria')->middleware('verificar_token');
+
+
+// LISTA CLASE VIRTUAL
+Route::post('/lista-clase', 'App\Http\Controllers\GrupoController@store')->middleware('verificar_token');
+Route::get('/lista-clase', 'App\Http\Controllers\GrupoController@mostrarFaltasTotalesGlobal')->middleware('verificar_token');
+Route::get('/registro-clase', 'App\Http\Controllers\GrupoController@registroClase')->middleware('verificar_token');
+Route::put('/lista-clase', 'App\Http\Controllers\GrupoController@update')->middleware('verificar_token');
+Route::get('/registro-alumno', 'App\Http\Controllers\GrupoController@registroAlumno')->middleware('verificar_token');
+
+
 
 
 // ALUMNOS 
@@ -110,6 +127,10 @@ Route::put('/alumnoTarea', 'App\Http\Controllers\AlumnoEntregaTarea@update')->mi
 
 
 Route::get('/alumno', 'App\Http\Controllers\alumnos@show')->middleware('verificar_token');
+
+// GRUPOS
+
+Route::get('/listar-alumnos', 'App\Http\Controllers\GrupoController@listarAlumnos')->middleware('verificar_token');
 
 // ENDPOINTS EQUISDES // USELESS NO BORRAR
 

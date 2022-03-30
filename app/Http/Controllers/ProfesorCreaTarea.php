@@ -353,6 +353,7 @@ class ProfesorCreaTarea extends Controller
     {   
         
         $eliminarTarea = Tarea::where('id', $request->idTareas)->first();
+        $profesorTareas = ProfesorTarea::where('idTareas', $request->idTareas)->first();
        /*  $eliminarProfesorTarea = ProfesorTarea::where('idTareas', $request->idTareas)->first(); */
         $eliminarArhivos = archivosTarea::where('idTarea', $request->idTareas)->get();
         
@@ -361,14 +362,17 @@ class ProfesorCreaTarea extends Controller
             $arhivosId = archivosTarea::where('id', $p->id)->first();
             $arhivosId->delete();
      }
-       try {
+       /* try { */
         DB::delete('delete from profesor_crea_tareas where idTareas="'.$request->idTareas.'";');
+           /*  $profesorTareas->delete(); */
             $eliminarTarea->delete();
             return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
+     /*    } catch (\Throwable $th) { */
             return response()->json(['status' => 'Bad Request'], 400);
-        }
+      /*   } */
     }
+
+    
 
 
 
