@@ -156,8 +156,59 @@ class ProfesorCreaTarea extends Controller
             ->orderBy('profesor_crea_tareas.idTareas', 'desc')
             ->get();
 
-        return response()->json($peticionSQL);
-    }else{
+            $TareasNoVencidas = array();
+            $TareasVencidas = array();
+            foreach ($peticionSQL as $p) {
+                $fecha_actual = Carbon::now()->subMinutes(23);
+                $fecha_inicio = Carbon::parse($p->fecha_vencimiento);
+        
+        
+                    if($fecha_inicio->gt($fecha_actual)){
+                      
+                        $datos = [
+                            "idTarea" => $p->idTarea,
+                            "idProfesor" => $p->idProfesor,
+                            "nombre" => $p->nombreUsuario,
+                            "idMateria" => $p->idMateria,
+                            "nombreMateria" => $p->nombreMateria,
+                            "idGrupo" => $p->idGrupo,
+                            "idGrupo" => $p->turnoGrupo,
+                            "idGrupo" => $p->titulo,
+                            "idGrupo" => $p->descripcion,
+                            "idGrupo" => $p->fecha_vencimiento,
+                        ];
+                       
+                        array_push($TareasNoVencidas, $datos);
+                        }else{
+                             
+                        $datos1 = [
+                            "idTarea" => $p->idTarea,
+                            "idProfesor" => $p->idProfesor,
+                            "nombre" => $p->nombreUsuario,
+                            "idMateria" => $p->idMateria,
+                            "nombreMateria" => $p->nombreMateria,
+                            "idGrupo" => $p->idGrupo,
+                            "idGrupo" => $p->turnoGrupo,
+                            "idGrupo" => $p->titulo,
+                            "idGrupo" => $p->descripcion,
+                            "idGrupo" => $p->fecha_vencimiento,
+                        ];
+                        array_push($TareasVencidas, $datos1);
+                        }
+                        
+                        }
+
+                        $tareas=[
+                            'noVencidas'=>$TareasNoVencidas,
+                            'vencidas'=>$TareasVencidas,
+                        ];
+               
+                       return response()->json($tareas);
+           
+    }
+    
+    
+    /* else{
         $peticionSQL = DB::table('profesor_crea_tareas')
         ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo','tareas.descripcion','tareas.fecha_vencimiento')
         ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
@@ -169,7 +220,8 @@ class ProfesorCreaTarea extends Controller
         ->get();
 
         return response()->json($peticionSQL);
-    }
+    } */
+
     }
 
     public function traerTarea(Request $request){

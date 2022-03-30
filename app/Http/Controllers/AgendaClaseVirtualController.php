@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\agendaClaseVirtual;
 use App\Models\materia;
 use App\Models\GruposProfesores;
+use App\Models\listaClaseVirtual;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -119,7 +120,7 @@ class AgendaClaseVirtualController extends Controller
 
         $dataResponse = array();
         foreach ($agendaClase as $p) {
-            $fecha_actual = Carbon::now()->subHours(3);
+            $fecha_actual = Carbon::now()->subMinutes(23);
             $fecha_inicio = Carbon::parse($p->fecha_fin);
     
     
@@ -166,18 +167,18 @@ class AgendaClaseVirtualController extends Controller
 
         $dataResponse = array();
         foreach ($agendaClase as $p) {
-            $fecha_actual2 = Carbon::now()->subHours(3);
+            $fecha_actual2 = Carbon::now()->subMinutes(23);
             $fecha_inicio1 = Carbon::parse($p->fecha_fin);
     
     
                
-            $fecha_actual = Carbon::now()->subHours(3)->format('d-m-Y');
+            $fecha_actual = Carbon::now()->subMinutes(23)->format('d-m-Y');
             $fecha_inicio = Carbon::parse($p->fecha_fin)->format('d-m-Y');
             
             
     
                 if($fecha_inicio1->gt($fecha_actual2)){
-                if($fecha_inicio ===$fecha_actual){
+                if($fecha_inicio >= $fecha_actual){
                     $materia=materia::where('id', $p->idMateria)->first();
 
                     $datos = [
@@ -206,7 +207,7 @@ class AgendaClaseVirtualController extends Controller
         $dataResponse = array();
         foreach ($agendaClase as $p) {
 
-        $fecha_actual = Carbon::now()->subHours(3);
+        $fecha_actual = Carbon::now()->subMinutes(23);
         $fecha_inicio = Carbon::parse($p->fecha_fin);
     
     
@@ -238,18 +239,18 @@ class AgendaClaseVirtualController extends Controller
         $dataResponse = array();
         foreach ($agendaClase as $p) {
 
-            $fecha_actual2 = Carbon::now()->subHours(3);
+            $fecha_actual2 = Carbon::now()->subMinutes(23);
             $fecha_inicio1 = Carbon::parse($p->fecha_fin);
     
     
                
-            $fecha_actual = Carbon::now()->subHours(3)->format('d-m-Y');
+            $fecha_actual = Carbon::now()->subMinutes(23)->format('d-m-Y');
             $fecha_inicio = Carbon::parse($p->fecha_fin)->format('d-m-Y');
             
             
     
                 if($fecha_inicio1->gt($fecha_actual2)){
-                if($fecha_inicio ===$fecha_actual){
+                if($fecha_inicio >= $fecha_actual){
         $materia=materia::where('id', $p->idMateria)->first();
 
         $datos = [
@@ -292,10 +293,12 @@ class AgendaClaseVirtualController extends Controller
 
     public function destroy(request $request)
     {
-        
-        $agendaClaseVirtual = agendaClaseVirtual::where('id', $request->id)->first();
+        $agendaClaseVirtual = agendaClaseVirtual::where('id', $request->idClase)->first();
+        DB::delete('delete from lista_aula_virtual where idClase="'.$request->idClase.'";');
+
         try {
             $agendaClaseVirtual->delete();
+
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
