@@ -82,7 +82,7 @@ class AgendaClaseVirtualController extends Controller
 
             array_push($materias, $p2->nombre);
 
-        }
+            }
 
 
         $p2 = [

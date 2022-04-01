@@ -311,13 +311,7 @@ class ProfesorEscribeForo extends Controller
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
 
             foreach ($peticionSQLFiltrada as $p2) {
-
-                $resultado = strpos($p2->archivo, ".pdf");
-                if ($resultado) {
-                    array_push($arrayDeArchivos, $p2->archivo);
-                } else {
-                    array_push($arrayImagenes, base64_encode(Storage::disk('ftp')->get($p2->archivo)));
-                }
+                strpos($p2->archivo, ".pdf") != null ?  array_push($arrayDeArchivos, $p2->archivo) :  array_push($arrayImagenes, $p2->archivo);
             }
 
             $datos = [
