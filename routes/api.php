@@ -114,6 +114,7 @@ Route::get('/lista-clase', 'App\Http\Controllers\GrupoController@mostrarFaltasTo
 Route::get('/registro-clase', 'App\Http\Controllers\GrupoController@registroClase')->middleware('verificar_token');
 Route::put('/lista-clase', 'App\Http\Controllers\GrupoController@update')->middleware('verificar_token');
 Route::get('/registro-alumno', 'App\Http\Controllers\GrupoController@registroAlumno')->middleware('verificar_token');
+Route::get('/registro-listas', 'App\Http\Controllers\GrupoController@index')->middleware('verificar_token');
 
 
 

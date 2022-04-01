@@ -71,7 +71,7 @@ class GrupoController extends Controller
         try {
             $listaPresentes = explode(',', $request->presentes);
             $listaAusentes = explode(',', $request->ausentes);
-     
+
             foreach ($listaPresentes as $presente) {
                 DB::insert('INSERT into lista_aula_virtual (idClase, idAlumnos, asistencia, created_at , updated_at) VALUES (?, ?, ?, ? , ?)', [$request->idClase, $presente, 1, Carbon::now(), Carbon::now()]);
             }
@@ -87,25 +87,43 @@ class GrupoController extends Controller
     }
 
 
-    public function show($id)
+    public function index(Request $request)
     {
-        //
+        return $request->idMateria ? self::registroListaMaterias($request->idMateria, $request->idProfesor) :   self::registroListarTodo($request->idProfesor);
+    }
+
+    public function registroListaMaterias($idMateria, $idProfesor)
+    {
+        return response()->json(DB::table('lista_aula_virtual')
+        ->select('lista_aula_virtual.idClase','agenda_clase_virtual.idGrupo','agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia' , 'lista_aula_virtual.created_at')
+        ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
+        ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
+        ->where('agenda_clase_virtual.idProfesor', $idProfesor)
+        ->where('agenda_clase_virtual.idMateria', $idMateria)
+        ->get());
+    }
+
+    public function registroListarTodo($idProfesor)
+    {
+        return response()->json(DB::table('lista_aula_virtual')
+        ->select('lista_aula_virtual.idClase','agenda_clase_virtual.idGrupo','agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia' , 'lista_aula_virtual.created_at')
+        ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
+        ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
+        ->where('agenda_clase_virtual.idProfesor', $idProfesor)
+        ->get());
     }
 
 
     public function mostrarFaltasTotalesGlobal(Request $request)
     {
-
-        $peticionSQL = DB::table('lista_aula_virtual')
+        return response()->json(DB::table('lista_aula_virtual')
             ->select('lista_aula_virtual.idAlumnos', DB::raw('count(*) as total'))
             ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
             ->where('agenda_clase_virtual.idMateria', $request->idMateria)
             ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
             ->where('lista_aula_virtual.asistencia', "0")
             ->groupBy('idAlumnos')
-            ->get();
-
-        return response()->json($peticionSQL);
+            ->get());
     }
 
     public function mostrarFaltasTotalesGlobalPorMes(Request $request)
