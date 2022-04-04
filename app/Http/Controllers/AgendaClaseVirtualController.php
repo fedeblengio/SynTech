@@ -178,7 +178,7 @@ class AgendaClaseVirtualController extends Controller
             
     
                 if($fecha_inicio1->gt($fecha_actual2)){
-                if($fecha_inicio >= $fecha_actual){
+                if($fecha_inicio === $fecha_actual){
                     $materia=materia::where('id', $p->idMateria)->first();
 
                     $datos = [
@@ -203,8 +203,15 @@ class AgendaClaseVirtualController extends Controller
     }
 
     public function consultaProfesor(Request $request){
-        $agendaClase=agendaClaseVirtual::all()->where('idProfesor', $request->idUsuario);
+
+        $agendaClase = DB::table('agenda_clase_virtual')
+        ->select('id', 'idProfesor', 'idGrupo', 'idMateria', 'fecha_inicio', 'fecha_fin')
+        ->where('idProfesor', $request->idUsuario)
+        ->orderBy('fecha_inicio', 'asc')
+        ->get();
+
         $dataResponse = array();
+
         foreach ($agendaClase as $p) {
 
         $fecha_actual = Carbon::now()->subMinutes(23);
@@ -235,8 +242,14 @@ class AgendaClaseVirtualController extends Controller
     }
 
     public function consultaProfesorEvento(Request $request){
-        $agendaClase=agendaClaseVirtual::all()->where('idProfesor', $request->idUsuario);
+        $agendaClase = DB::table('agenda_clase_virtual')
+        ->select('id','idProfesor', 'idGrupo', 'idMateria', 'fecha_inicio', 'fecha_fin')
+        ->where('idProfesor', $request->idUsuario)
+        ->orderBy('fecha_inicio', 'asc')
+        ->get();
+
         $dataResponse = array();
+
         foreach ($agendaClase as $p) {
 
             $fecha_actual2 = Carbon::now()->subMinutes(23);
@@ -250,7 +263,7 @@ class AgendaClaseVirtualController extends Controller
             
     
                 if($fecha_inicio1->gt($fecha_actual2)){
-                if($fecha_inicio >= $fecha_actual){
+                if($fecha_inicio === $fecha_actual){
         $materia=materia::where('id', $p->idMateria)->first();
 
         $datos = [
