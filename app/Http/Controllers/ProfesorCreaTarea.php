@@ -172,10 +172,10 @@ class ProfesorCreaTarea extends Controller
                             "idMateria" => $p->idMateria,
                             "nombreMateria" => $p->nombreMateria,
                             "idGrupo" => $p->idGrupo,
-                            "idGrupo" => $p->turnoGrupo,
-                            "idGrupo" => $p->titulo,
-                            "idGrupo" => $p->descripcion,
-                            "idGrupo" => $p->fecha_vencimiento,
+                            "turnoGrupo" => $p->turnoGrupo,
+                            "titulo" => $p->titulo,
+                            "descripcion" => $p->descripcion,
+                            "fecha_vencimiento" => $p->fecha_vencimiento,
                         ];
                        
                         array_push($TareasNoVencidas, $datos);
@@ -188,10 +188,10 @@ class ProfesorCreaTarea extends Controller
                             "idMateria" => $p->idMateria,
                             "nombreMateria" => $p->nombreMateria,
                             "idGrupo" => $p->idGrupo,
-                            "idGrupo" => $p->turnoGrupo,
-                            "idGrupo" => $p->titulo,
-                            "idGrupo" => $p->descripcion,
-                            "idGrupo" => $p->fecha_vencimiento,
+                            "turnoGrupo" => $p->turnoGrupo,
+                            "titulo" => $p->titulo,
+                            "descripcion" => $p->descripcion,
+                            "fecha_vencimiento" => $p->fecha_vencimiento,
                         ];
                         array_push($TareasVencidas, $datos1);
                         }
