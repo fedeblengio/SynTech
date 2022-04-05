@@ -9,6 +9,7 @@ use App\Models\listaClaseVirtual;
 use App\Models\agendaClaseVirtual;
 use App\Models\usuarios;
 use Carbon\Carbon;
+use App\PDF;
 
 class GrupoController extends Controller
 {
@@ -100,6 +101,7 @@ class GrupoController extends Controller
         ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
         ->where('agenda_clase_virtual.idProfesor', $idProfesor)
         ->where('agenda_clase_virtual.idMateria', $idMateria)
+        ->distinct()
         ->get());
     }
 
@@ -110,6 +112,7 @@ class GrupoController extends Controller
         ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
         ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
         ->where('agenda_clase_virtual.idProfesor', $idProfesor)
+        ->distinct()
         ->get());
     }
 
@@ -182,9 +185,9 @@ class GrupoController extends Controller
         foreach ($registroClase as $p) {
             $usuarios = usuarios::where('username', $p->idAlumnos)->first();
             if ($p->asistencia == "1") {
-                $chequeo = true;
+                $chequeo = "Presente";
             } else {
-                $chequeo = false;
+                $chequeo = "Ausente";
             }
             $datos = [
                 "idClase" => $p->idClase,
@@ -198,6 +201,7 @@ class GrupoController extends Controller
         }
 
         return response()->json($dataResponse);
+
     }
 
     public function registroAlumno(Request $request)
@@ -241,9 +245,24 @@ class GrupoController extends Controller
      */
     public function update(Request $request)
     {
-        DB::delete('delete from lista_aula_virtual where idClase="' . $request->idClase . '";');
-        return  self::store($request);
+        try {
+           
+            foreach ($request->presentes as $presente) {
+                DB::update('UPDATE lista_aula_virtual set asistencia = 1 where idAlumnos = ?  AND idClase= ?', [$presente,  $request->idClase]);
+    
+            }
+            foreach ($request->ausentes as $ausente) {
+                DB::update('UPDATE lista_aula_virtual set asistencia = 0 where idAlumnos = ? AND idClase= ?',[ $ausente, $request->idClase]);
+              
+            }
+
+
+            return response()->json(['status' => 'Success'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => 'Bad Request'], 400);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
