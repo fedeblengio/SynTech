@@ -64,7 +64,8 @@ Route::get('/imagen-perfil', 'App\Http\Controllers\loginController@traerImagen')
 Route::put('/usuario', 'App\Http\Controllers\usuariosController@update')->middleware('verificar_token');
 // CAMBIAR EMAIL Y GENERO
 Route::put('/usuario-db', 'App\Http\Controllers\usuariosController@update_db')->middleware('verificar_token');
-
+// LISTAR TODOS DATOS DE UN USUARIO 
+Route::get('/usuario','App\Http\Controllers\usuariosController@show')->middleware('verificar_token');
 
 
 //FORO PRINCIPAL PUBLICACIONES  
@@ -111,7 +112,7 @@ Route::get('/agenda-clase-grupos', 'App\Http\Controllers\AgendaClaseVirtualContr
 // LISTA CLASE VIRTUAL
 Route::post('/lista-clase', 'App\Http\Controllers\GrupoController@store')->middleware('verificar_token');
 Route::get('/lista-clase', 'App\Http\Controllers\GrupoController@mostrarFaltasTotalesGlobal')->middleware('verificar_token');
-Route::get('/registro-clase', 'App\Http\Controllers\GrupoController@registroClase')->middleware('verificar_token');
+Route::get('/registro-clase', 'App\Http\Controllers\GrupoController@registroClase');
 Route::put('/lista-clase', 'App\Http\Controllers\GrupoController@update')->middleware('verificar_token');
 Route::get('/registro-alumno', 'App\Http\Controllers\GrupoController@registroAlumno')->middleware('verificar_token');
 Route::get('/registro-listas', 'App\Http\Controllers\GrupoController@index')->middleware('verificar_token');
