@@ -167,18 +167,18 @@ class AgendaClaseVirtualController extends Controller
 
         $dataResponse = array();
         foreach ($agendaClase as $p) {
-            $fecha_actual2 = Carbon::now()->subMinutes(23);
+            $fecha_actual2 = Carbon::now()->addMinutes(23);
             $fecha_inicio1 = Carbon::parse($p->fecha_fin);
     
     
                
-            $fecha_actual = Carbon::now()->subMinutes(23)->format('d-m-Y');
-            $fecha_inicio = Carbon::parse($p->fecha_fin)->format('d-m-Y');
-            
+            $fecha_actual = Carbon::now()->addMinutes(23)->format('d-m-Y');
+            $fecha_inicio = Carbon::parse($p->fecha_inicio)->format('d-m-Y');
+            $fecha_fin = Carbon::parse($p->fecha_fin)->format('d-m-Y');
             
     
                 if($fecha_inicio1->gt($fecha_actual2)){
-                if($fecha_inicio === $fecha_actual){
+                if($fecha_inicio === $fecha_actual || $fecha_fin === $fecha_actual ){
                     $materia=materia::where('id', $p->idMateria)->first();
 
                     $datos = [
@@ -252,18 +252,18 @@ class AgendaClaseVirtualController extends Controller
 
         foreach ($agendaClase as $p) {
 
-            $fecha_actual2 = Carbon::now()->subMinutes(23);
+            $fecha_actual2 = Carbon::now()->addMinutes(23);
             $fecha_inicio1 = Carbon::parse($p->fecha_fin);
     
     
                
-            $fecha_actual = Carbon::now()->subMinutes(23)->format('d-m-Y');
-            $fecha_inicio = Carbon::parse($p->fecha_fin)->format('d-m-Y');
-            
+            $fecha_actual = Carbon::now()->addMinutes(23)->format('d-m-Y');
+            $fecha_inicio = Carbon::parse($p->fecha_inicio)->format('d-m-Y');
+            $fecha_fin = Carbon::parse($p->fecha_fin)->format('d-m-Y');
             
     
                 if($fecha_inicio1->gt($fecha_actual2)){
-                if($fecha_inicio === $fecha_actual){
+                if($fecha_inicio === $fecha_actual || $fecha_fin === $fecha_actual){
         $materia=materia::where('id', $p->idMateria)->first();
 
         $datos = [
