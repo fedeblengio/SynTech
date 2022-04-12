@@ -37,6 +37,30 @@ class AlumnoEntregaTarea extends Controller
             return response()->json(['status' => 'Error'], 406);
         }
     } */
+    public function visualizarEntrega(Request $request){
+             
+            $primera_entrega = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos','usuarios.nombre AS nombreAlumno', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor' )
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username')
+            ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
+            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
+            ->get();
+            $segunda_entrega = DB::table('re_hacer_tareas')
+            ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos','usuarios.nombre AS nombreAlumno', 're_hacer_tareas.created_at AS fecha_entrega', 're_hacer_tareas.calificacion AS calificacion', 're_hacer_tareas.mensaje AS mensajeAlumno', 're_hacer_tareas.mensaje_profesor AS mensajeProfesor' )
+            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')
+            ->where('re_hacer_tareas.idTareas', $request->idTareas)
+            ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
+            ->get();
+            
+
+            $aux = [
+                "primera_entrega" => $primera_entrega,
+                "segunda_entrega" => $segunda_entrega
+            ];
+        
+        return response()->json($aux);
+ 
+    }
     public function seleccion(Request $request)
     {
         return $request->re_hacer ? self::reHacerTarea($request) : self::subirTarea($request);
