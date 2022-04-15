@@ -37,29 +37,69 @@ class AlumnoEntregaTarea extends Controller
             return response()->json(['status' => 'Error'], 406);
         }
     } */
-    public function visualizarEntrega(Request $request){
-             
-            $primera_entrega = DB::table('alumno_entrega_tareas')
-            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos','usuarios.nombre AS nombreAlumno', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor' )
+    public function visualizarEntrega(Request $request)
+    {
+        $primera_entrega = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
             ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username')
             ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
             ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
             ->get();
-            $segunda_entrega = DB::table('re_hacer_tareas')
-            ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos','usuarios.nombre AS nombreAlumno', 're_hacer_tareas.created_at AS fecha_entrega', 're_hacer_tareas.calificacion AS calificacion', 're_hacer_tareas.mensaje AS mensajeAlumno', 're_hacer_tareas.mensaje_profesor AS mensajeProfesor' )
+
+        $segunda_entrega = DB::table('re_hacer_tareas')
+            ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 're_hacer_tareas.created_at AS fecha_entrega', 're_hacer_tareas.calificacion AS calificacion', 're_hacer_tareas.mensaje AS mensajeAlumno', 're_hacer_tareas.mensaje_profesor AS mensajeProfesor')
             ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')
             ->where('re_hacer_tareas.idTareas', $request->idTareas)
             ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
             ->get();
-            
 
-            $aux = [
-                "primera_entrega" => $primera_entrega,
-                "segunda_entrega" => $segunda_entrega
-            ];
-        
+
+        $imagen_perfil_alumno = DB::table('usuarios')
+            ->select('usuarios.imagen_perfil AS img')
+            ->where('usuarios.username', $request->idAlumnos)
+            ->get();
+
+
+        $archivosAlumno1 = array();
+        $archivosAlumno2 = array();
+
+
+        $traerArchivosTareaAlumno = DB::table('archivos_entrega')
+            ->select('nombreArchivo AS archivoAlumno')
+            ->where('idTareas', $request->idTareas)
+            ->distinct()
+            ->get();
+        $traerArchivosTareaAlumno2 = DB::table('archivos_re_hacer_tarea')
+            ->select('nombreArchivo AS archivoAlumno')
+            ->where('idTareas', $request->idTareas)
+            ->distinct()
+            ->get();
+
+        foreach ($traerArchivosTareaAlumno as $archivosA1) {
+            array_push($archivosAlumno1, $archivosA1->archivoAlumno);
+        }
+        foreach ($traerArchivosTareaAlumno2 as $archivosA2) {
+            array_push($archivosAlumno2, $archivosA2->archivoAlumno);
+        }
+
+
+        $primeraE = [
+            "entrega" => $primera_entrega,
+            "archivosAlumno" => $archivosAlumno1,
+        ];
+
+        $segundaE = [
+            "entrega" => $segunda_entrega,
+            "archivosAlumno" => $archivosAlumno2,
+        ];
+
+        $aux = [
+            "imagen_perfil_alumno" => base64_encode(Storage::disk('ftp')->get($imagen_perfil_alumno[0]->img)),
+            "primera_entrega" => $primeraE,
+            "segunda_entrega" => $segundaE
+        ];
+
         return response()->json($aux);
- 
     }
     public function seleccion(Request $request)
     {
