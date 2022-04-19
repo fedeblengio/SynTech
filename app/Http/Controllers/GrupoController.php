@@ -90,31 +90,60 @@ class GrupoController extends Controller
 
     public function index(Request $request)
     {
-      return  self::registroListarTodo($request->idProfesor);
+        return  self::registroListarTodo($request->idProfesor);
     }
 
     public function registroListarTodo($idProfesor)
     {
         return response()->json(DB::table('lista_aula_virtual')
-        ->select('lista_aula_virtual.idClase','agenda_clase_virtual.idGrupo','agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia' , 'materias.id AS idMateria', 'lista_aula_virtual.created_at')
-        ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
-        ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
-        ->where('agenda_clase_virtual.idProfesor', $idProfesor)
-        ->distinct()
-        ->get());
+            ->select('lista_aula_virtual.idClase', 'agenda_clase_virtual.idGrupo', 'agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia', 'materias.id AS idMateria', 'lista_aula_virtual.created_at')
+            ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
+            ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
+            ->where('agenda_clase_virtual.idProfesor', $idProfesor)
+            ->distinct()
+            ->get());
     }
+
 
 
     public function mostrarFaltasTotalesGlobal(Request $request)
     {
-        return response()->json(DB::table('lista_aula_virtual')
-            ->select('lista_aula_virtual.idAlumnos', DB::raw('count(*) as total'))
-            ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
+
+        $alumnos = DB::table('alumnos_pertenecen_grupos')
+        ->select( 'alumnos_pertenecen_grupos.idAlumnos as idAlumnos', 'usuarios.nombre as nombreAlumno')
+        ->join('usuarios', 'usuarios.username', '=', 'alumnos_pertenecen_grupos.idAlumnos')
+        ->join('profesor_estan_grupo_foro', 'profesor_estan_grupo_foro.idGrupo', '=', 'alumnos_pertenecen_grupos.idGrupo')
+        ->where('alumnos_pertenecen_grupos.idGrupo', $request->idGrupo)
+        ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
+        ->get();
+        $cantClasesListadas = DB::table('agenda_clase_virtual')
+        ->select(DB::raw('count(*) as totalClase'))
+        ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
+        ->where('agenda_clase_virtual.idMateria', $request->idMateria)
+        ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+        ->get();
+
+    $listadoAlumnos = array();
+ 
+    foreach ($alumnos as $a) {
+
+        $cantFaltas = DB::table('agenda_clase_virtual')
+            ->select(DB::raw('count(*) as totalClase'))
+            ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
             ->where('agenda_clase_virtual.idMateria', $request->idMateria)
             ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
-            ->where('lista_aula_virtual.asistencia', "0")
-            ->groupBy('idAlumnos')
-            ->get());
+            ->where('lista_aula_virtual.idAlumnos', $a->idAlumnos)
+            ->where('lista_aula_virtual.asistencia', '0')
+            ->get();
+        $alumno = [
+            "idAlumno" => $a->idAlumnos,
+            "cantidad_faltas" => $cantFaltas[0]->totalClase,
+            "total_clases" => $cantClasesListadas[0]->totalClase
+        ];
+        array_push($listadoAlumnos, $alumno); 
+    }
+    return response()->json($listadoAlumnos);
+ 
     }
 
     public function mostrarFaltasTotalesGlobalPorMes(Request $request)
@@ -189,7 +218,6 @@ class GrupoController extends Controller
         }
 
         return response()->json($dataResponse);
-
     }
 
     public function registroAlumno(Request $request)
@@ -234,14 +262,12 @@ class GrupoController extends Controller
     public function update(Request $request)
     {
         try {
-           
+
             foreach ($request->presentes as $presente) {
                 DB::update('UPDATE lista_aula_virtual set asistencia = 1 where idAlumnos = ?  AND idClase= ?', [$presente,  $request->idClase]);
-    
             }
             foreach ($request->ausentes as $ausente) {
-                DB::update('UPDATE lista_aula_virtual set asistencia = 0 where idAlumnos = ? AND idClase= ?',[ $ausente, $request->idClase]);
-              
+                DB::update('UPDATE lista_aula_virtual set asistencia = 0 where idAlumnos = ? AND idClase= ?', [$ausente, $request->idClase]);
             }
 
 
