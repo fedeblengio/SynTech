@@ -90,25 +90,13 @@ class GrupoController extends Controller
 
     public function index(Request $request)
     {
-        return $request->idMateria ? self::registroListaMaterias($request->idMateria, $request->idProfesor) :   self::registroListarTodo($request->idProfesor);
-    }
-
-    public function registroListaMaterias($idMateria, $idProfesor)
-    {
-        return response()->json(DB::table('lista_aula_virtual')
-        ->select('lista_aula_virtual.idClase','agenda_clase_virtual.idGrupo','agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia' , 'lista_aula_virtual.created_at')
-        ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
-        ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
-        ->where('agenda_clase_virtual.idProfesor', $idProfesor)
-        ->where('agenda_clase_virtual.idMateria', $idMateria)
-        ->distinct()
-        ->get());
+      return  self::registroListarTodo($request->idProfesor);
     }
 
     public function registroListarTodo($idProfesor)
     {
         return response()->json(DB::table('lista_aula_virtual')
-        ->select('lista_aula_virtual.idClase','agenda_clase_virtual.idGrupo','agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia' , 'lista_aula_virtual.created_at')
+        ->select('lista_aula_virtual.idClase','agenda_clase_virtual.idGrupo','agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia' , 'materias.id AS idMateria', 'lista_aula_virtual.created_at')
         ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
         ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
         ->where('agenda_clase_virtual.idProfesor', $idProfesor)
