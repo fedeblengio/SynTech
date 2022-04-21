@@ -26,11 +26,13 @@ class usuariosController extends Controller
     {
         try {
             $usuarios = usuarios::where('username', $request->username)->first();
-            if ($request->nuevoEmail == null)
-                DB::update('UPDATE usuarios SET genero="' . $request->genero . '" ,  email="' . $usuarios->email . '" WHERE username="' . $request->username . '";');
-            if ($request->genero == null)
-                DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" ,  email="' . $request->nuevoEmail . '" WHERE username="' . $request->username . '";');
-            return response()->json(['status' => 'Success'], 200);
+            if ($request->nuevoEmail == null && $request->nuevoNombre== null)
+                DB::update('UPDATE usuarios SET genero="' . $request->genero . '" ,nombre="' . $usuarios->nombre . '" ,  email="' . $usuarios->email . '" WHERE username="' . $request->username . '";');
+            if ($request->genero == null && $request->nuevoNombre== null)
+                DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" , nombre="' . $usuarios->nombre . '" ,  email="' . $request->nuevoEmail . '" WHERE username="' . $request->username . '";');
+                if ($request->genero == null && $request->nuevoEmail== null)
+                DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" , nombre="' . $request->nuevoNombre . '" ,  email="' . $usuarios->email . '" WHERE username="' . $request->username . '";');
+                return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
