@@ -135,8 +135,19 @@ class GrupoController extends Controller
             ->where('lista_aula_virtual.idAlumnos', $a->idAlumnos)
             ->where('lista_aula_virtual.asistencia', '0')
             ->get();
+        
+        $fechas_ausencia=DB::table('agenda_clase_virtual')
+        ->select('agenda_clase_virtual.fecha_inicio as fecha_clase')
+        ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
+        ->where('agenda_clase_virtual.idMateria', $request->idMateria)
+        ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+        ->where('lista_aula_virtual.idAlumnos', $a->idAlumnos)
+        ->where('lista_aula_virtual.asistencia', '0')
+        ->get();
         $alumno = [
             "idAlumno" => $a->idAlumnos,
+            "nombreAlumno" => $a->nombreAlumno,
+            "fechas_ausencia"=> $fechas_ausencia,
             "cantidad_faltas" => $cantFaltas[0]->totalClase,
             "total_clases" => $cantClasesListadas[0]->totalClase
         ];
