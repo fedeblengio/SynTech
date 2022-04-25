@@ -67,11 +67,13 @@ class AlumnoEntregaTarea extends Controller
         $traerArchivosTareaAlumno = DB::table('archivos_entrega')
             ->select('nombreArchivo AS archivoAlumno')
             ->where('idTareas', $request->idTareas)
+            ->where('idAlumnos', $request->idAlumnos)
             ->distinct()
             ->get();
         $traerArchivosTareaAlumno2 = DB::table('archivos_re_hacer_tarea')
             ->select('nombreArchivo AS archivoAlumno')
             ->where('idTareas', $request->idTareas)
+            ->where('idAlumnos', $request->idAlumnos)
             ->distinct()
             ->get();
 
@@ -103,7 +105,76 @@ class AlumnoEntregaTarea extends Controller
     }
     public function seleccion(Request $request)
     {
-        return $request->re_hacer ? self::reHacerTarea($request) : self::subirTarea($request);
+        return $request->re_hacer == 1 ? self::reHacerTarea($request) : self::subirTarea($request);
+    }
+
+    
+    public function TareaNotaAlumnoMateria(Request $request)
+    {
+
+        $primera_entrega = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno','tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno','alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
+            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
+            ->join('usuarios', 'usuarios.username', '=', 'alumno_entrega_tareas.idAlumnos')
+            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->get();
+
+        $tareasNotas = array();
+        $tareasNotasReHacer = array();
+
+        foreach ($primera_entrega as $p) {
+            $segunda_entrega = DB::table('re_hacer_tareas')
+                ->select('re_hacer_tareas.calificacion')
+                ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+                ->join('alumno_entrega_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
+                ->join('tareas', 'tareas.id', '=', 're_hacer_tareas.idTareas')
+                ->where('re_hacer_tareas.idTareas', $p->idTareas)
+                ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
+                ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+                ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+                ->first();
+       
+          
+            $calificacion= [
+                "calificacion" => 0,
+            ];
+            if($segunda_entrega == null){
+                $datos = [
+                    "idTareas" => $p->idTareas,
+                    "titulo" => $p->titulo,
+                    "idAlumnos"=>$p->idAlumnos,
+                    'nombreAlumno' => $p->nombreAlumno,
+                    "calificacion" => $p->calificacion,
+                    'descripcion' => $p->descripcion,
+                    "nota_reHacer"=>$calificacion,
+                ];
+            }else{
+                $datos = [
+                    "idTareas" => $p->idTareas,
+                    "titulo" => $p->titulo,
+                    'descripcion' => $p->descripcion,
+                    "idAlumnos"=>$p->idAlumnos,
+                    'nombreAlumno' => $p->nombreAlumno,
+                    "calificacion" => $p->calificacion,
+                    "nota_reHacer"=>$segunda_entrega,
+                ];
+            }
+           
+           
+      
+        
+         
+            array_push($tareasNotas, $datos);
+        }
+
+
+
+
+
+        return response()->json($tareasNotas);
     }
 
     public function subirTarea($request)
@@ -323,19 +394,12 @@ class AlumnoEntregaTarea extends Controller
             ->orderBy('alumno_entrega_tareas.created_at', 'desc')
             ->get();
 
-        $entregasReHacer = DB::table('re_hacer_tareas')
-            ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
-            ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')
-            ->join('tareas', 're_hacer_tareas.idTareas', '=', 'tareas.id')
-            ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
-            ->orderBy('re_hacer_tareas.created_at', 'desc')
-            ->get();
+        return $entregas;
 
 
 
         $entregas_tarea = array();
-        $entregas_re_hacer_tarea = array();
+
         foreach ($entregas as $t) {
 
             $datos = [
@@ -355,28 +419,11 @@ class AlumnoEntregaTarea extends Controller
             array_push($entregas_tarea, $datos);
         }
 
-        foreach ($entregasReHacer as $p) {
-            $reHacer = [
-                'idTarea' => $p->idTareas,
-                'idAlumnos' => $p->idAlumnos,
-                'calificacion' => $p->calificacion,
-                'usuario' => $p->nombreUsuario,
-                'idMateria' => $p->idMateria,
-                'idGrupo' => $p->idGrupo,
-                'idProfesor' => $p->idProfesor,
-                'titulo' => $p->titulo,
-                'descripcion' => $p->descripcion,
-            ];
-
-            array_push($entregas_re_hacer_tarea, $reHacer);
-        }
-        $entregas_totales = [
-            'entregas_tareas' => $entregas_tarea,
-            're_hacer' => $entregas_re_hacer_tarea,
-        ];
 
 
-        return response()->json($entregas_totales);
+
+
+        return response()->json($entregas_tarea);
     }
 
 
@@ -497,11 +544,12 @@ class AlumnoEntregaTarea extends Controller
 
     public function verificar_correcion(Request $request)
     {
-        if ($request->re_hacer) {
-            return self::corregirEntrega($request);
-        } else {
+
+        if ($request->re_hacer == 1) {
 
             return self::corregirEntregaReHacer($request);
+        } else {
+            return self::corregirEntrega($request);
         }
     }
 
@@ -509,15 +557,16 @@ class AlumnoEntregaTarea extends Controller
     {
 
         $existe = AlumnoEntrega::where('idTareas', $request->idTareas)->where('idAlumnos', $request->idAlumnos)->first();
-        try {
-            if ($existe) {
 
+        try {
+
+            if ($existe) {
                 DB::update('UPDATE alumno_entrega_tareas SET calificacion="' . $request->calificacion . '" , mensaje_profesor="' . $request->mensaje . '" , re_hacer="' . $request->re_hacer . '" WHERE idTareas="' . $request->idTareas . '" AND idAlumnos="' . $request->idAlumnos . '";');
                 return response()->json(['status' => 'Success'], 200);
             }
-            return response()->json(['status' => 'Bad Request'], 400);
+            return response()->json(['status' => 'Bad Request1'], 400);
         } catch (\Throwable $th) {
-            return response()->json(['status' => 'Bad Request'], 400);
+            return response()->json(['status' => 'Bad Request2'], 400);
         }
     }
 
@@ -532,9 +581,9 @@ class AlumnoEntregaTarea extends Controller
                 DB::update('UPDATE re_hacer_tareas SET calificacion="' . $request->calificacion . '" , mensaje_profesor="' . $request->mensaje . '" WHERE idTareas="' . $request->idTareas . '" AND idAlumnos="' . $request->idAlumnos . '";');
                 return response()->json(['status' => 'Success'], 200);
             }
-            return response()->json(['status' => 'Bad Request'], 400);
+            return response()->json(['status' => 'Bad Request3'], 400);
         } catch (\Throwable $th) {
-            return response()->json(['status' => 'Bad Request'], 400);
+            return response()->json(['status' => 'Bad Request4'], 400);
         }
     }
 }

@@ -92,6 +92,8 @@ Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@tareas')->middlewa
 Route::delete('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@destroy')->middleware('verificar_token');
 Route::get('/tareas', 'App\Http\Controllers\ProfesorCreaTarea@listarTareas')->middleware('verificar_token');
 Route::post('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@seleccion')->middleware('verificar_token');
+Route::get('/notas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@TareaNotaAlumnoMateria')->middleware('verificar_token');
+
 
 // ENTREGAS 
 Route::get('/entregas-grupo', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregas')->middleware('verificar_token');

@@ -120,7 +120,7 @@ class AgendaClaseVirtualController extends Controller
 
         $dataResponse = array();
         foreach ($agendaClase as $p) {
-            $fecha_actual = Carbon::now()->subMinutes(23);
+            $fecha_actual = Carbon::now()->addMinutes(23);
             $fecha_inicio = Carbon::parse($p->fecha_fin);
     
     
@@ -214,7 +214,7 @@ class AgendaClaseVirtualController extends Controller
 
         foreach ($agendaClase as $p) {
 
-        $fecha_actual = Carbon::now()->subMinutes(23);
+        $fecha_actual = Carbon::now()->addMinutes(23);
         $fecha_inicio = Carbon::parse($p->fecha_fin);
     
     
