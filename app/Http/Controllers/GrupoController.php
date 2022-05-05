@@ -70,20 +70,19 @@ class GrupoController extends Controller
     public function store(Request $request)
     {
         try {
-            $listaPresentes = explode(',', $request->presentes);
-            $listaAusentes = explode(',', $request->ausentes);
 
-            foreach ($listaPresentes as $presente) {
+
+            foreach ($request->presentes as $presente) {
                 DB::insert('INSERT into lista_aula_virtual (idClase, idAlumnos, asistencia, created_at , updated_at) VALUES (?, ?, ?, ? , ?)', [$request->idClase, $presente, 1, Carbon::now(), Carbon::now()]);
             }
-            foreach ($listaAusentes as $ausente) {
+            foreach ($request->ausentes as $ausente) {
                 DB::insert('INSERT into lista_aula_virtual (idClase, idAlumnos, asistencia, created_at , updated_at) VALUES (?, ?, ?, ? , ?)', [$request->idClase, $ausente, 0, Carbon::now(), Carbon::now()]);
             }
 
 
-            return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'Bad Request'], 400);
+         return response()->json(['status' => 'Success'], 200); 
+       } catch (\Throwable $th) { 
+           return response()->json(['status' => 'Bad Request'], 400); 
         }
     }
 
