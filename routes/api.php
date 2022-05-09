@@ -101,6 +101,8 @@ Route::get('/entregas-alumnos', 'App\Http\Controllers\AlumnoEntregaTarea@listarE
 Route::get('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@entregaAlumno')->middleware('verificar_token');
 Route::put('/entregas-correccion', 'App\Http\Controllers\AlumnoEntregaTarea@verificar_correcion')->middleware('verificar_token');
 Route::get('/visualizar-entrega', 'App\Http\Controllers\AlumnoEntregaTarea@visualizarEntrega')->middleware('verificar_token');
+Route::get('/promedio', 'App\Http\Controllers\AlumnoEntregaTarea@promedioMateria')->middleware('verificar_token');
+
 
 // AGENDA CLASE VIRTUAL
 Route::get('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@show')->middleware('verificar_token');

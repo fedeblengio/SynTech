@@ -10,6 +10,7 @@ use App\Models\AlumnoEntrega;
 use App\Models\archivosEntrega;
 use App\Models\archivosReHacerTarea;
 use App\Models\AlumnoReHacerTarea;
+use App\Models\alumnoGrupo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -175,6 +176,84 @@ class AlumnoEntregaTarea extends Controller
 
 
         return response()->json($tareasNotas);
+    }
+
+
+    public function promedioMateria(Request $request){
+
+        $tareasTotales = DB::table('profesor_crea_tareas')
+        ->select(DB::raw('count(*) as totalTareas'))
+        ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+        ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+        ->groupBy('idMateria', 'idGrupo')
+        ->first();
+
+        $totalTarea= $tareasTotales->totalTareas;
+
+        $alumnos = alumnoGrupo::where('idGrupo', $request->idGrupo)->get();
+
+        $alumnos = DB::table('alumnos_pertenecen_grupos')
+        ->select( 'alumnos_pertenecen_grupos.idAlumnos')
+        ->where('alumnos_pertenecen_grupos.idGrupo',$request->idGrupo)
+        ->get();
+
+     
+        $dataResponse = array();
+
+
+        $sumaNotaPrimera = 0;
+        $sumaNotaSegunda = 0;
+            foreach ($alumnos as $a){ 
+            $primera_entrega = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno','tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno','alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
+            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
+            ->join('usuarios', 'usuarios.username', '=', 'alumno_entrega_tareas.idAlumnos')
+            ->leftJoin('re_hacer_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idAlumnos')
+            ->where('alumno_entrega_tareas.idAlumnos', $a->idAlumnos)
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->get();
+            foreach ($primera_entrega as $p) {
+                $sumaNotaPrimera = $sumaNotaPrimera + $p->calificacion; 
+                
+            }
+            
+            
+
+            $segunda_entrega = DB::table('re_hacer_tareas')
+            ->select('re_hacer_tareas.calificacion')
+            ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('alumno_entrega_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
+            ->join('tareas', 'tareas.id', '=', 're_hacer_tareas.idTareas')
+            ->where('alumno_entrega_tareas.idAlumnos', $a->idAlumnos)
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->get();
+            foreach ($segunda_entrega as $s){
+                $sumaNotaSegunda = $sumaNotaSegunda + $s->calificacion; 
+            }
+
+            $sumaTotal=$sumaNotaPrimera+$sumaNotaSegunda;
+            
+            $promedio=$sumaTotal/$totalTarea;
+
+
+
+            $datos = [
+                "idAlumnos"=>$a->idAlumnos,
+                "promedio" => round($promedio),
+            ];
+
+            array_push($dataResponse, $datos);
+
+
+        }
+
+        return response()->json($dataResponse);
+
+        
+
     }
 
     public function subirTarea($request)
@@ -545,7 +624,7 @@ class AlumnoEntregaTarea extends Controller
     public function verificar_correcion(Request $request)
     {
 
-        if ($request->re_hacer == 1) {
+        if ($request->re_entrega) {
 
             return self::corregirEntregaReHacer($request);
         } else {
