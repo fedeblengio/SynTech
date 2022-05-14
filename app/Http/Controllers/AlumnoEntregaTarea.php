@@ -193,7 +193,8 @@ class AlumnoEntregaTarea extends Controller
         $alumnos = alumnoGrupo::where('idGrupo', $request->idGrupo)->get();
 
         $alumnos = DB::table('alumnos_pertenecen_grupos')
-        ->select( 'alumnos_pertenecen_grupos.idAlumnos')
+        ->select( 'alumnos_pertenecen_grupos.idAlumnos','usuarios.nombre')
+        ->join('usuarios', 'alumnos_pertenecen_grupos.idAlumnos', '=', 'usuarios.username')
         ->where('alumnos_pertenecen_grupos.idGrupo',$request->idGrupo)
         ->get();
 
@@ -242,7 +243,9 @@ class AlumnoEntregaTarea extends Controller
 
             $datos = [
                 "idAlumnos"=>$a->idAlumnos,
+                "nombreAlumno"=>$a->nombre,
                 "promedio" => round($promedio),
+                "asistencia"=>$a->idAlumnos,
             ];
 
             array_push($dataResponse, $datos);
