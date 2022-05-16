@@ -350,7 +350,7 @@ class ProfesorCreaTarea extends Controller
         foreach ($peticionSQL as $t) {
 
             
-            $fecha_actual = Carbon::now();
+            $fecha_actual = Carbon::now()->subMinutes(23);
             $fecha_vencimiento = Carbon::parse($t->fecha_vencimiento);
             $booelan = true;
     

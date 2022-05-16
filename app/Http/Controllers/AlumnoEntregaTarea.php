@@ -11,6 +11,7 @@ use App\Models\archivosEntrega;
 use App\Models\archivosReHacerTarea;
 use App\Models\AlumnoReHacerTarea;
 use App\Models\alumnoGrupo;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -181,6 +182,15 @@ class AlumnoEntregaTarea extends Controller
 
     public function promedioMateria(Request $request){
 
+        $fecha_actual = Carbon::now()->subMinutes(23);
+        $cantClasesListadas = DB::table('agenda_clase_virtual')
+        ->select(DB::raw('count(*) as totalClase'))
+        ->where('agenda_clase_virtual.idMateria', $request->idMateria)
+        ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+        ->where('agenda_clase_virtual.fecha_fin', '<=',$fecha_actual)
+        ->get();
+
+
         $tareasTotales = DB::table('profesor_crea_tareas')
         ->select(DB::raw('count(*) as totalTareas'))
         ->where('profesor_crea_tareas.idMateria', $request->idMateria)
@@ -205,6 +215,15 @@ class AlumnoEntregaTarea extends Controller
         $sumaNotaPrimera = 0;
         $sumaNotaSegunda = 0;
             foreach ($alumnos as $a){ 
+            $cantFaltas = DB::table('agenda_clase_virtual')
+            ->select(DB::raw('count(*) as totalClase'))
+            ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
+            ->where('agenda_clase_virtual.idMateria', $request->idMateria)
+            ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+            ->where('lista_aula_virtual.idAlumnos', $a->idAlumnos)
+            ->where('lista_aula_virtual.asistencia', '0')
+            ->get();
+
             $primera_entrega = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno','tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno','alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
             ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
@@ -239,6 +258,11 @@ class AlumnoEntregaTarea extends Controller
             
             $promedio=$sumaTotal/$totalTarea;
 
+            $cantidadFaltas=$cantFaltas[0]->totalClase;
+            $totalClases=$cantClasesListadas[0]->totalClase;
+
+            $porcentajeFaltas=(100*$cantidadFaltas)/$totalClases;
+
 
 
             $datos = [
@@ -246,11 +270,14 @@ class AlumnoEntregaTarea extends Controller
                 "nombreAlumno"=>$a->nombre,
                 "promedio" => round($promedio),
                 "asistencia"=>$a->idAlumnos,
+                "porcentajeFaltas"=>round($porcentajeFaltas),
+                "cantidadFaltas"=>$cantidadFaltas,
+                "cantidadClases"=>$totalClases
             ];
 
             array_push($dataResponse, $datos);
 
-
+            
         }
 
         return response()->json($dataResponse);
