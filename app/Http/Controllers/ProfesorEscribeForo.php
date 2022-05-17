@@ -92,6 +92,7 @@ class ProfesorEscribeForo extends Controller
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
             ->orderBy('id', 'desc')
+            ->take($request->limit)
             ->get();
 
 
@@ -159,6 +160,7 @@ class ProfesorEscribeForo extends Controller
             ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
             ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
             ->orderBy('id', 'desc')
+            ->take($request->limit)
             ->get();
 
         $dataResponse = array();
@@ -231,6 +233,7 @@ class ProfesorEscribeForo extends Controller
             ->join('usuarios', 'usuarios.username', '=', 'datosForo.idUsuario')
             ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
             ->orderBy('id', 'desc')
+            ->take($request->limit)
             ->get();
 
         $dataResponse = array();
@@ -307,6 +310,7 @@ class ProfesorEscribeForo extends Controller
             ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
             ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
             ->orderBy('id', 'desc')
+            ->take($request->limit)
             ->get();
 
         $dataResponse = array();
