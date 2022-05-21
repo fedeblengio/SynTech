@@ -399,7 +399,19 @@ class ProfesorCreaTarea extends Controller
         return response()->json($tareas);
     }
 
+    public function tareasParaCorregir(Request $request){
 
+        $peticionSQL = DB::table('tareas')
+        ->select('tareas.id as idTarea','tareas.titulo','profesor_crea_tareas.idMateria','profesor_crea_tareas.idGrupo')
+        ->join('profesor_crea_tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
+        ->join('alumno_entrega_tareas', 'profesor_crea_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
+        ->where('profesor_crea_tareas.idProfesor', $request->idProfesor)
+        ->whereNull('alumno_entrega_tareas.calificacion')
+        ->distinct()
+        ->get();
+        
+        return response()->json($peticionSQL);
+    }
 
 
     public function update(Request $request)
