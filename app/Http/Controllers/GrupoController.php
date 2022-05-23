@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\listaClaseVirtual;
 use App\Models\agendaClaseVirtual;
 use App\Models\usuarios;
+use App\Http\Controllers\RegistrosController;
 use Carbon\Carbon;
 use App\PDF;
 
@@ -78,7 +79,7 @@ class GrupoController extends Controller
             foreach ($request->ausentes as $ausente) {
                 DB::insert('INSERT into lista_aula_virtual (idClase, idAlumnos, asistencia, created_at , updated_at) VALUES (?, ?, ?, ? , ?)', [$request->idClase, $ausente, 0, Carbon::now(), Carbon::now()]);
             }
-
+            RegistrosController::store("LISTA",$request->header('token'),"CREATE","");
 
          return response()->json(['status' => 'Success'], 200); 
        } catch (\Throwable $th) { 
@@ -280,6 +281,7 @@ class GrupoController extends Controller
                 DB::update('UPDATE lista_aula_virtual set asistencia = 0 where idAlumnos = ? AND idClase= ?', [$ausente, $request->idClase]);
             }
 
+            RegistrosController::store("LISTA",$request->header('token'),"UPDATE","");
 
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {

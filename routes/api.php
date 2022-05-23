@@ -12,35 +12,10 @@ use Illuminate\Support\Facades\DB;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-// CHECK TOKEN
-Route::get('/token', function () {
-  return 'JoJo no Kimyou na Bouken Ice of Heaven';
-})->middleware('verificar_token');
+
 // TESTING CODE SIMPLE NOTE
 Route::get('/test', function () {
-  return 'TEST API ENDPOINT'; 
-/*   $b = DB::table('re_hacer_tareas')
-  ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario' ,'profesor_crea_tareas.idGrupo' ,'profesor_crea_tareas.idProfesor' ,'profesor_crea_tareas.idMateria')
-  ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-  ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')   
-  ->join('tareas', 're_hacer_tareas.idTareas', '=', 'tareas.id')  
-  ->where('profesor_crea_tareas.idGrupo','TB1')
-  ->where('re_hacer_tareas.idTareas',12)
-  ->where('profesor_crea_tareas.idMateria',1)
-  ->orderBy('re_hacer_tareas.created_at', 'desc')
-  ->get();
- $a= DB::table('alumno_entrega_tareas')
-  ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario' ,'profesor_crea_tareas.idGrupo' ,'profesor_crea_tareas.idProfesor' ,'profesor_crea_tareas.idMateria')
-  ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-  ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username') 
-  ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')   
-  ->where('profesor_crea_tareas.idGrupo','TB1')
-  ->where('alumno_entrega_tareas.idTareas',12)
-  ->where('profesor_crea_tareas.idMateria',1)
-  ->orderBy('alumno_entrega_tareas.created_at', 'desc')
-  ->get();
-    return response()->json($a);*/
-  /*   return $peticionSQL; */ 
+  return  "sadasd";
 });
 //
 

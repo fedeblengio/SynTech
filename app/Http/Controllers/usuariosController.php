@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\usuarios;
 use App\Models\token;
 use Carbon\Carbon;
+use App\Http\Controllers\RegistrosController;
 use Illuminate\Support\Facades\DB;
 use LdapRecord\Models\ActiveDirectory\User;
 
@@ -19,6 +20,7 @@ class usuariosController extends Controller
             $user->unicodePwd = $request->newPassword;
             $user->save();
             $user->refresh();
+            RegistrosController::store("CONTRASEÑA",$request->header('token'),"UPDATE","");
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
@@ -38,6 +40,7 @@ class usuariosController extends Controller
             if ($request->genero == null && $request->nuevoEmail == null) {
                 DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" , nombre="' . $request->nuevoNombre . '" ,  email="' . $usuarios->email . '" WHERE username="' . $request->username . '";');
             }
+            RegistrosController::store("USUARIO",$request->header('token'),"UPDATE","");
             return response()->json(["token" => self::updateToken($request)], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);

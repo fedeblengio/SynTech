@@ -5,6 +5,7 @@ use App\Models\agendaClaseVirtual;
 use App\Models\materia;
 use App\Models\GruposProfesores;
 use App\Models\listaClaseVirtual;
+use App\Http\Controllers\RegistrosController;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -15,7 +16,7 @@ class AgendaClaseVirtualController extends Controller
     
     public function store(Request $request)
     {
-      
+       
         try {
             $materia = materia::where('nombre', $request->materia)->first();
 
@@ -27,6 +28,9 @@ class AgendaClaseVirtualController extends Controller
                 $agendarClaseVirtual->fecha_inicio = $request->fecha_inicio;
                 $agendarClaseVirtual->fecha_fin = $request->fecha_fin;
                 $agendarClaseVirtual->save();
+       
+                RegistrosController::store("Clase Virtual",$request->header('token'),"CREATE",$request->idGrupo);
+
                 return response()->json(['status' => 'Success'], 200);
            
         } catch (\Throwable $th) {
@@ -289,20 +293,6 @@ class AgendaClaseVirtualController extends Controller
 
 
 
-    public function update(Request $request){
-       
-        try {
-         
-                $agendarClaseVirtual = agendaClaseVirtual::where('id', $request->id)->first();
-                $agendarClaseVirtual->fecha_inicio = $request->fecha_inicio;
-                $agendarClaseVirtual->fecha_fin = $request->fecha_fin;
-                $agendarClaseVirtual->save();
-
-                return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'Bad Request'], 400);
-        }
-    }
 
     public function destroy(request $request)
     {
@@ -311,6 +301,8 @@ class AgendaClaseVirtualController extends Controller
 
         try {
             $agendaClaseVirtual->delete();
+
+            RegistrosController::store("Clase Virtual",$request->token,"DELETE","");
 
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {

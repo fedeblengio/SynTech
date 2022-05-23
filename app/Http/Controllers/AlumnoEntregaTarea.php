@@ -11,6 +11,7 @@ use App\Models\archivosEntrega;
 use App\Models\archivosReHacerTarea;
 use App\Models\AlumnoReHacerTarea;
 use App\Models\alumnoGrupo;
+use App\Http\Controllers\RegistrosController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -307,6 +308,8 @@ class AlumnoEntregaTarea extends Controller
                 $archivosEntrega->save();
             }
         }
+        RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE","");
+        
         return response()->json(['status' => 'Success'], 200);
     }
 
@@ -337,6 +340,7 @@ class AlumnoEntregaTarea extends Controller
         if ($existe)
             DB::update('UPDATE alumno_entrega_tareas SET re_hacer="0" WHERE idTareas="' . $request->idTareas . '" AND idAlumnos="' . $request->idAlumnos . '";');
 
+            RegistrosController::store("RE-ENTREGA TAREA",$request->header('token'),"CREATE","");
 
         return response()->json(['status' => 'Success'], 200);
     }
@@ -671,6 +675,7 @@ class AlumnoEntregaTarea extends Controller
 
             if ($existe) {
                 DB::update('UPDATE alumno_entrega_tareas SET calificacion="' . $request->calificacion . '" , mensaje_profesor="' . $request->mensaje . '" , re_hacer="' . $request->re_hacer . '" WHERE idTareas="' . $request->idTareas . '" AND idAlumnos="' . $request->idAlumnos . '";');
+                RegistrosController::store("CORRECION ENTREGA",$request->header('token'),"UPDATE","");
                 return response()->json(['status' => 'Success'], 200);
             }
             return response()->json(['status' => 'Bad Request1'], 400);
@@ -688,6 +693,7 @@ class AlumnoEntregaTarea extends Controller
             if ($existe) {
 
                 DB::update('UPDATE re_hacer_tareas SET calificacion="' . $request->calificacion . '" , mensaje_profesor="' . $request->mensaje . '" WHERE idTareas="' . $request->idTareas . '" AND idAlumnos="' . $request->idAlumnos . '";');
+                RegistrosController::store("CORRECION RE-ENTREGA",$request->header('token'),"UPDATE","");
                 return response()->json(['status' => 'Success'], 200);
             }
             return response()->json(['status' => 'Bad Request3'], 400);

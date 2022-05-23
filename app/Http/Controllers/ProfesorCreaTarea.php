@@ -10,6 +10,7 @@ use App\Models\archivosEntrega;
 use App\Models\GruposProfesores;
 use App\Models\ProfesorTarea;
 use App\Models\archivosReHacerTarea;
+use App\Http\Controllers\RegistrosController;
 use Illuminate\Support\Str;
 use App\Models\archivosTarea;
 use Illuminate\Http\Request;
@@ -91,6 +92,7 @@ class ProfesorCreaTarea extends Controller
                 $archivosEntrega->save();
             }
         }
+        RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE","");
         return response()->json(['status' => 'Success'], 200);
     }
 
@@ -125,7 +127,7 @@ class ProfesorCreaTarea extends Controller
             }
         }
 
-
+        RegistrosController::store("TAREA",$request->header('token'),"CREATE",$request->idGrupo);
 
         return response()->json(['status' => 'Success'], 200);
     }
@@ -161,11 +163,11 @@ class ProfesorCreaTarea extends Controller
             $TareasNoVencidas = array();
             $TareasVencidas = array();
             foreach ($peticionSQL as $p) {
-                $fecha_actual = Carbon::now()->subMinutes(23);
-                $fecha_inicio = Carbon::parse($p->fecha_vencimiento);
+                $fecha_actual = Carbon::now()->subMinutes(23)->format('d-m-Y');
+                $fecha_inicio = Carbon::parse($p->fecha_vencimiento)->format('d-m-Y');
         
-        
-                    if($fecha_inicio->gt($fecha_actual)){
+                if($fecha_inicio===$fecha_actual || $fecha_inicio>$fecha_actual){   
+                   
                       
                         $datos = [
                             "idTarea" => $p->idTarea,
@@ -344,21 +346,20 @@ class ProfesorCreaTarea extends Controller
         }
         
 
-    
+        
+        $TareasNoVencidas = array();
+        $TareasVencidas = array();
         $tarea=array();
         $re_hacer_tarea=array();
         foreach ($peticionSQL as $t) {
 
             
-            $fecha_actual = Carbon::now()->subMinutes(23);
-            $fecha_vencimiento = Carbon::parse($t->fecha_vencimiento);
+            $fecha_actual = Carbon::now()->subMinutes(23)->format('d-m-Y');
+            $fecha_vencimiento = Carbon::parse($t->fecha_vencimiento)->format('d-m-Y');
             $booelan = true;
     
-                if($fecha_vencimiento->gt($fecha_actual)){
+                if($fecha_vencimiento===$fecha_actual || $fecha_vencimiento>$fecha_actual){
                     $booelan = false;
-                 }else{
-                    $booelan = true;
-                 }
 
                  $datos = [
                     'idTarea'=> $t->idTareas,
@@ -374,6 +375,7 @@ class ProfesorCreaTarea extends Controller
                 ];
 
                 array_push($tarea,$datos);
+             }
     
             }
 
@@ -423,6 +425,7 @@ class ProfesorCreaTarea extends Controller
             $modificarDatosTarea->descripcion = $request->descripcion;
             $modificarDatosTarea->fecha_vencimiento = $request->fecha_vencimiento;
             $modificarDatosTarea->save();
+            RegistrosController::store("TAREA",$request->header('token'),"UPDATE",$request->titulo);
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
@@ -456,6 +459,8 @@ class ProfesorCreaTarea extends Controller
         }
         DB::delete('delete from profesor_crea_tareas where idTareas="'.$request->idTareas.'";');
         $eliminarTarea->delete();
+
+        RegistrosController::store("TAREA",$request->header('token'),"DELETE",$eliminarTarea->titulo);
         
 
            /*  return response()->json(['status' => 'Success'], 200);

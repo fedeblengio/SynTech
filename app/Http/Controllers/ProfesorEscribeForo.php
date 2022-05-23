@@ -8,6 +8,7 @@ use App\Models\Foro;
 use App\Models\archivosForo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Http\Controllers\RegistrosController;
 use App\Models\ProfesorForoGrupo;
 
 class ProfesorEscribeForo extends Controller
@@ -55,7 +56,7 @@ class ProfesorEscribeForo extends Controller
 
 
 
-    public function update(Request $request)
+   /*  public function update(Request $request)
     {
         $modificarDatosForo = datosForo::where('id', $request->idDatos)->first();
 
@@ -63,11 +64,12 @@ class ProfesorEscribeForo extends Controller
             $modificarDatosForo->titulo = $request->titulo;
             $modificarDatosForo->mensaje = $request->mensaje;
             $modificarDatosForo->save();
+            
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
-    }
+    } */
 
     /*     public function destroy(Request $request)
     {
@@ -395,6 +397,8 @@ class ProfesorEscribeForo extends Controller
                 $archivosForo->save();
             }
         }
+
+        RegistrosController::store("PUBLICACION FORO",$request->header('token'),"CREATE","");
         return response()->json(['status' => 'Success'], 200);
     }
 
@@ -411,6 +415,7 @@ class ProfesorEscribeForo extends Controller
         }
         try {
             $postForo->delete();
+            RegistrosController::store("PUBLICACION FORO",$request->header('token'),"DELETE","");
             return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);

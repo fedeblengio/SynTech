@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\RegistrosController;
 use Illuminate\Http\Request;
 
 class ProfesorGrupo extends Controller
