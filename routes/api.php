@@ -32,8 +32,6 @@ Route::post('/login', 'App\Http\Controllers\loginController@connect');
 
 
 // USUARIOS
-//LOGIN
-Route::get('/login', 'App\Http\Controllers\loginController@connect');
 Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen')->middleware('verificar_token');
 // TRAER IMAGEN FTP B64
 Route::get('/imagen-perfil', 'App\Http\Controllers\loginController@traerImagen')->middleware('verificar_token');
