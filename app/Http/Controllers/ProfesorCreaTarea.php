@@ -163,10 +163,10 @@ class ProfesorCreaTarea extends Controller
             $TareasNoVencidas = array();
             $TareasVencidas = array();
             foreach ($peticionSQL as $p) {
-                $fecha_actual = Carbon::now()->subMinutes(23)->format('d-m-Y');
-                $fecha_inicio = Carbon::parse($p->fecha_vencimiento)->format('d-m-Y');
+                $fecha_actual = Carbon::now()->subMinutes(23);
+                $fecha_inicio = Carbon::parse($p->fecha_vencimiento)->addHours(24);
         
-                if($fecha_inicio===$fecha_actual || $fecha_inicio>$fecha_actual){   
+                if($fecha_inicio>=$fecha_actual ){   
                    
                       
                         $datos = [
@@ -354,8 +354,8 @@ class ProfesorCreaTarea extends Controller
         foreach ($peticionSQL as $t) {
 
             
-            $fecha_actual = Carbon::now()->subMinutes(23)->format('d-m-Y');
-            $fecha_vencimiento = Carbon::parse($t->fecha_vencimiento)->format('d-m-Y');
+            $fecha_actual = Carbon::now()->subMinutes(23);
+            $fecha_vencimiento = Carbon::parse($t->fecha_vencimiento)->addHours(24);
             $booelan = true;
     
                 if($fecha_vencimiento===$fecha_actual || $fecha_vencimiento>$fecha_actual){
