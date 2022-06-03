@@ -23,14 +23,14 @@ class GrupoController extends Controller
     {
         $alumnos = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo', 'alumnos_pertenecen_grupos.idAlumnos as idAlumnos', 'usuarios.nombre as nombreAlumno', 'usuarios.imagen_perfil')
-            ->join('usuarios', 'usuarios.username', '=', 'alumnos_pertenecen_grupos.idAlumnos')
+            ->join('usuarios', 'usuarios.id', '=', 'alumnos_pertenecen_grupos.idAlumnos')
             ->join('profesor_estan_grupo_foro', 'profesor_estan_grupo_foro.idGrupo', '=', 'alumnos_pertenecen_grupos.idGrupo')
             ->where('alumnos_pertenecen_grupos.idGrupo', $request->idGrupo)
             ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
             ->get();
         $profesor = DB::table('profesor_estan_grupo_foro')
             ->select('profesor_estan_grupo_foro.idGrupo AS idGrupo', 'profesor_estan_grupo_foro.idProfesor', 'usuarios.nombre as nombreProfesor', 'usuarios.imagen_perfil')
-            ->join('usuarios', 'usuarios.username', '=', 'profesor_estan_grupo_foro.idProfesor')
+            ->join('usuarios', 'usuarios.id', '=', 'profesor_estan_grupo_foro.idProfesor')
             ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
             ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
             ->get();
@@ -111,7 +111,7 @@ class GrupoController extends Controller
 
         $alumnos = DB::table('alumnos_pertenecen_grupos')
         ->select( 'alumnos_pertenecen_grupos.idAlumnos as idAlumnos', 'usuarios.nombre as nombreAlumno')
-        ->join('usuarios', 'usuarios.username', '=', 'alumnos_pertenecen_grupos.idAlumnos')
+        ->join('usuarios', 'usuarios.id', '=', 'alumnos_pertenecen_grupos.idAlumnos')
         ->join('profesor_estan_grupo_foro', 'profesor_estan_grupo_foro.idGrupo', '=', 'alumnos_pertenecen_grupos.idGrupo')
         ->where('alumnos_pertenecen_grupos.idGrupo', $request->idGrupo)
         ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
@@ -211,7 +211,7 @@ class GrupoController extends Controller
         $chequeo = "";
         $dataResponse = array();
         foreach ($registroClase as $p) {
-            $usuarios = usuarios::where('username', $p->idAlumnos)->first();
+            $usuarios = usuarios::where('id', $p->idAlumnos)->first();
             if ($p->asistencia == "1") {
                 $chequeo = "Presente";
             } else {
@@ -238,7 +238,7 @@ class GrupoController extends Controller
 
 
         foreach ($registroAlumno as $p) {
-            $usuarios = usuarios::where('username', $p->idAlumnos)->first();
+            $usuarios = usuarios::where('id', $p->idAlumnos)->first();
             if ($p->asistencia == "1") {
                 $chequeo = true;
             } else {

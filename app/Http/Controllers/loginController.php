@@ -48,10 +48,10 @@ class loginController extends Controller
     public function traerDatos($request){
 
 
-        $u = usuarios::where('username', $request->username)->first(); 
+        $u = usuarios::where('id', $request->username)->first(); 
 
         $datos=[
-            "username" => $u->username,
+            "username" => $u->id,
             "nombre" => $u->nombre,
             "ou" => $u->ou,
             "email" => $u->email,
@@ -110,10 +110,10 @@ class loginController extends Controller
     {
           try { 
 
-        $usuarios = usuarios::where('username', $request->idUsuario)->first();
+        $usuarios = usuarios::where('id', $request->idUsuario)->first();
 
         if ($usuarios) {
-            DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE username="' . $request->idUsuario . '";');
+            DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE id="' . $request->idUsuario . '";');
             if ($usuarios->imagen_perfil !== "default_picture.png") {
                 Storage::disk('ftp')->delete($usuarios->imagen_perfil);
             }
@@ -127,7 +127,7 @@ class loginController extends Controller
 
     public function traerImagen(Request $request)
     {
-        $usuario = usuarios::where('username', $request->username)->first();
+        $usuario = usuarios::where('id', $request->username)->first();
         $base64imagen = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
         return $base64imagen;
     }

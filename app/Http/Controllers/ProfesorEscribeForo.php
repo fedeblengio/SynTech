@@ -90,7 +90,7 @@ class ProfesorEscribeForo extends Controller
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre AS materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor',  'datosForo.mensaje AS mensaje',  'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-            ->join('usuarios', 'usuarios.username', '=', 'datosForo.idUsuario')
+            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
             ->orderBy('id', 'desc')
@@ -113,7 +113,7 @@ class ProfesorEscribeForo extends Controller
             $postAuthor = $p->postAuthor;
             $imgPerfil = DB::table('usuarios')
                 ->select('imagen_perfil')
-                ->where('username', $postAuthor)
+                ->where('id', $postAuthor)
                 ->get();
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
@@ -157,7 +157,7 @@ class ProfesorEscribeForo extends Controller
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor',  'datosForo.mensaje AS mensaje',  'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-            ->join('usuarios', 'usuarios.username', '=', 'datosForo.idUsuario')
+            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
             ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
@@ -180,7 +180,7 @@ class ProfesorEscribeForo extends Controller
             $postAuthor = $p->postAuthor;
             $imgPerfil = DB::table('usuarios')
                 ->select('imagen_perfil')
-                ->where('username', $postAuthor)
+                ->where('id', $postAuthor)
                 ->get();
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
@@ -232,7 +232,7 @@ class ProfesorEscribeForo extends Controller
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor',  'datosForo.mensaje AS mensaje',  'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-            ->join('usuarios', 'usuarios.username', '=', 'datosForo.idUsuario')
+            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
             ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
             ->orderBy('id', 'desc')
             ->take($request->limit)
@@ -254,7 +254,7 @@ class ProfesorEscribeForo extends Controller
 
             $imgPerfil = DB::table('usuarios')
                 ->select('imagen_perfil')
-                ->where('username', $postAuthor)
+                ->where('id', $postAuthor)
                 ->get();
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
@@ -308,7 +308,7 @@ class ProfesorEscribeForo extends Controller
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor',  'datosForo.mensaje AS mensaje',  'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-            ->join('usuarios', 'usuarios.username', '=', 'datosForo.idUsuario')
+            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
             ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
             ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
             ->orderBy('id', 'desc')
@@ -331,7 +331,7 @@ class ProfesorEscribeForo extends Controller
 
             $imgPerfil = DB::table('usuarios')
                 ->select('imagen_perfil')
-                ->where('username', $postAuthor)
+                ->where('id', $postAuthor)
                 ->get();
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));

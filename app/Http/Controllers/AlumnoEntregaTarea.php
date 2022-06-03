@@ -44,14 +44,14 @@ class AlumnoEntregaTarea extends Controller
     {
         $primera_entrega = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
             ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
             ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
             ->get();
 
         $segunda_entrega = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 're_hacer_tareas.created_at AS fecha_entrega', 're_hacer_tareas.calificacion AS calificacion', 're_hacer_tareas.mensaje AS mensajeAlumno', 're_hacer_tareas.mensaje_profesor AS mensajeProfesor')
-            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')
+            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
             ->where('re_hacer_tareas.idTareas', $request->idTareas)
             ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
             ->get();
@@ -59,7 +59,7 @@ class AlumnoEntregaTarea extends Controller
 
         $imagen_perfil_alumno = DB::table('usuarios')
             ->select('usuarios.imagen_perfil AS img')
-            ->where('usuarios.username', $request->idAlumnos)
+            ->where('usuarios.id', $request->idAlumnos)
             ->get();
 
 
@@ -119,7 +119,7 @@ class AlumnoEntregaTarea extends Controller
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno','tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno','alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
             ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
             ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
-            ->join('usuarios', 'usuarios.username', '=', 'alumno_entrega_tareas.idAlumnos')
+            ->join('usuarios', 'usuarios.id', '=', 'alumno_entrega_tareas.idAlumnos')
             ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
             ->where('profesor_crea_tareas.idMateria', $request->idMateria)
             ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
@@ -205,7 +205,7 @@ class AlumnoEntregaTarea extends Controller
 
         $alumnos = DB::table('alumnos_pertenecen_grupos')
         ->select( 'alumnos_pertenecen_grupos.idAlumnos','usuarios.nombre')
-        ->join('usuarios', 'alumnos_pertenecen_grupos.idAlumnos', '=', 'usuarios.username')
+        ->join('usuarios', 'alumnos_pertenecen_grupos.idAlumnos', '=', 'usuarios.id')
         ->where('alumnos_pertenecen_grupos.idGrupo',$request->idGrupo)
         ->get();
 
@@ -229,7 +229,7 @@ class AlumnoEntregaTarea extends Controller
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno','tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno','alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
             ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
             ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
-            ->join('usuarios', 'usuarios.username', '=', 'alumno_entrega_tareas.idAlumnos')
+            ->join('usuarios', 'usuarios.id', '=', 'alumno_entrega_tareas.idAlumnos')
             ->leftJoin('re_hacer_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idAlumnos')
             ->where('alumno_entrega_tareas.idAlumnos', $a->idAlumnos)
             ->where('profesor_crea_tareas.idMateria', $request->idMateria)
@@ -355,7 +355,7 @@ class AlumnoEntregaTarea extends Controller
         $entregas = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
             ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
             ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
             ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
             ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
@@ -367,7 +367,7 @@ class AlumnoEntregaTarea extends Controller
         $entregasCorregidas = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
             ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
             ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
 
             ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
@@ -381,7 +381,7 @@ class AlumnoEntregaTarea extends Controller
         $entregasReHacer = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
             ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')
+            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
             ->join('tareas', 're_hacer_tareas.idTareas', '=', 'tareas.id')
             ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
             ->where('re_hacer_tareas.idTareas', $request->idTareas)
@@ -393,7 +393,7 @@ class AlumnoEntregaTarea extends Controller
         $entregasReHacerCorregidas = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
             ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')
+            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
             ->join('tareas', 're_hacer_tareas.idTareas', '=', 'tareas.id')
             ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
             ->where('re_hacer_tareas.idTareas', $request->idTareas)
@@ -501,7 +501,7 @@ class AlumnoEntregaTarea extends Controller
         $entregas = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'alumno_entrega_tareas.re_hacer AS re_hacer', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
             ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
             ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
             ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
             ->orderBy('alumno_entrega_tareas.created_at', 'desc')
@@ -547,7 +547,7 @@ class AlumnoEntregaTarea extends Controller
 
         $peticionSQL = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensaje', 'usuarios.nombre AS nombreUsuario')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.username')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
             ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
             ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
             ->get();
@@ -569,7 +569,7 @@ class AlumnoEntregaTarea extends Controller
 
             $imgPerfil = DB::table('usuarios')
                 ->select('imagen_perfil')
-                ->where('username', $postAuthor)
+                ->where('id', $postAuthor)
                 ->get();
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
@@ -606,7 +606,7 @@ class AlumnoEntregaTarea extends Controller
 
         $peticionSQL = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.created_at AS fecha', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario')
-            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.username')
+            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
             ->where('re_hacer_tareas.idTareas', $request->idTareas)
             ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
             ->get();
@@ -627,7 +627,7 @@ class AlumnoEntregaTarea extends Controller
 
             $imgPerfil = DB::table('usuarios')
                 ->select('imagen_perfil')
-                ->where('username', $postAuthor)
+                ->where('id', $postAuthor)
                 ->get();
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));

@@ -10,11 +10,11 @@ class ProfesorGrupo extends Controller
     public function listarProfesorGrupo(Request $request)
     {
         $profesor_grupo = DB::table('grupos_tienen_profesor')
-                          ->select('usuarios.username' ,'usuarios.nombre AS Profesor','materias.id AS idMateria' ,'materias.nombre AS Materia' , 'grupos.idGrupo' , 'grupos.nombreCompleto' , 'grupos.anioElectivo')
+                          ->select('usuarios.id' ,'usuarios.nombre AS Profesor','materias.id AS idMateria' ,'materias.nombre AS Materia' , 'grupos.idGrupo' , 'grupos.nombreCompleto' , 'grupos.anioElectivo')
                           ->join('grupos', 'grupos.idGrupo', '=', 'grupos_tienen_profesor.idGrupo')
                           ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
-                          ->join('usuarios', 'usuarios.username', '=', 'grupos_tienen_profesor.idProfesor')
-                          ->where('username', $request->idProfesor)
+                          ->join('usuarios', 'usuarios.id', '=', 'grupos_tienen_profesor.idProfesor')
+                          ->where('idProfesor', $request->idProfesor)
                           ->get();
 
         return response()->json($profesor_grupo);
@@ -31,7 +31,7 @@ class ProfesorGrupo extends Controller
                   ->select('grupos_tienen_profesor.idMateria AS idMateria', 'materias.nombre AS Materia', 'grupos_tienen_profesor.idGrupo AS idGrupo','grupos.nombreCompleto', 'grupos_tienen_profesor.idProfesor AS idProfesor', 'usuarios.nombre AS Profesor' )
                   ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
                   ->join('grupos', 'grupos.idGrupo', '=', 'grupos_tienen_profesor.idGrupo') 
-                  ->join('usuarios', 'usuarios.username', '=', 'grupos_tienen_profesor.idProfesor')
+                  ->join('usuarios', 'usuarios.id', '=', 'grupos_tienen_profesor.idProfesor')
                   ->where('grupos_tienen_profesor.idGrupo', $idGrupo[0]->idGrupo)
                   ->get();
 

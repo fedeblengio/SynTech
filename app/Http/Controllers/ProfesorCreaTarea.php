@@ -153,7 +153,7 @@ class ProfesorCreaTarea extends Controller
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
             ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
-            ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.username')
+            ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.id')
             ->where('profesor_crea_tareas.idProfesor', $request->idUsuario)
             ->where('profesor_crea_tareas.idMateria', $request->idMateria)
             ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
@@ -251,8 +251,8 @@ class ProfesorCreaTarea extends Controller
             $postAuthor = $p->idProfesor;
 
             $usuario = DB::table('usuarios')
-                ->select('imagen_perfil','username','nombre')
-                ->where('username', $postAuthor)
+                ->select('imagen_perfil','id','nombre')
+                ->where('id', $postAuthor)
                 ->get();
 
     
@@ -310,7 +310,7 @@ class ProfesorCreaTarea extends Controller
         $variable3 = $request->idMateria;
         if ($request->idMateria){ 
             $peticionSQL = DB::select(
-                DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2 AND idMateria=:variable3) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.username = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
+                DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2 AND idMateria=:variable3) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.id = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
                 array('variable' => $variable,'variable2' => $variable2, 'variable3' => $variable3)    
             );
             $peticionSQL2 = DB::table('profesor_crea_tareas')
@@ -319,7 +319,7 @@ class ProfesorCreaTarea extends Controller
             ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
-            ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.username')
+            ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.id')
             ->where('profesor_crea_tareas.idGrupo',  $idGrupo[0]->idGrupo)
             ->where('alumno_entrega_tareas.idAlumnos', $request->idUsuario)
             ->where('profesor_crea_tareas.idMateria', $request->idMateria)
@@ -328,7 +328,7 @@ class ProfesorCreaTarea extends Controller
             ->get();
         }else{
             $peticionSQL = DB::select(
-                DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.username = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
+                DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.id = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
                 array('variable' => $variable,'variable2' => $variable2)    
             );
             $peticionSQL2 = DB::table('profesor_crea_tareas')
@@ -337,7 +337,7 @@ class ProfesorCreaTarea extends Controller
             ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
-            ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.username')
+            ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.id')
             ->where('profesor_crea_tareas.idGrupo',  $idGrupo[0]->idGrupo)
             ->where('alumno_entrega_tareas.idAlumnos', $request->idUsuario)
             ->where('alumno_entrega_tareas.re_hacer', "1")
