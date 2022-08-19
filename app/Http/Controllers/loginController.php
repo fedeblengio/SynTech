@@ -24,33 +24,33 @@ class loginController extends Controller
 
     public function connect(Request $request)
     {
-        
+
         $connection = new Connection([
             'hosts' => ['192.168.50.139'],
         ]);
 
-        $datos = self::traerDatos($request); 
+        $datos = self::traerDatos($request);
 
-        $connection-> connect();
+        $connection->connect();
 
-        
-        if ($connection->auth()->attempt($request->username.'@syntech.intra', $request->password, $stayBound = true)) {
+
+        if ($connection->auth()->attempt($request->username . '@syntech.intra', $request->password, $stayBound = true)) {
             return [
                 'connection' => 'Success',
-                 'datos' => $datos, 
-                 ];
-        }else {
+                'datos' => $datos,
+            ];
+        } else {
             return response()->json(['error' => 'Unauthenticated.'], 401);
-        } 
-
+        }
     }
 
-    public function traerDatos($request){
+    public function traerDatos($request)
+    {
 
 
-        $u = usuarios::where('id', $request->username)->first(); 
+        $u = usuarios::where('id', $request->username)->first();
 
-        $datos=[
+        $datos = [
             "username" => $u->id,
             "nombre" => $u->nombre,
             "ou" => $u->ou,
@@ -61,13 +61,12 @@ class loginController extends Controller
 
         $base64data = base64_encode(json_encode($datos));
         $tExist = token::where('token', $base64data)->first();
-        
-       
-        if($tExist){
+
+
+        if ($tExist) {
             $tExist->delete();
             self::guardarToken($base64data);
-
-        }else{
+        } else {
             self::guardarToken($base64data);
         }
 
@@ -77,10 +76,11 @@ class loginController extends Controller
 
 
 
-    public function guardarToken($token){
+    public function guardarToken($token)
+    {
         $t = new token;
-        $t->token=$token;
-        $t->fecha_vencimiento=Carbon::now()->addMinutes(90);
+        $t->token = $token;
+        $t->fecha_vencimiento = Carbon::now()->addMinutes(90);
         $t->save();
     }
 
@@ -108,21 +108,20 @@ class loginController extends Controller
 
     public function subirImagen($request, $nombre)
     {
-          try { 
+        try {
 
-        $usuarios = usuarios::where('id', $request->idUsuario)->first();
+            $usuarios = usuarios::where('id', $request->idUsuario)->first();
 
-        if ($usuarios) {
-            DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE id="' . $request->idUsuario . '";');
-            if ($usuarios->imagen_perfil !== "default_picture.png") {
-                Storage::disk('ftp')->delete($usuarios->imagen_perfil);
+            if ($usuarios) {
+                DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE id="' . $request->idUsuario . '";');
+                if ($usuarios->imagen_perfil !== "default_picture.png") {
+                    Storage::disk('ftp')->delete($usuarios->imagen_perfil);
+                }
             }
+            return response()->json(['status' => 'Success'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => 'Bad Request'], 400);
         }
-        return response()->json(['status' => 'Success'], 200);
-           } catch (\Throwable $th) {
-        return response()->json(['status' => 'Bad Request'], 400);
-
-          }
     }
 
     public function traerImagen(Request $request)

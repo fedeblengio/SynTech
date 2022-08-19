@@ -157,6 +157,7 @@ class AgendaClaseVirtualController extends Controller
         $idGrupo = DB::table('alumnos_pertenecen_grupos')
         ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
         ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
+        ->where('alumnos_pertenecen_grupos.deleted_at', NULL)
         ->get();
 
         $agendaClase = DB::table('agenda_clase_virtual')
@@ -247,8 +248,8 @@ class AgendaClaseVirtualController extends Controller
 
     public function consultaProfesorEvento(Request $request){
         $agendaClase = DB::table('agenda_clase_virtual')
-        ->select('id','idProfesor', 'idGrupo', 'idMateria', 'fecha_inicio', 'fecha_fin')
-        ->where('idProfesor', $request->idUsuario)
+        ->select('agenda_clase_virtual.id','agenda_clase_virtual.idProfesor', 'agenda_clase_virtual.idGrupo', 'agenda_clase_virtual.idMateria', 'agenda_clase_virtual.fecha_inicio', 'agenda_clase_virtual.fecha_fin')
+        ->where('agenda_clase_virtual.idProfesor', $request->idUsuario)
         ->orderBy('fecha_inicio', 'asc')
         ->get();
 

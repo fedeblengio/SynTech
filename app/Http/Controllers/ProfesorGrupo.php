@@ -14,6 +14,7 @@ class ProfesorGrupo extends Controller
                           ->join('grupos', 'grupos.idGrupo', '=', 'grupos_tienen_profesor.idGrupo')
                           ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
                           ->join('usuarios', 'usuarios.id', '=', 'grupos_tienen_profesor.idProfesor')
+                          ->where('grupos_tienen_profesor.deleted_at', NULL)
                           ->where('idProfesor', $request->idProfesor)
                           ->get();
 
@@ -25,6 +26,7 @@ class ProfesorGrupo extends Controller
         $idGrupo=DB::table('alumnos_pertenecen_grupos')
                  ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
                  ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
+                 ->where('alumnos_pertenecen_grupos.deleted_at', NULL)
                  ->get();
 
         $materias=DB::table('grupos_tienen_profesor')

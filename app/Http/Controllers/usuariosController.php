@@ -30,15 +30,15 @@ class usuariosController extends Controller
     public function update_db(Request $request)
     {
         try {
-            $usuarios = usuarios::where('username', $request->username)->first();
+            $usuarios = usuarios::where('id', $request->username)->first();
             if ($request->nuevoEmail == null && $request->nuevoNombre == null) {
-                DB::update('UPDATE usuarios SET genero="' . $request->genero . '" ,nombre="' . $usuarios->nombre . '" ,  email="' . $usuarios->email . '" WHERE username="' . $request->username . '";');
+                DB::update('UPDATE usuarios SET genero="' . $request->genero . '" ,nombre="' . $usuarios->nombre . '" ,  email="' . $usuarios->email . '" WHERE id="' . $request->username . '";');
             }
             if ($request->genero == null && $request->nuevoNombre == null) {
-                DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" , nombre="' . $usuarios->nombre . '" ,  email="' . $request->nuevoEmail . '" WHERE username="' . $request->username . '";');
+                DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" , nombre="' . $usuarios->nombre . '" ,  email="' . $request->nuevoEmail . '" WHERE id="' . $request->username . '";');
             }
             if ($request->genero == null && $request->nuevoEmail == null) {
-                DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" , nombre="' . $request->nuevoNombre . '" ,  email="' . $usuarios->email . '" WHERE username="' . $request->username . '";');
+                DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" , nombre="' . $request->nuevoNombre . '" ,  email="' . $usuarios->email . '" WHERE id="' . $request->username . '";');
             }
             RegistrosController::store("USUARIO",$request->header('token'),"UPDATE","");
             return response()->json(["token" => self::updateToken($request)], 200);
@@ -49,9 +49,9 @@ class usuariosController extends Controller
 
     public function show(Request $request)
     {
-        $a  = usuarios::where('username', $request->idUsuario)->first();
+        $a  = usuarios::where('id', $request->idUsuario)->first();
         $alumno = [
-            "username" => $a->username,
+            "username" => $a->id,
             "nombre" => $a->nombre,
             "email" => $a->email,
             "ou" => $a->ou,
@@ -69,10 +69,10 @@ class usuariosController extends Controller
             $t->delete();
         }
 
-        $u = usuarios::where('username', $request->username)->first();
+        $u = usuarios::where('id', $request->username)->first();
 
         $datos = [
-            "username" => $u->username,
+            "username" => $u->id,
             "nombre" => $u->nombre,
             "ou" => $u->ou,
             "email" => $u->email,
