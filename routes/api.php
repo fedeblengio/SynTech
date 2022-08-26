@@ -22,7 +22,6 @@ Route::get('/test', function () {
 
 
 // FTP SAVE FILE
-Route::post('/FTP', 'App\Http\Controllers\ProfesorEscribeForo@guardarArchivoFTP')->middleware('verificar_token');
 Route::get('/traerArchivo', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo')->middleware('verificar_token'); 
 //
 
@@ -47,7 +46,7 @@ Route::get('/usuario','App\Http\Controllers\usuariosController@show')->middlewar
 Route::get('/foros', 'App\Http\Controllers\ProfesorEscribeForo@index')->middleware('verificar_token');
 
 Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show')->middleware('verificar_token');
-Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@guardarPublicacionBD')->middleware('verificar_token');
+Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store')->middleware('verificar_token');
 /* Route::put('/foro','App\Http\Controllers\ProfesorEscribeForo@update')->middleware('verificar_token'); */
 Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy')->middleware('verificar_token'); 
 //

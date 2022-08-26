@@ -24,19 +24,6 @@ class ProfesorEscribeForo extends Controller
         return Storage::disk('ftp')->get($request->archivo);
     }
 
-    public function guardarArchivoFTP(Request $request)
-    {
-        try {
-            if ($request->hasFile("archivo")) {
-                $nombreArchivo = $request->nombre;
-                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivo, 'r+'));
-            }
-            return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'Error'], 406);
-        }
-    }
-
     public function show(Request $request)
     {
         if ($request->idMateria) {
@@ -53,34 +40,6 @@ class ProfesorEscribeForo extends Controller
             }
         }
     }
-
-
-
-   /*  public function update(Request $request)
-    {
-        $modificarDatosForo = datosForo::where('id', $request->idDatos)->first();
-
-        try {
-            $modificarDatosForo->titulo = $request->titulo;
-            $modificarDatosForo->mensaje = $request->mensaje;
-            $modificarDatosForo->save();
-            
-            return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'Bad Request'], 400);
-        }
-    } */
-
-    /*     public function destroy(Request $request)
-    {
-        $eliminarDatosForo = datosForo::where('id', $request->idDatos)->first();
-        try {
-            $eliminarDatosForo->delete();
-            return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'Bad Request'], 400);
-        }
-    } */
 
 
 
@@ -373,15 +332,8 @@ class ProfesorEscribeForo extends Controller
         return response()->json($dataResponse);
     }
 
+    public function store (Request $request){
 
-
-
-
-
-
-
-    public function guardarPublicacionBD(Request $request)
-    {
         $datosForo = new datosForo;
         $datosForo->idForo = $request->idForo;
         $datosForo->idUsuario = $request->idUsuario;
@@ -389,18 +341,18 @@ class ProfesorEscribeForo extends Controller
         $datosForo->save();
 
         $idDatos = DB::table('datosForo')->orderBy('created_at', 'desc')->limit(1)->get('id');
-        $nombreArchivosArray = explode(',', $request->nombre_archivos);
 
-        if ($request->nombre_archivos) {
-            foreach ($nombreArchivosArray as $nombres) {
-
+        if ($request->archivos){
+            for ($i=0; $i < count($request->nombresArchivo); $i++){
+                $nombreArchivo = random_int(0,1000000)."_".$request->nombresArchivo[$i];
+                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
                 $archivosForo = new archivosForo;
                 $archivosForo->idDato = $idDatos[0]->id;
                 $archivosForo->idForo = $request->idForo;
-                $archivosForo->nombreArchivo = $nombres;
+                $archivosForo->nombreArchivo = $nombreArchivo;
                 $archivosForo->save();
-            }
         }
+    }
 
         RegistrosController::store("PUBLICACION FORO",$request->header('token'),"CREATE","");
         return response()->json(['status' => 'Success'], 200);
