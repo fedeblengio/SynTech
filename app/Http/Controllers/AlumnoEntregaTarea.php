@@ -283,8 +283,6 @@ class AlumnoEntregaTarea extends Controller
 
         return response()->json($dataResponse);
 
-        
-
     }
 
     public function subirTarea($request)
@@ -297,19 +295,19 @@ class AlumnoEntregaTarea extends Controller
         $alumnoTarea->re_hacer = 0;
         $alumnoTarea->save();
 
-
-        $nombreArchivosArray = explode(',', $request->nombre_archivos);
-        if ($request->nombre_archivos) {
-            foreach ($nombreArchivosArray as $nombres) {
+        if ($request->archivos) {
+            
+            for ($i=0; $i < count($request->nombresArchivo); $i++){
+                $nombreArchivo = random_int(0,1000000)."_".$request->nombresArchivo[$i];
+                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
                 $archivosEntrega = new archivosEntrega;
                 $archivosEntrega->idTareas = $request->idTareas;
                 $archivosEntrega->idAlumnos = $request->idAlumnos;
-                $archivosEntrega->nombreArchivo = $nombres;
+                $archivosEntrega->nombreArchivo = $nombreArchivo;
                 $archivosEntrega->save();
             }
         }
-        RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE","");
-        
+        RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE",$request->idAlumnos);
         return response()->json(['status' => 'Success'], 200);
     }
 
@@ -324,14 +322,16 @@ class AlumnoEntregaTarea extends Controller
         $alumnoReHacer->save();
 
 
-        $nombreArchivosArray = explode(',', $request->nombre_archivos);
-        if ($request->nombre_archivos) {
-            foreach ($nombreArchivosArray as $nombres) {
+        if ($request->archivos) {
+            
+            for ($i=0; $i < count($request->nombresArchivo); $i++){
+                $nombreArchivo = random_int(0,1000000)."_".$request->nombresArchivo[$i];
+                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
                 $archivosReHacer = new archivosReHacerTarea;
                 $archivosReHacer->idTareas = $request->idTareas;
                 $archivosReHacer->idTareasNueva = $request->idTareas;
                 $archivosReHacer->idAlumnos = $request->idAlumnos;
-                $archivosReHacer->nombreArchivo = $nombres;
+                $archivosReHacer->nombreArchivo = $nombreArchivo;
                 $archivosReHacer->save();
             }
         }
@@ -340,7 +340,7 @@ class AlumnoEntregaTarea extends Controller
         if ($existe)
             DB::update('UPDATE alumno_entrega_tareas SET re_hacer="0" WHERE idTareas="' . $request->idTareas . '" AND idAlumnos="' . $request->idAlumnos . '";');
 
-            RegistrosController::store("RE-ENTREGA TAREA",$request->header('token'),"CREATE","");
+            RegistrosController::store("RE-ENTREGA TAREA",$request->header('token'),"CREATE",$request->idAlumnos);
 
         return response()->json(['status' => 'Success'], 200);
     }

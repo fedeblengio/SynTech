@@ -62,7 +62,7 @@ Route::get('/profesor-grupo', 'App\Http\Controllers\ProfesorGrupo@listarProfesor
 // TAREAS
 Route::get('/tareas-corregir', 'App\Http\Controllers\ProfesorCreaTarea@tareasParaCorregir')->middleware('verificar_token');
 Route::get('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@traerTarea')->middleware('verificar_token');
-Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@tareas')->middleware('verificar_token');
+Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@store')->middleware('verificar_token');
 Route::delete('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@destroy')->middleware('verificar_token');
 Route::get('/tareas', 'App\Http\Controllers\ProfesorCreaTarea@listarTareas')->middleware('verificar_token');
 Route::post('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@seleccion')->middleware('verificar_token');
@@ -113,6 +113,10 @@ Route::get('/alumno', 'App\Http\Controllers\alumnos@show')->middleware('verifica
 
 Route::get('/listar-alumnos', 'App\Http\Controllers\GrupoController@listarAlumnos')->middleware('verificar_token');
 
+//NOTICIAS
+Route::get('/noticia','App\Http\Controllers\materialPublicoController@index');
+Route::post('/noticia','App\Http\Controllers\materialPublicoController@store');
+Route::delete('/noticia','App\Http\Controllers\materialPublicoController@destroy');
 // ENDPOINTS EQUISDES // USELESS NO BORRAR
 
 //TAREA 

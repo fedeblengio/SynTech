@@ -19,86 +19,8 @@ use Mockery\Undefined;
 
 class ProfesorCreaTarea extends Controller
 {
-    /*  public function index()
-    {
-        return response()->json(Tarea::all());
-    } */
-
-
-    /*  public function show(Request $request)
-    {
-        $mostrarTareasGrupos=ProfesorTarea::all()->where('idGrupo', $request->idGrupo)->where('idMateria',££££3£££££££);
-        return response()->json($mostrarTareasGrupos);
-    } */
-    /* 
-    public function traerTareasGrupo(Request $request){
-        $tarea_grupo = DB::table('profesor_crea_tareas')
-        ->select('profesor_crea_tareas.idGrupo AS Grupo', 'profesor_crea_tareas.idTareas AS Tareas', 'profesor_crea_tareas.IdMateria AS idMateria', 'materias.nombre AS nombreMateria', 'tareas.titulo AS tareasTitulo', 'tareas.descripcion AS tareaDescripcion', 'tareas.fecha_vencimiento AS tareaVencimiento', 'tareas.archivo AS tareaArchivo')
-        ->join('tareas', 'tareas.id', '=', 'profesor_crea_tareas.idTareas')
-        ->join('materias', 'materias.id', '=', 'profesor_crea_tareas.idMateria')
-        ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-        ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-        ->get();
-
-        return response()->json($tarea_grupo);
-    }
-
-    public function ProfesorGrupo(Request $request)
-    {
-        $profesorGrupo=GruposProfesores::all()->where('idProfesor', $request->idProfesor);
-        return response()->json($profesorGrupo);
-    } */
-
-
-
-
-    /* public function store(Request $request)
-    {
-        try {       
-            if ($request->hasFile("archivo")) {
-                $nombreArchivo = $request->nombre;
-                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivo, 'r+'));
-            }
-            return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'Error'], 406);
-        }
-    } */
-    public function tareas(Request $request)
-    {
-        if ($request->ou == 'Profesor') {
-            return  self::crearTarea($request);
-        } else if ($request->ou == 'Alumno') {
-            return self::subirTarea($request);
-        }
-    }
-    public function subirTarea(Request $request)
-    {
-
-        $alumnoTarea = new AlumnoEntrega;
-        $alumnoTarea->idTareas = $request->idTareas;
-        $alumnoTarea->idAlumnos = $request->idUsuario;
-        $alumnoTarea->mensaje = $request->mensaje;
-        $alumnoTarea->save();
-
-
-        $nombreArchivosArray = explode(',', $request->nombreArchivos);
-        if ($request->nombreArchivos) {
-            foreach ($nombreArchivosArray as $nombres) {
-                $archivosEntrega = new archivosEntrega;
-                $archivosEntrega->idTareas = $request->idTareas;
-                $archivosEntrega->idAlumnos = $request->idUsuario;
-                $archivosEntrega->nombreArchivo = $nombres;
-                $archivosEntrega->save();
-            }
-        }
-        RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE","");
-        return response()->json(['status' => 'Success'], 200);
-    }
-
-
-
-    public function crearTarea(Request $request)
+    
+    public function store(Request $request)
     {
         $tarea = new Tarea;
         $tarea->titulo = $request->titulo;
@@ -115,14 +37,13 @@ class ProfesorCreaTarea extends Controller
         $profesorTareas->idProfesor = $request->idUsuario;
         $profesorTareas->save();
 
-
-
-        $nombreArchivosArray = explode(',', $request->nombreArchivos);
-        if ($request->nombreArchivos) {
-            foreach ($nombreArchivosArray as $nombres) {
+        if ($request->archivos) {
+            for ($i=0; $i < count($request->nombresArchivo); $i++){
+                $nombreArchivo = random_int(0,1000000)."_".$request->nombresArchivo[$i];
+                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
                 $archivosTarea = new archivosTarea;
                 $archivosTarea->idTarea = $idTareas[0]->id;
-                $archivosTarea->nombreArchivo = $nombres;
+                $archivosTarea->nombreArchivo = $nombreArchivo;
                 $archivosTarea->save();
             }
         }
@@ -210,21 +131,6 @@ class ProfesorCreaTarea extends Controller
                        return response()->json($tareas);
            
     }
-    
-    
-    /* else{
-        $peticionSQL = DB::table('profesor_crea_tareas')
-        ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo','tareas.descripcion','tareas.fecha_vencimiento')
-        ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
-        ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
-        ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
-        ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.username')
-        ->where('profesor_crea_tareas.idProfesor', $request->idUsuario)
-        ->orderBy('profesor_crea_tareas.idTareas', 'desc')
-        ->get();
-
-        return response()->json($peticionSQL);
-    } */
 
     }
 
@@ -439,7 +345,7 @@ class ProfesorCreaTarea extends Controller
         $eliminarArhivos = archivosTarea::where('idTarea', $request->idTareas)->get();
         $eliminarArhivosReHacer = archivosReHacerTarea::where('idTareas', $request->idTareas)->get();
         $eliminarArhivosEntrega = archivosEntrega::where('idTareas', $request->idTareas)->get();
-        /* try {  */
+         try {  
         foreach ($eliminarArhivosReHacer as $t) {
             Storage::disk('ftp')->delete($t->nombreArchivo);
             $arhivosId = archivosReHacerTarea::where('id', $t->id)->first();
@@ -463,10 +369,10 @@ class ProfesorCreaTarea extends Controller
         RegistrosController::store("TAREA",$request->header('token'),"DELETE",$eliminarTarea->titulo);
         
 
-           /*  return response()->json(['status' => 'Success'], 200);
+             return response()->json(['status' => 'Success'], 200);
             } catch (\Throwable $th) { 
             return response()->json(['status' => 'Bad Request'], 400);
-         }   */
+         }  
     }
 
     
