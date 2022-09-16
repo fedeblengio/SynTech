@@ -25,11 +25,17 @@ class loginController extends Controller
     public function connect(Request $request)
     {
 
+        $u = usuarios::where('id', $request->username)->first();
+
+        if($u->ou == "Bedelias"){
+            return response()->json(['error' => 'Unauthenticated.'], 401);
+        }
+
         $connection = new Connection([
             'hosts' => ['192.168.50.139'],
         ]);
 
-        $datos = self::traerDatos($request);
+        $datos = self::traerDatos($u);
 
         $connection->connect();
 
@@ -44,11 +50,9 @@ class loginController extends Controller
         }
     }
 
-    public function traerDatos($request)
+    public function traerDatos($u)
     {
 
-
-        $u = usuarios::where('id', $request->username)->first();
 
         $datos = [
             "username" => $u->id,

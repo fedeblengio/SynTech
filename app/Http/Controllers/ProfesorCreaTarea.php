@@ -13,9 +13,13 @@ use App\Models\archivosReHacerTarea;
 use App\Http\Controllers\RegistrosController;
 use Illuminate\Support\Str;
 use App\Models\archivosTarea;
+use App\Models\usuarios;
+use App\Models\materia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Mockery\Undefined;
+use App\Mail\tareaMail;
 
 class ProfesorCreaTarea extends Controller
 {
@@ -37,6 +41,9 @@ class ProfesorCreaTarea extends Controller
         $profesorTareas->idProfesor = $request->idUsuario;
         $profesorTareas->save();
 
+        $nombreUsuario = usuarios::where('id', $request->idUsuario)->first();
+        $nombreMateria = materia::where('id', $request->idMateria)->first();
+
         if ($request->archivos) {
             for ($i=0; $i < count($request->nombresArchivo); $i++){
                 $nombreArchivo = random_int(0,1000000)."_".$request->nombresArchivo[$i];
@@ -47,6 +54,23 @@ class ProfesorCreaTarea extends Controller
                 $archivosTarea->save();
             }
         }
+
+        $details = [
+            'nombreUsuario' => $nombreUsuario->nombre,
+            'nombreMateria' => $nombreMateria->nombre,
+            'grupo' => $request->idGrupo
+        ];
+
+        $alumnos= DB::table('alumnos_pertenecen_grupos')
+        ->select('usuarios.email')
+        ->join('usuarios', 'alumnos_pertenecen_grupos.idAlumnos', '=', 'usuarios.id')
+        ->where('alumnos_pertenecen_grupos.idGrupo' , $request->idGrupo)
+        ->get();
+
+        foreach ($alumnos as $a){  
+            Mail::to($a->email)->send(new tareaMail($details));
+        }
+        
 
         RegistrosController::store("TAREA",$request->header('token'),"CREATE",$request->idGrupo);
 

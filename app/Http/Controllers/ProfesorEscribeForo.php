@@ -259,9 +259,6 @@ class ProfesorEscribeForo extends Controller
     {
 
 
-
-
-
         $idGrupo = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
             ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)

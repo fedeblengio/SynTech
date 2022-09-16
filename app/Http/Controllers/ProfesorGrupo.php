@@ -16,6 +16,7 @@ class ProfesorGrupo extends Controller
                           ->join('usuarios', 'usuarios.id', '=', 'grupos_tienen_profesor.idProfesor')
                           ->where('grupos_tienen_profesor.deleted_at', NULL)
                           ->where('idProfesor', $request->idProfesor)
+                          ->where('grupos_tienen_profesor.deleted_at', NULL)
                           ->get();
 
         return response()->json($profesor_grupo);

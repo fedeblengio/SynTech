@@ -14,13 +14,23 @@ class materialPublicoController extends Controller
 {
     public function index(Request $request)
     {
-        $peticionSQL = DB::table('material_publicos')
+        if($request->idUsuario){
+            $peticionSQL = DB::table('material_publicos')
+            ->select('material_publicos.id', 'material_publicos.imgEncabezado', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
+            ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
+            ->where('material_publicos.idUsuario', $request->idUsuario)
+            ->orderBy('id', 'desc')
+            ->take($request->limit)
+            ->get();
+        }else{
+            $peticionSQL = DB::table('material_publicos')
             ->select('material_publicos.id', 'material_publicos.imgEncabezado', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
             ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
             ->orderBy('id', 'desc')
             ->take($request->limit)
             ->get();
-
+        }
+      
         $dataResponse = array();
 
 
