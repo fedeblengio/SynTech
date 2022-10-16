@@ -22,7 +22,7 @@ class RegistrosController extends Controller
             $registros->accion = $accion;
             switch ($accion) {
                 case ('CREATE');
-                    $registros->mensaje = "Creo " . $objeto . " " . $info;
+                    $registros->mensaje = "Generó " . $objeto . " " . $info;
                     break;
                 case ('UPDATE'):
                     $registros->mensaje = "Modifico " . $objeto . " " . $info;

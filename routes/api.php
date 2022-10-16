@@ -22,7 +22,7 @@ Route::get('/test', function () {
 
 
 // FTP SAVE FILE
-Route::get('/traerArchivo', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo')->middleware('verificar_token'); //SE UsA
+Route::get('/traerArchivo', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); //SE UsA
 //
 
 // LOGIN
@@ -108,8 +108,8 @@ Route::get('/listar-alumnos', 'App\Http\Controllers\GrupoController@listarAlumno
 
 //NOTICIAS
 Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); //SE UsA
-Route::post('/noticia','App\Http\Controllers\materialPublicoController@store');
-Route::delete('/noticia','App\Http\Controllers\materialPublicoController@destroy');
+Route::post('/noticia','App\Http\Controllers\materialPublicoController@store')->middleware('verificar_token');
+Route::delete('/noticia','App\Http\Controllers\materialPublicoController@destroy')->middleware('verificar_token');
 //
 
 // ENDPOINTS EQUISDES // USELESS NO BORRAR

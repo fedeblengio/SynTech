@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\token;
 use App\Models\usuarios;
+use App\Models\GruposProfesores;
+use App\Models\alumnoGrupo;
 use Illuminate\Http\Request;
 use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Support\Str;
@@ -26,9 +28,23 @@ class loginController extends Controller
     {
 
         $u = usuarios::where('id', $request->username)->first();
+        $grupoProfesor = GruposProfesores::where('idProfesor', $request->username)->first();
+        $grupoAlumno = alumnoGrupo::where('idAlumnos', $request->username)->first();
 
-        if($u->ou == "Bedelias"){
-            return response()->json(['error' => 'Unauthenticated.'], 401);
+        switch ($u->ou) {
+            case ('Bedelias');
+                return response()->json(['error' => 'Unauthenticated.'], 401);
+                break;
+            case ('Profesor'):
+                if(!$grupoProfesor){
+                return response()->json(['error' => 'Unauthenticated.'], 401);
+                }
+                break;
+            case ('Alumno'):
+                if(!$grupoAlumno){
+                return response()->json(['error' => 'Unauthenticated.'], 401);
+                }
+                break;
         }
 
         $connection = new Connection([

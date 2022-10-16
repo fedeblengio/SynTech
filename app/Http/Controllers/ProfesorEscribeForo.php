@@ -46,37 +46,19 @@ class ProfesorEscribeForo extends Controller
 
     public function traerPublicacionesProfesor($request)
     {
-        $peticionSQL = DB::table('profesor_estan_grupo_foro')
-            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre AS materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor',  'datosForo.mensaje AS mensaje',  'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
-            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-            ->join('grupos_tienen_profesor AS A', 'A.idMateria', '=', 'profesor_estan_grupo_foro.idMateria')
-            ->join('grupos_tienen_profesor', 'grupos_tienen_profesor.idGrupo', '=', 'profesor_estan_grupo_foro.idGrupo')
-            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
-            ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
-            ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
-            ->where('grupos_tienen_profesor.deleted_at', NULL)
-            ->orderBy('id', 'desc')
-            ->take($request->limit)
-            ->get();
+        $peticionSQL = $this->getPublicacionesForoForProfesor($request);
 
 
         $dataResponse = array();
 
 
         foreach ($peticionSQL as $p) {
-            $peticionSQLFiltrada = DB::table('archivos_foro')
-                ->select('nombreArchivo AS archivo')
-                ->where('idDato', $p->id)
-                ->distinct()
-                ->get();
+            $peticionSQLFiltrada = $this->getArchivosForo($p);
 
             $arrayArchivos = array();
             $arrayImagenes = array();
             $postAuthor = $p->postAuthor;
-            $imgPerfil = DB::table('usuarios')
-                ->select('imagen_perfil')
-                ->where('id', $postAuthor)
-                ->get();
+            $imgPerfil = $this->getImagenPefil($postAuthor);
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
 
@@ -116,34 +98,18 @@ class ProfesorEscribeForo extends Controller
 
     public function traerPublicacionesProfesorMateria($request)
     {
-        $peticionSQL = DB::table('profesor_estan_grupo_foro')
-            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor',  'datosForo.mensaje AS mensaje',  'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
-            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
-            ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
-            ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
-            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
-            ->orderBy('id', 'desc')
-            ->take($request->limit)
-            ->get();
+        $peticionSQL = $this->getPublicacionesForoMateriaForProfesor($request);
 
         $dataResponse = array();
 
 
         foreach ($peticionSQL as $p) {
-            $peticionSQLFiltrada = DB::table('archivos_foro')
-                ->select('nombreArchivo AS archivo')
-                ->where('idDato', $p->id)
-                ->distinct()
-                ->get();
+            $peticionSQLFiltrada = $this->getArchivosForo($p);
 
             $arrayArchivos = array();
             $arrayImagenes = array();
             $postAuthor = $p->postAuthor;
-            $imgPerfil = DB::table('usuarios')
-                ->select('imagen_perfil')
-                ->where('id', $postAuthor)
-                ->get();
+            $imgPerfil = $this->getImagenPefil($postAuthor);
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
 
@@ -185,40 +151,21 @@ class ProfesorEscribeForo extends Controller
 
     public function traerPublicacionesAlumno($request)
     {
-        $idGrupo = DB::table('alumnos_pertenecen_grupos')
-            ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
-            ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
-            ->where('alumnos_pertenecen_grupos.deleted_at', NULL)
-            ->get();
+        $idGrupo = $this->getIdGrupoAlumno($request);
 
-        $peticionSQL = DB::table('profesor_estan_grupo_foro')
-            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor',  'datosForo.mensaje AS mensaje',  'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
-            ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
-            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
-            ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
-            ->orderBy('id', 'desc')
-            ->take($request->limit)
-            ->get();
+        $peticionSQL = $this->getPublicacionesForoForGrupo($idGrupo[0], $request);
 
         $dataResponse = array();
 
         foreach ($peticionSQL as $p) {
 
-            $peticionSQLFiltrada = DB::table('archivos_foro')
-                ->select('nombreArchivo AS archivo')
-                ->where('idDato', $p->id)
-                ->distinct()
-                ->get();
+            $peticionSQLFiltrada = $this->getArchivosForo($p);
 
             $arrayDeArchivos = array();
             $arrayImagenes = array();
             $postAuthor = $p->postAuthor;
 
-            $imgPerfil = DB::table('usuarios')
-                ->select('imagen_perfil')
-                ->where('id', $postAuthor)
-                ->get();
+            $imgPerfil = $this->getImagenPefil($postAuthor);
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
 
@@ -257,42 +204,21 @@ class ProfesorEscribeForo extends Controller
 
     public function traerPublicacionesAlumnoMateria($request)
     {
+        $idGrupo = $this->getIdGrupoAlumno($request);
 
-
-        $idGrupo = DB::table('alumnos_pertenecen_grupos')
-            ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
-            ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
-            ->get();
-
-        $peticionSQL = DB::table('profesor_estan_grupo_foro')
-            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor',  'datosForo.mensaje AS mensaje',  'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
-            ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
-            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
-            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
-            ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo[0]->idGrupo)
-            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
-            ->orderBy('id', 'desc')
-            ->take($request->limit)
-            ->get();
+        $peticionSQL = $this->getPublicacionesForoMateriaForGrupo($idGrupo[0], $request);
 
         $dataResponse = array();
 
         foreach ($peticionSQL as $p) {
 
-            $peticionSQLFiltrada = DB::table('archivos_foro')
-                ->select('nombreArchivo AS archivo')
-                ->where('idDato', $p->id)
-                ->distinct()
-                ->get();
+            $peticionSQLFiltrada = $this->getArchivosForo($p);
 
             $arrayDeArchivos = array();
             $arrayImagenes = array();
             $postAuthor = $p->postAuthor;
 
-            $imgPerfil = DB::table('usuarios')
-                ->select('imagen_perfil')
-                ->where('id', $postAuthor)
-                ->get();
+            $imgPerfil = $this->getImagenPefil($postAuthor);
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
 
@@ -331,24 +257,14 @@ class ProfesorEscribeForo extends Controller
 
     public function store (Request $request){
 
-        $datosForo = new datosForo;
-        $datosForo->idForo = $request->idForo;
-        $datosForo->idUsuario = $request->idUsuario;
-        $datosForo->mensaje = $request->mensaje;
-        $datosForo->save();
+        $this->agregarDatosForo($request);
 
         $idDatos = DB::table('datosForo')->orderBy('created_at', 'desc')->limit(1)->get('id');
 
         if ($request->archivos){
             for ($i=0; $i < count($request->nombresArchivo); $i++){
-                $nombreArchivo = random_int(0,1000000)."_".$request->nombresArchivo[$i];
-                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
-                $archivosForo = new archivosForo;
-                $archivosForo->idDato = $idDatos[0]->id;
-                $archivosForo->idForo = $request->idForo;
-                $archivosForo->nombreArchivo = $nombreArchivo;
-                $archivosForo->save();
-        }
+                $this->subirArchivoForo($request, $i, $idDatos[0]);
+            }
     }
 
         RegistrosController::store("PUBLICACION FORO",$request->header('token'),"CREATE","");
@@ -373,5 +289,158 @@ class ProfesorEscribeForo extends Controller
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
+    }
+
+    /**
+     * @param $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getPublicacionesForoForProfesor($request): \Illuminate\Support\Collection
+    {
+        $peticionSQL = DB::table('profesor_estan_grupo_foro')
+            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre AS materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
+            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
+            ->join('grupos_tienen_profesor AS A', 'A.idMateria', '=', 'profesor_estan_grupo_foro.idMateria')
+            ->join('grupos_tienen_profesor', 'grupos_tienen_profesor.idGrupo', '=', 'profesor_estan_grupo_foro.idGrupo')
+            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
+            ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
+            ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
+            ->where('grupos_tienen_profesor.deleted_at', NULL)
+            ->orderBy('id', 'desc')
+            ->take($request->limit)
+            ->distinct()
+            ->get();
+        return $peticionSQL;
+    }
+
+    /**
+     * @param $p
+     * @return \Illuminate\Support\Collection
+     */
+    public function getArchivosForo($p): \Illuminate\Support\Collection
+    {
+        $peticionSQLFiltrada = DB::table('archivos_foro')
+            ->select('nombreArchivo AS archivo')
+            ->where('idDato', $p->id)
+            ->distinct()
+            ->get();
+        return $peticionSQLFiltrada;
+    }
+
+    /**
+     * @param $postAuthor
+     * @return \Illuminate\Support\Collection
+     */
+    public function getImagenPefil($postAuthor): \Illuminate\Support\Collection
+    {
+        $imgPerfil = DB::table('usuarios')
+            ->select('imagen_perfil')
+            ->where('id', $postAuthor)
+            ->get();
+        return $imgPerfil;
+    }
+
+    /**
+     * @param $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getPublicacionesForoMateriaForProfesor($request): \Illuminate\Support\Collection
+    {
+        $peticionSQL = DB::table('profesor_estan_grupo_foro')
+            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
+            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
+            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
+            ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
+            ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
+            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
+            ->orderBy('id', 'desc')
+            ->take($request->limit)
+            ->get();
+        return $peticionSQL;
+    }
+
+    /**
+     * @param $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getIdGrupoAlumno($request): \Illuminate\Support\Collection
+    {
+        $idGrupo = DB::table('alumnos_pertenecen_grupos')
+            ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
+            ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
+            ->where('alumnos_pertenecen_grupos.deleted_at', NULL)
+            ->get();
+        return $idGrupo;
+    }
+
+    /**
+     * @param $idGrupo
+     * @param $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getPublicacionesForoForGrupo($idGrupo, $request): \Illuminate\Support\Collection
+    {
+        $peticionSQL = DB::table('profesor_estan_grupo_foro')
+            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
+            ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
+            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
+            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
+            ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo->idGrupo)
+            ->orderBy('id', 'desc')
+            ->take($request->limit)
+            ->distinct()
+            ->get();
+        return $peticionSQL;
+    }
+
+    /**
+     * @param $idGrupo
+     * @param $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getPublicacionesForoMateriaForGrupo($idGrupo, $request): \Illuminate\Support\Collection
+    {
+        $peticionSQL = DB::table('profesor_estan_grupo_foro')
+            ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
+            ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
+            ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
+            ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
+            ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo->idGrupo)
+            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
+            ->orderBy('id', 'desc')
+            ->take($request->limit)
+            ->get();
+        return $peticionSQL;
+    }
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function agregarDatosForo(Request $request): void
+    {
+        $datosForo = new datosForo;
+        $datosForo->idForo = $request->idForo;
+        $datosForo->idUsuario = $request->idUsuario;
+        $datosForo->mensaje = $request->mensaje;
+        $datosForo->save();
+    }
+
+    /**
+     * @param Request $request
+     * @param int $i
+     * @param $idDatos
+     * @return void
+     * @throws \Exception
+     */
+    public function subirArchivoForo(Request $request, int $i, $idDatos): void
+    {
+        $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
+        Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+        $archivosForo = new archivosForo;
+        $archivosForo->idDato = $idDatos->id;
+        $archivosForo->idForo = $request->idForo;
+        $archivosForo->nombreArchivo = $nombreArchivo;
+        $archivosForo->save();
     }
 }

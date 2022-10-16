@@ -30,7 +30,7 @@ class AlumnoEntregaTarea extends Controller
 
     /* public function store(Request $request)
     {
-        try {       
+        try {
             if ($request->hasFile("archivo")) {
                 $nombreArchivo = $request->nombre;
                 Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivo, 'r+'));
@@ -42,43 +42,20 @@ class AlumnoEntregaTarea extends Controller
     } */
     public function visualizarEntrega(Request $request)
     {
-        $primera_entrega = DB::table('alumno_entrega_tareas')
-            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
-            ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
-            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
-            ->get();
+        $primera_entrega = $this->getPrimeraEntregaAlumno($request);
 
-        $segunda_entrega = DB::table('re_hacer_tareas')
-            ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 're_hacer_tareas.created_at AS fecha_entrega', 're_hacer_tareas.calificacion AS calificacion', 're_hacer_tareas.mensaje AS mensajeAlumno', 're_hacer_tareas.mensaje_profesor AS mensajeProfesor')
-            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
-            ->where('re_hacer_tareas.idTareas', $request->idTareas)
-            ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
-            ->get();
+        $segunda_entrega = $this->getSegundaEntregaAlumno($request);
 
 
-        $imagen_perfil_alumno = DB::table('usuarios')
-            ->select('usuarios.imagen_perfil AS img')
-            ->where('usuarios.id', $request->idAlumnos)
-            ->get();
+        $imagen_perfil_alumno = $this->getImagenPerfilAlumno($request);
 
 
         $archivosAlumno1 = array();
         $archivosAlumno2 = array();
 
 
-        $traerArchivosTareaAlumno = DB::table('archivos_entrega')
-            ->select('nombreArchivo AS archivoAlumno')
-            ->where('idTareas', $request->idTareas)
-            ->where('idAlumnos', $request->idAlumnos)
-            ->distinct()
-            ->get();
-        $traerArchivosTareaAlumno2 = DB::table('archivos_re_hacer_tarea')
-            ->select('nombreArchivo AS archivoAlumno')
-            ->where('idTareas', $request->idTareas)
-            ->where('idAlumnos', $request->idAlumnos)
-            ->distinct()
-            ->get();
+        $traerArchivosTareaAlumno = $this->getArchivosTareaAlumno($request);
+        $traerArchivosTareaAlumno2 = $this->getArchivosTareaAlumno2($request);
 
         foreach ($traerArchivosTareaAlumno as $archivosA1) {
             array_push($archivosAlumno1, $archivosA1->archivoAlumno);
@@ -111,36 +88,19 @@ class AlumnoEntregaTarea extends Controller
         return $request->re_hacer == 1 ? self::reHacerTarea($request) : self::subirTarea($request);
     }
 
-    
+
     public function TareaNotaAlumnoMateria(Request $request)
     {
 
-        $primera_entrega = DB::table('alumno_entrega_tareas')
-            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno','tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno','alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
-            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
-            ->join('usuarios', 'usuarios.id', '=', 'alumno_entrega_tareas.idAlumnos')
-            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-            ->get();
+        $primera_entrega = self::getCalificacionPrimeraEntrega($request);
 
         $tareasNotas = array();
         $tareasNotasReHacer = array();
 
         foreach ($primera_entrega as $p) {
-            $segunda_entrega = DB::table('re_hacer_tareas')
-                ->select('re_hacer_tareas.calificacion')
-                ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-                ->join('alumno_entrega_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
-                ->join('tareas', 'tareas.id', '=', 're_hacer_tareas.idTareas')
-                ->where('re_hacer_tareas.idTareas', $p->idTareas)
-                ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
-                ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-                ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-                ->first();
-       
-          
+            $segunda_entrega = self::getCalificacionSegundaEntrega($p, $request);
+
+
             $calificacion= [
                 "calificacion" => 0,
             ];
@@ -165,11 +125,11 @@ class AlumnoEntregaTarea extends Controller
                     "nota_reHacer"=>$segunda_entrega,
                 ];
             }
-           
-           
-      
-        
-         
+
+
+
+
+
             array_push($tareasNotas, $datos);
         }
 
@@ -184,87 +144,54 @@ class AlumnoEntregaTarea extends Controller
     public function promedioMateria(Request $request){
 
         $fecha_actual = Carbon::now()->subMinutes(23);
-        $cantClasesListadas = DB::table('agenda_clase_virtual')
-        ->select(DB::raw('count(*) as totalClase'))
-        ->where('agenda_clase_virtual.idMateria', $request->idMateria)
-        ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
-        ->where('agenda_clase_virtual.fecha_fin', '<=',$fecha_actual)
-        ->get();
+        $cantClasesListadas = self::getCantidadClasesListadas($request, $fecha_actual);
 
 
-        $tareasTotales = DB::table('profesor_crea_tareas')
-        ->select(DB::raw('count(*) as totalTareas'))
-        ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-        ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-        ->groupBy('idMateria', 'idGrupo')
-        ->first();
+        $tareasTotales = self::getTareasTotalesMateriaGrupo($request);
 
         $totalTarea= $tareasTotales->totalTareas;
 
         $alumnos = alumnoGrupo::where('idGrupo', $request->idGrupo)->get();
 
-        $alumnos = DB::table('alumnos_pertenecen_grupos')
-        ->select( 'alumnos_pertenecen_grupos.idAlumnos','usuarios.nombre')
-        ->join('usuarios', 'alumnos_pertenecen_grupos.idAlumnos', '=', 'usuarios.id')
-        ->where('alumnos_pertenecen_grupos.idGrupo',$request->idGrupo)
-        ->get();
+        $alumnos = self::getAlumnosGrupo($request);
 
-     
+
         $dataResponse = array();
 
 
         $sumaNotaPrimera = 0;
         $sumaNotaSegunda = 0;
-            foreach ($alumnos as $a){ 
-            $cantFaltas = DB::table('agenda_clase_virtual')
-            ->select(DB::raw('count(*) as totalClase'))
-            ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
-            ->where('agenda_clase_virtual.idMateria', $request->idMateria)
-            ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
-            ->where('lista_aula_virtual.idAlumnos', $a->idAlumnos)
-            ->where('lista_aula_virtual.asistencia', '0')
-            ->get();
+            foreach ($alumnos as $a){
+                $cantFaltas = self::cantidadFaltasPorAlumno($request, $a);
 
-            $primera_entrega = DB::table('alumno_entrega_tareas')
-            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno','tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno','alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
-            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
-            ->join('usuarios', 'usuarios.id', '=', 'alumno_entrega_tareas.idAlumnos')
-            ->leftJoin('re_hacer_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idAlumnos')
-            ->where('alumno_entrega_tareas.idAlumnos', $a->idAlumnos)
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-            ->get();
-            foreach ($primera_entrega as $p) {
-                $sumaNotaPrimera = $sumaNotaPrimera + $p->calificacion; 
-                
+                $primera_entrega = self::datosPrimeraEntrega($a, $request);
+                foreach ($primera_entrega as $p) {
+                $sumaNotaPrimera = $sumaNotaPrimera + $p->calificacion;
+
             }
-            
-            
 
-            $segunda_entrega = DB::table('re_hacer_tareas')
-            ->select('re_hacer_tareas.calificacion')
-            ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('alumno_entrega_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
-            ->join('tareas', 'tareas.id', '=', 're_hacer_tareas.idTareas')
-            ->where('alumno_entrega_tareas.idAlumnos', $a->idAlumnos)
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-            ->get();
-            foreach ($segunda_entrega as $s){
-                $sumaNotaSegunda = $sumaNotaSegunda + $s->calificacion; 
+
+                $segunda_entrega = self::datosSegundaEntrega($a, $request);
+                foreach ($segunda_entrega as $s){
+                $sumaNotaSegunda = $sumaNotaSegunda + $s->calificacion;
             }
 
             $sumaTotal=$sumaNotaPrimera+$sumaNotaSegunda;
-            
-            $promedio=$sumaTotal/$totalTarea;
+
+            if($totalTarea==0){
+                $promedio=0;
+            }else{
+                $promedio=$sumaTotal/$totalTarea;
+            }
 
             $cantidadFaltas=$cantFaltas[0]->totalClase;
             $totalClases=$cantClasesListadas[0]->totalClase;
 
-            $porcentajeFaltas=(100*$cantidadFaltas)/$totalClases;
-
-
+            if($totalClases==0){
+                $porcentajeFaltas=0;
+            }else{
+                $porcentajeFaltas=(100*$cantidadFaltas)/$totalClases;
+            }
 
             $datos = [
                 "idAlumnos"=>$a->idAlumnos,
@@ -278,7 +205,7 @@ class AlumnoEntregaTarea extends Controller
 
             array_push($dataResponse, $datos);
 
-            
+
         }
 
         return response()->json($dataResponse);
@@ -288,24 +215,11 @@ class AlumnoEntregaTarea extends Controller
     public function subirTarea($request)
     {
 
-        $alumnoTarea = new AlumnoEntrega;
-        $alumnoTarea->idTareas = $request->idTareas;
-        $alumnoTarea->idAlumnos = $request->idAlumnos;
-        $alumnoTarea->mensaje = $request->mensaje;
-        $alumnoTarea->re_hacer = 0;
-        $alumnoTarea->save();
+        $this->subirEntrega($request);
 
         if ($request->archivos) {
-            
-            for ($i=0; $i < count($request->nombresArchivo); $i++){
-                $nombreArchivo = random_int(0,1000000)."_".$request->nombresArchivo[$i];
-                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
-                $archivosEntrega = new archivosEntrega;
-                $archivosEntrega->idTareas = $request->idTareas;
-                $archivosEntrega->idAlumnos = $request->idAlumnos;
-                $archivosEntrega->nombreArchivo = $nombreArchivo;
-                $archivosEntrega->save();
-            }
+
+            $this->subirArchivosEntrega($request);
         }
         RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE",$request->idAlumnos);
         return response()->json(['status' => 'Success'], 200);
@@ -314,26 +228,12 @@ class AlumnoEntregaTarea extends Controller
     public function reHacerTarea($request)
     {
 
-        $alumnoReHacer = new AlumnoReHacerTarea;
-        $alumnoReHacer->idTareasNueva = $request->idTareas;
-        $alumnoReHacer->idTareas = $request->idTareas;
-        $alumnoReHacer->idAlumnos = $request->idAlumnos;
-        $alumnoReHacer->mensaje = $request->mensaje;
-        $alumnoReHacer->save();
+        $this->subirReHacerTarea($request);
 
 
         if ($request->archivos) {
-            
-            for ($i=0; $i < count($request->nombresArchivo); $i++){
-                $nombreArchivo = random_int(0,1000000)."_".$request->nombresArchivo[$i];
-                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
-                $archivosReHacer = new archivosReHacerTarea;
-                $archivosReHacer->idTareas = $request->idTareas;
-                $archivosReHacer->idTareasNueva = $request->idTareas;
-                $archivosReHacer->idAlumnos = $request->idAlumnos;
-                $archivosReHacer->nombreArchivo = $nombreArchivo;
-                $archivosReHacer->save();
-            }
+
+            $this->subirArchivosReHacerTarea($request);
         }
         $existe = AlumnoEntrega::where('idTareas', $request->idTareas)->where('idAlumnos', $request->idAlumnos)->first();
         /*   $reHacer=0; */
@@ -352,56 +252,14 @@ class AlumnoEntregaTarea extends Controller
     public function listarEntregas(Request $request)
     {
 
-        $entregas = DB::table('alumno_entrega_tareas')
-            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
-            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
-            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-            ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
-            ->whereNull('alumno_entrega_tareas.calificacion')
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->orderBy('alumno_entrega_tareas.created_at', 'desc')
-            ->get();
+        $entregas = $this->getAllEntregasGrupoMateria($request);
 
-        $entregasCorregidas = DB::table('alumno_entrega_tareas')
-            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
-            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
-            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
-
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-            ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
-            ->whereNotNull('alumno_entrega_tareas.calificacion')
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->orderBy('alumno_entrega_tareas.created_at', 'desc')
-            ->get();
+        $entregasCorregidas = $this->getEntregasCorregidasGrupoMateria($request);
 
 
-        $entregasReHacer = DB::table('re_hacer_tareas')
-            ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
-            ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
-            ->join('tareas', 're_hacer_tareas.idTareas', '=', 'tareas.id')
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-            ->where('re_hacer_tareas.idTareas', $request->idTareas)
-            ->whereNull('re_hacer_tareas.calificacion')
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->orderBy('re_hacer_tareas.created_at', 'desc')
-            ->get();
+        $entregasReHacer = $this->getAllEntregasReHacerGrupoMateria($request);
 
-        $entregasReHacerCorregidas = DB::table('re_hacer_tareas')
-            ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
-            ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
-            ->join('tareas', 're_hacer_tareas.idTareas', '=', 'tareas.id')
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-            ->where('re_hacer_tareas.idTareas', $request->idTareas)
-            ->whereNotNull('re_hacer_tareas.calificacion')
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->orderBy('re_hacer_tareas.created_at', 'desc')
-            ->get();
-
+        $entregasReHacerCorregidas = $this->getEntregasReHacerCorregidasGrupoMateria($request);
 
 
         $entregas_tarea = array();
@@ -498,14 +356,7 @@ class AlumnoEntregaTarea extends Controller
     public function listarEntregasAlumno(Request $request)
     {
 
-        $entregas = DB::table('alumno_entrega_tareas')
-            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'alumno_entrega_tareas.re_hacer AS re_hacer', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
-            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
-            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
-            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
-            ->orderBy('alumno_entrega_tareas.created_at', 'desc')
-            ->get();
+        $entregas = $this->getEntregasAlumno($request);
 
         return $entregas;
 
@@ -545,32 +396,19 @@ class AlumnoEntregaTarea extends Controller
     public function entregaAlumno(Request $request)
     {
 
-        $peticionSQL = DB::table('alumno_entrega_tareas')
-            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensaje', 'usuarios.nombre AS nombreUsuario')
-            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
-            ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
-            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
-            ->get();
+        $peticionSQL = $this->getEntregaAlumno($request);
 
         $dataResponse = array();
 
         foreach ($peticionSQL as $p) {
 
-            $peticionSQLFiltrada = DB::table('archivos_entrega')
-                ->select('id AS idArchivo', 'nombreArchivo AS archivo')
-                ->where('idTareas', $p->idTareas)
-                ->where('idAlumnos', $p->idAlumnos)
-                ->distinct()
-                ->get();
+            $peticionSQLFiltrada = $this->getArchivosEntrega($p);
 
             $arrayDeArchivos = array();
             $arrayImagenes = array();
             $postAuthor = $p->idAlumnos;
 
-            $imgPerfil = DB::table('usuarios')
-                ->select('imagen_perfil')
-                ->where('id', $postAuthor)
-                ->get();
+            $imgPerfil = $this->getImgPerfil($postAuthor);
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
 
@@ -604,31 +442,18 @@ class AlumnoEntregaTarea extends Controller
     public function entregaAlumnoReHacer(Request $request)
     {
 
-        $peticionSQL = DB::table('re_hacer_tareas')
-            ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.created_at AS fecha', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario')
-            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
-            ->where('re_hacer_tareas.idTareas', $request->idTareas)
-            ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
-            ->get();
+        $peticionSQL = $this->getReHacerEntregaAlumno($request);
 
         $dataResponse = array();
 
         foreach ($peticionSQL as $p) {
 
-            $peticionSQLFiltrada = DB::table('archivos_re_hacer_tarea')
-                ->select('id AS idArchivo', 'nombreArchivo AS archivo')
-                ->where('idTareas', $p->idTareas)
-                ->where('idAlumnos', $p->idAlumnos)
-                ->distinct()
-                ->get();
+            $peticionSQLFiltrada = $this->getArchivosReHacerEntrega($p);
 
             $arrayDeArchivos = array();
             $postAuthor = $p->idAlumnos;
 
-            $imgPerfil = DB::table('usuarios')
-                ->select('imagen_perfil')
-                ->where('id', $postAuthor)
-                ->get();
+            $imgPerfil = $this->getImgPerfil($postAuthor);
 
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
 
@@ -700,5 +525,453 @@ class AlumnoEntregaTarea extends Controller
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request4'], 400);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getPrimeraEntregaAlumno(Request $request): \Illuminate\Support\Collection
+    {
+        $primera_entrega = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
+            ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
+            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
+            ->get();
+        return $primera_entrega;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getSegundaEntregaAlumno(Request $request): \Illuminate\Support\Collection
+    {
+        $segunda_entrega = DB::table('re_hacer_tareas')
+            ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 're_hacer_tareas.created_at AS fecha_entrega', 're_hacer_tareas.calificacion AS calificacion', 're_hacer_tareas.mensaje AS mensajeAlumno', 're_hacer_tareas.mensaje_profesor AS mensajeProfesor')
+            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
+            ->where('re_hacer_tareas.idTareas', $request->idTareas)
+            ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
+            ->get();
+        return $segunda_entrega;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getImagenPerfilAlumno(Request $request): \Illuminate\Support\Collection
+    {
+        $imagen_perfil_alumno = DB::table('usuarios')
+            ->select('usuarios.imagen_perfil AS img')
+            ->where('usuarios.id', $request->idAlumnos)
+            ->get();
+        return $imagen_perfil_alumno;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getArchivosTareaAlumno(Request $request): \Illuminate\Support\Collection
+    {
+        $traerArchivosTareaAlumno = DB::table('archivos_entrega')
+            ->select('nombreArchivo AS archivoAlumno')
+            ->where('idTareas', $request->idTareas)
+            ->where('idAlumnos', $request->idAlumnos)
+            ->distinct()
+            ->get();
+        return $traerArchivosTareaAlumno;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getArchivosTareaAlumno2(Request $request): \Illuminate\Support\Collection
+    {
+        $traerArchivosTareaAlumno2 = DB::table('archivos_re_hacer_tarea')
+            ->select('nombreArchivo AS archivoAlumno')
+            ->where('idTareas', $request->idTareas)
+            ->where('idAlumnos', $request->idAlumnos)
+            ->distinct()
+            ->get();
+        return $traerArchivosTareaAlumno2;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCalificacionPrimeraEntrega(Request $request): \Illuminate\Support\Collection
+    {
+        $primera_entrega = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno', 'tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
+            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
+            ->join('usuarios', 'usuarios.id', '=', 'alumno_entrega_tareas.idAlumnos')
+            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->get();
+        return $primera_entrega;
+    }
+
+    /**
+     * @param $p
+     * @param Request $request
+     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|object|null
+     */
+    public function getCalificacionSegundaEntrega($p, Request $request)
+    {
+        $segunda_entrega = DB::table('re_hacer_tareas')
+            ->select('re_hacer_tareas.calificacion')
+            ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('alumno_entrega_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
+            ->join('tareas', 'tareas.id', '=', 're_hacer_tareas.idTareas')
+            ->where('re_hacer_tareas.idTareas', $p->idTareas)
+            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->first();
+        return $segunda_entrega;
+    }
+
+    /**
+     * @param Request $request
+     * @param Carbon $fecha_actual
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCantidadClasesListadas(Request $request, Carbon $fecha_actual): \Illuminate\Support\Collection
+    {
+        $cantClasesListadas = DB::table('agenda_clase_virtual')
+            ->select(DB::raw('count(*) as totalClase'))
+            ->where('agenda_clase_virtual.idMateria', $request->idMateria)
+            ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+            ->where('agenda_clase_virtual.fecha_fin', '<=', $fecha_actual)
+            ->get();
+        return $cantClasesListadas;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|object|null
+     */
+    public function getTareasTotalesMateriaGrupo(Request $request)
+    {
+        $tareasTotales = DB::table('profesor_crea_tareas')
+            ->select(DB::raw('count(*) as totalTareas'))
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->groupBy('idMateria', 'idGrupo')
+            ->first();
+        return $tareasTotales;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAlumnosGrupo(Request $request): \Illuminate\Support\Collection
+    {
+        $alumnos = DB::table('alumnos_pertenecen_grupos')
+            ->select('alumnos_pertenecen_grupos.idAlumnos', 'usuarios.nombre')
+            ->join('usuarios', 'alumnos_pertenecen_grupos.idAlumnos', '=', 'usuarios.id')
+            ->where('alumnos_pertenecen_grupos.idGrupo', $request->idGrupo)
+            ->get();
+        return $alumnos;
+    }
+
+    /**
+     * @param Request $request
+     * @param $a
+     * @return \Illuminate\Support\Collection
+     */
+    public function cantidadFaltasPorAlumno(Request $request, $a): \Illuminate\Support\Collection
+    {
+        $cantFaltas = DB::table('agenda_clase_virtual')
+            ->select(DB::raw('count(*) as totalClase'))
+            ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
+            ->where('agenda_clase_virtual.idMateria', $request->idMateria)
+            ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+            ->where('lista_aula_virtual.idAlumnos', $a->idAlumnos)
+            ->where('lista_aula_virtual.asistencia', '0')
+            ->get();
+        return $cantFaltas;
+    }
+
+    /**
+     * @param $a
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function datosPrimeraEntrega($a, Request $request): \Illuminate\Support\Collection
+    {
+        $primera_entrega = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno', 'tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
+            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
+            ->join('usuarios', 'usuarios.id', '=', 'alumno_entrega_tareas.idAlumnos')
+            ->leftJoin('re_hacer_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idAlumnos')
+            ->where('alumno_entrega_tareas.idAlumnos', $a->idAlumnos)
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->get();
+        return $primera_entrega;
+    }
+
+    /**
+     * @param $a
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function datosSegundaEntrega($a, Request $request): \Illuminate\Support\Collection
+    {
+        $segunda_entrega = DB::table('re_hacer_tareas')
+            ->select('re_hacer_tareas.calificacion')
+            ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('alumno_entrega_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
+            ->join('tareas', 'tareas.id', '=', 're_hacer_tareas.idTareas')
+            ->where('alumno_entrega_tareas.idAlumnos', $a->idAlumnos)
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->get();
+        return $segunda_entrega;
+    }
+
+    /**
+     * @param $request
+     * @return void
+     * @throws \Exception
+     */
+    public function subirArchivosEntrega($request): void
+    {
+        for ($i = 0; $i < count($request->nombresArchivo); $i++) {
+            $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
+            Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+            $archivosEntrega = new archivosEntrega;
+            $archivosEntrega->idTareas = $request->idTareas;
+            $archivosEntrega->idAlumnos = $request->idAlumnos;
+            $archivosEntrega->nombreArchivo = $nombreArchivo;
+            $archivosEntrega->save();
+        }
+    }
+
+    /**
+     * @param $request
+     * @return void
+     * @throws \Exception
+     */
+    public function subirArchivosReHacerTarea($request): void
+    {
+        for ($i = 0; $i < count($request->nombresArchivo); $i++) {
+            $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
+            Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+            $archivosReHacer = new archivosReHacerTarea;
+            $archivosReHacer->idTareas = $request->idTareas;
+            $archivosReHacer->idTareasNueva = $request->idTareas;
+            $archivosReHacer->idAlumnos = $request->idAlumnos;
+            $archivosReHacer->nombreArchivo = $nombreArchivo;
+            $archivosReHacer->save();
+        }
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllEntregasGrupoMateria(Request $request): \Illuminate\Support\Collection
+    {
+        $entregas = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
+            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
+            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
+            ->whereNull('alumno_entrega_tareas.calificacion')
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->orderBy('alumno_entrega_tareas.created_at', 'desc')
+            ->get();
+        return $entregas;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getEntregasCorregidasGrupoMateria(Request $request): \Illuminate\Support\Collection
+    {
+        $entregasCorregidas = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
+            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
+            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
+            ->whereNotNull('alumno_entrega_tareas.calificacion')
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->orderBy('alumno_entrega_tareas.created_at', 'desc')
+            ->get();
+        return $entregasCorregidas;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllEntregasReHacerGrupoMateria(Request $request): \Illuminate\Support\Collection
+    {
+        $entregasReHacer = DB::table('re_hacer_tareas')
+            ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
+            ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
+            ->join('tareas', 're_hacer_tareas.idTareas', '=', 'tareas.id')
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->where('re_hacer_tareas.idTareas', $request->idTareas)
+            ->whereNull('re_hacer_tareas.calificacion')
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->orderBy('re_hacer_tareas.created_at', 'desc')
+            ->get();
+        return $entregasReHacer;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getEntregasReHacerCorregidasGrupoMateria(Request $request): \Illuminate\Support\Collection
+    {
+        $entregasReHacerCorregidas = DB::table('re_hacer_tareas')
+            ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
+            ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
+            ->join('tareas', 're_hacer_tareas.idTareas', '=', 'tareas.id')
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->where('re_hacer_tareas.idTareas', $request->idTareas)
+            ->whereNotNull('re_hacer_tareas.calificacion')
+            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->orderBy('re_hacer_tareas.created_at', 'desc')
+            ->get();
+        return $entregasReHacerCorregidas;
+    }
+
+    /**
+     * @param $request
+     * @return void
+     */
+    public function subirEntrega($request): void
+    {
+        $alumnoTarea = new AlumnoEntrega;
+        $alumnoTarea->idTareas = $request->idTareas;
+        $alumnoTarea->idAlumnos = $request->idAlumnos;
+        $alumnoTarea->mensaje = $request->mensaje;
+        $alumnoTarea->re_hacer = 0;
+        $alumnoTarea->save();
+    }
+
+    /**
+     * @param $request
+     * @return void
+     */
+    public function subirReHacerTarea($request): void
+    {
+        $alumnoReHacer = new AlumnoReHacerTarea;
+        $alumnoReHacer->idTareasNueva = $request->idTareas;
+        $alumnoReHacer->idTareas = $request->idTareas;
+        $alumnoReHacer->idAlumnos = $request->idAlumnos;
+        $alumnoReHacer->mensaje = $request->mensaje;
+        $alumnoReHacer->save();
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getEntregasAlumno(Request $request): \Illuminate\Support\Collection
+    {
+        $entregas = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'alumno_entrega_tareas.re_hacer AS re_hacer', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
+            ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
+            ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
+            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
+            ->orderBy('alumno_entrega_tareas.created_at', 'desc')
+            ->get();
+        return $entregas;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getEntregaAlumno(Request $request): \Illuminate\Support\Collection
+    {
+        $peticionSQL = DB::table('alumno_entrega_tareas')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensaje', 'usuarios.nombre AS nombreUsuario')
+            ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
+            ->where('alumno_entrega_tareas.idTareas', $request->idTareas)
+            ->where('alumno_entrega_tareas.idAlumnos', $request->idAlumnos)
+            ->get();
+        return $peticionSQL;
+    }
+
+    /**
+     * @param $p
+     * @return \Illuminate\Support\Collection
+     */
+    public function getArchivosEntrega($p): \Illuminate\Support\Collection
+    {
+        $peticionSQLFiltrada = DB::table('archivos_entrega')
+            ->select('id AS idArchivo', 'nombreArchivo AS archivo')
+            ->where('idTareas', $p->idTareas)
+            ->where('idAlumnos', $p->idAlumnos)
+            ->distinct()
+            ->get();
+        return $peticionSQLFiltrada;
+    }
+
+    /**
+     * @param $postAuthor
+     * @return \Illuminate\Support\Collection
+     */
+    public function getImgPerfil($postAuthor): \Illuminate\Support\Collection
+    {
+        $imgPerfil = DB::table('usuarios')
+            ->select('imagen_perfil')
+            ->where('id', $postAuthor)
+            ->get();
+        return $imgPerfil;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getReHacerEntregaAlumno(Request $request): \Illuminate\Support\Collection
+    {
+        $peticionSQL = DB::table('re_hacer_tareas')
+            ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.created_at AS fecha', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario')
+            ->join('usuarios', 're_hacer_tareas.idAlumnos', '=', 'usuarios.id')
+            ->where('re_hacer_tareas.idTareas', $request->idTareas)
+            ->where('re_hacer_tareas.idAlumnos', $request->idAlumnos)
+            ->get();
+        return $peticionSQL;
+    }
+
+    /**
+     * @param $p
+     * @return \Illuminate\Support\Collection
+     */
+    public function getArchivosReHacerEntrega($p): \Illuminate\Support\Collection
+    {
+        $peticionSQLFiltrada = DB::table('archivos_re_hacer_tarea')
+            ->select('id AS idArchivo', 'nombreArchivo AS archivo')
+            ->where('idTareas', $p->idTareas)
+            ->where('idAlumnos', $p->idAlumnos)
+            ->distinct()
+            ->get();
+        return $peticionSQLFiltrada;
     }
 }

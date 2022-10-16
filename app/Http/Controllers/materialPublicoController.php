@@ -15,31 +15,16 @@ class materialPublicoController extends Controller
     public function index(Request $request)
     {
         if($request->idUsuario){
-            $peticionSQL = DB::table('material_publicos')
-            ->select('material_publicos.id', 'material_publicos.imgEncabezado', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
-            ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
-            ->where('material_publicos.idUsuario', $request->idUsuario)
-            ->orderBy('id', 'desc')
-            ->take($request->limit)
-            ->get();
+            $peticionSQL = $this->getMaterialPublicoForUsuario($request);
         }else{
-            $peticionSQL = DB::table('material_publicos')
-            ->select('material_publicos.id', 'material_publicos.imgEncabezado', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
-            ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
-            ->orderBy('id', 'desc')
-            ->take($request->limit)
-            ->get();
+            $peticionSQL = $this->getMaterialPublico($request);
         }
-      
+
         $dataResponse = array();
 
 
         foreach ($peticionSQL as $p) {
-            $peticionSQLFiltrada = DB::table('archivos_material_publico')
-                ->select('nombreArchivo AS archivo')
-                ->where('idMaterialPublico', $p->id)
-                ->distinct()
-                ->get();
+            $peticionSQLFiltrada = $this->getArchivosMaterialPublico($p);
 
             $p->imgEncabezado = base64_encode(Storage::disk('ftp')->get($p->imgEncabezado));
 
@@ -50,7 +35,7 @@ class materialPublicoController extends Controller
                 array_push($arrayArchivos, $p2->archivo);
             }
 
-            
+
             $datos = [
                 "id" => $p->id,
                 "imagenEncabezado" => $p->imgEncabezado,
@@ -73,25 +58,15 @@ class materialPublicoController extends Controller
 
     public function store(Request $request)
     {
-        
-        $materialPublico = new material_publico;
-        $materialPublico->idUsuario = $request->idUsuario;
-        $materialPublico->titulo = $request->titulo;
-        $materialPublico->mensaje = $request->mensaje;
-        $materialPublico->imgEncabezado = "encabezadoPredeterminado.jpg";
-        $materialPublico->save();
+
+        $this->agregarMaterialPublico($request);
 
         $idDatos = DB::table('material_publicos')->orderBy('created_at', 'desc')->limit(1)->get('id');
 
         if ($request->archivos) {
 
             for ($i = 0; $i < count($request->nombresArchivo); $i++) {
-                $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
-                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
-                $archivosForo = new archivos_material_publico;
-                $archivosForo->idMaterialPublico = $idDatos[0]->id;
-                $archivosForo->nombreArchivo = $nombreArchivo;
-                $archivosForo->save();
+                $this->subirArchivoMaterialPublico($request, $i, $idDatos[0]);
             }
         }
 
@@ -105,9 +80,7 @@ class materialPublicoController extends Controller
         $materialPublico = material_publico::where('id', $request->id)->first();
         $arhivosMaterialPublico = archivos_material_publico::where('idMaterialPublico', $request->id)->get();
         foreach ($arhivosMaterialPublico as $p) {
-            Storage::disk('ftp')->delete($p->nombreArchivo);
-            $arhivosId = archivos_material_publico::where('id', $p->id)->first();
-            $arhivosId->delete();
+            $this->deleteArchivosMaterialPublico($p);
         }
         try {
             $materialPublico->delete();
@@ -116,5 +89,92 @@ class materialPublicoController extends Controller
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getMaterialPublicoForUsuario(Request $request): \Illuminate\Support\Collection
+    {
+        $peticionSQL = DB::table('material_publicos')
+            ->select('material_publicos.id', 'material_publicos.imgEncabezado', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
+            ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
+            ->where('material_publicos.idUsuario', $request->idUsuario)
+            ->orderBy('id', 'desc')
+            ->take($request->limit)
+            ->get();
+        return $peticionSQL;
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Support\Collection
+     */
+    public function getMaterialPublico(Request $request): \Illuminate\Support\Collection
+    {
+        $peticionSQL = DB::table('material_publicos')
+            ->select('material_publicos.id', 'material_publicos.imgEncabezado', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
+            ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
+            ->orderBy('id', 'desc')
+            ->take($request->limit)
+            ->get();
+        return $peticionSQL;
+    }
+
+    /**
+     * @param $p
+     * @return \Illuminate\Support\Collection
+     */
+    public function getArchivosMaterialPublico($p): \Illuminate\Support\Collection
+    {
+        $peticionSQLFiltrada = DB::table('archivos_material_publico')
+            ->select('nombreArchivo AS archivo')
+            ->where('idMaterialPublico', $p->id)
+            ->distinct()
+            ->get();
+        return $peticionSQLFiltrada;
+    }
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function agregarMaterialPublico(Request $request): void
+    {
+        $materialPublico = new material_publico;
+        $materialPublico->idUsuario = $request->idUsuario;
+        $materialPublico->titulo = $request->titulo;
+        $materialPublico->mensaje = $request->mensaje;
+        $materialPublico->imgEncabezado = "encabezadoPredeterminado.jpg";
+        $materialPublico->save();
+    }
+
+    /**
+     * @param Request $request
+     * @param int $i
+     * @param $idDatos
+     * @return void
+     * @throws \Exception
+     */
+    public function subirArchivoMaterialPublico(Request $request, int $i, $idDatos): void
+    {
+        $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
+        Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+        $archivosForo = new archivos_material_publico;
+        $archivosForo->idMaterialPublico = $idDatos->id;
+        $archivosForo->nombreArchivo = $nombreArchivo;
+        $archivosForo->save();
+    }
+
+    /**
+     * @param $p
+     * @return void
+     */
+    public function deleteArchivosMaterialPublico($p): void
+    {
+        Storage::disk('ftp')->delete($p->nombreArchivo);
+        $arhivosId = archivos_material_publico::where('id', $p->id)->first();
+        $arhivosId->delete();
     }
 }
