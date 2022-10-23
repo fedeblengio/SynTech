@@ -46,6 +46,7 @@ Route::get('/foros', 'App\Http\Controllers\ProfesorEscribeForo@index')->middlewa
 Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show')->middleware('verificar_token'); //SE UsA
 Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store')->middleware('verificar_token'); //SE UsA
 Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy')->middleware('verificar_token'); //SE UsA
+Route::get('/traerGrupos', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos')->middleware('verificar_token');
 //
 
 // MATERIAS DADO UN GRUPO 

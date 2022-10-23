@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\datosForo;
 use App\Models\Foro;
 use App\Models\archivosForo;
+use App\Models\alumnoGrupo;
+use App\Http\Controllers\ProfesorGrupo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Http\Controllers\RegistrosController;
@@ -18,6 +20,22 @@ class ProfesorEscribeForo extends Controller
         return response()->json(ProfesorForoGrupo::where('idMateria', $request->idMateria)
             ->where('idGrupo', $request->idGrupo)->first());
     }
+
+    public function traerGrupos(Request $request){
+        if($request->ou == 'Profesor'){
+            $request["idProfesor"] = $request->idUsuario;
+            return ProfesorGrupo::listarProfesorGrupo($request);
+        }else if ($request->ou == 'Alumno'){
+            return self::traerGruposAlumnos($request);
+        }
+    }
+
+ 
+    public function traerGruposAlumnos($request){
+        $gruposAlumno=alumnoGrupo::select('idGrupo')->where('idAlumnos', $request->idUsuario)->get();
+        return response()->json($gruposAlumno);
+    }
+
 
     public function traerArchivo(Request $request)
     {
@@ -151,9 +169,8 @@ class ProfesorEscribeForo extends Controller
 
     public function traerPublicacionesAlumno($request)
     {
-        $idGrupo = $this->getIdGrupoAlumno($request);
 
-        $peticionSQL = $this->getPublicacionesForoForGrupo($idGrupo[0], $request);
+        $peticionSQL = $this->getPublicacionesForoForGrupo($request);
 
         $dataResponse = array();
 
@@ -204,9 +221,8 @@ class ProfesorEscribeForo extends Controller
 
     public function traerPublicacionesAlumnoMateria($request)
     {
-        $idGrupo = $this->getIdGrupoAlumno($request);
 
-        $peticionSQL = $this->getPublicacionesForoMateriaForGrupo($idGrupo[0], $request);
+        $peticionSQL = $this->getPublicacionesForoMateriaForGrupo($request);
 
         $dataResponse = array();
 
@@ -305,6 +321,7 @@ class ProfesorEscribeForo extends Controller
             ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
+            ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
             ->where('grupos_tienen_profesor.deleted_at', NULL)
             ->orderBy('id', 'desc')
             ->take($request->limit)
@@ -353,6 +370,7 @@ class ProfesorEscribeForo extends Controller
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
             ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
+            ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
             ->orderBy('id', 'desc')
             ->take($request->limit)
             ->get();
@@ -378,14 +396,14 @@ class ProfesorEscribeForo extends Controller
      * @param $request
      * @return \Illuminate\Support\Collection
      */
-    public function getPublicacionesForoForGrupo($idGrupo, $request): \Illuminate\Support\Collection
+    public function getPublicacionesForoForGrupo($request): \Illuminate\Support\Collection
     {
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
             ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
-            ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo->idGrupo)
+            ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
             ->orderBy('id', 'desc')
             ->take($request->limit)
             ->distinct()
@@ -398,14 +416,14 @@ class ProfesorEscribeForo extends Controller
      * @param $request
      * @return \Illuminate\Support\Collection
      */
-    public function getPublicacionesForoMateriaForGrupo($idGrupo, $request): \Illuminate\Support\Collection
+    public function getPublicacionesForoMateriaForGrupo($request): \Illuminate\Support\Collection
     {
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
             ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
-            ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo->idGrupo)
+            ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
             ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
             ->orderBy('id', 'desc')
             ->take($request->limit)
