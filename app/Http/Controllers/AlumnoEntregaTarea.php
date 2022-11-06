@@ -165,15 +165,15 @@ class AlumnoEntregaTarea extends Controller
                 $cantFaltas = self::cantidadFaltasPorAlumno($request, $a);
 
                 $primera_entrega = self::datosPrimeraEntrega($a, $request);
-                foreach ($primera_entrega as $p) {
-                $sumaNotaPrimera = $sumaNotaPrimera + $p->calificacion;
-
-            }
-
-
                 $segunda_entrega = self::datosSegundaEntrega($a, $request);
                 foreach ($segunda_entrega as $s){
-                $sumaNotaSegunda = $sumaNotaSegunda + $s->calificacion;
+                    foreach ($primera_entrega as $p) {
+                        if($p->idTareas == $s->idTareas){ 
+                            $sumaNotaSegunda = $sumaNotaSegunda + $s->calificacion;
+                        }else{
+                            $sumaNotaPrimera = $sumaNotaPrimera + $p->calificacion;
+                        } 
+                    }       
             }
 
             $sumaTotal=$sumaNotaPrimera+$sumaNotaSegunda;
@@ -729,7 +729,7 @@ class AlumnoEntregaTarea extends Controller
     public function datosSegundaEntrega($a, Request $request): \Illuminate\Support\Collection
     {
         $segunda_entrega = DB::table('re_hacer_tareas')
-            ->select('re_hacer_tareas.calificacion')
+            ->select('re_hacer_tareas.calificacion', 're_hacer_tareas.idTareas')
             ->join('profesor_crea_tareas', 're_hacer_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
             ->join('alumno_entrega_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
             ->join('tareas', 'tareas.id', '=', 're_hacer_tareas.idTareas')

@@ -191,17 +191,15 @@ class ProfesorCreaTarea extends Controller
 
     public function consultaAlumno(Request $request)
     {
-        $idGrupo = $this->getIdGrupoAlumno($request);
-
         $variable =  $request->idUsuario;
-        $variable2 = $idGrupo[0]->idGrupo;
+        $variable2 = $request->idGrupo;
         $variable3 = $request->idMateria;
         if ($request->idMateria){
             $peticionSQL = $this->getTareasMateriaForAlumno($variable, $variable2, $variable3);
-            $peticionSQL2 = $this->getReHacerTareasMateriaForAlumno($idGrupo[0], $request);
+            $peticionSQL2 = $this->getReHacerTareasMateriaForAlumno($request);
         }else{
             $peticionSQL = $this->getTareasForAlumno($variable, $variable2);
-            $peticionSQL2 = $this->getReHacerTareasForAlumno($idGrupo[0], $request);
+            $peticionSQL2 = $this->getReHacerTareasForAlumno($request);
         }
 
 
@@ -288,21 +286,21 @@ class ProfesorCreaTarea extends Controller
     {
 
         $eliminarTarea = Tarea::where('id', $request->idTareas)->first();
-        $eliminarArhivos = archivosTarea::where('idTarea', $request->idTareas)->get();
+        $eliminarArchivos = archivosTarea::where('idTarea', $request->idTareas)->get();
         $eliminarArhivosReHacer = archivosReHacerTarea::where('idTareas', $request->idTareas)->get();
         $eliminarArhivosEntrega = archivosEntrega::where('idTareas', $request->idTareas)->get();
-         try {
-             $this->deleteReHacerTareas($eliminarArhivosReHacer, $request);
-             $this->deleteEntregasTareas($eliminarArhivosEntrega, $request);
-             $this->deleteTareaProfesor($eliminarArhivos, $request, $eliminarTarea);
+          /* try { */
+             self::deleteReHacerTareas($eliminarArhivosReHacer, $request);
+             self::deleteEntregasTareas($eliminarArhivosEntrega, $request);
+             self::deleteTareaProfesor($eliminarArchivos, $request, $eliminarTarea);
 
              RegistrosController::store("TAREA",$request->header('token'),"DELETE",$eliminarTarea->titulo);
 
 
              return response()->json(['status' => 'Success'], 200);
-            } catch (\Throwable $th) {
+           /*   } catch (\Throwable $th) {  */
             return response()->json(['status' => 'Bad Request'], 400);
-         }
+          /* }  */
     }
 
     /**
@@ -458,7 +456,7 @@ class ProfesorCreaTarea extends Controller
      * @param Request $request
      * @return \Illuminate\Support\Collection
      */
-    public function getReHacerTareasMateriaForAlumno($idGrupo, Request $request): \Illuminate\Support\Collection
+    public function getReHacerTareasMateriaForAlumno(Request $request): \Illuminate\Support\Collection
     {
         $peticionSQL2 = DB::table('profesor_crea_tareas')
             ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
@@ -467,7 +465,7 @@ class ProfesorCreaTarea extends Controller
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
             ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.id')
-            ->where('profesor_crea_tareas.idGrupo', $idGrupo->idGrupo)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
             ->where('alumno_entrega_tareas.idAlumnos', $request->idUsuario)
             ->where('profesor_crea_tareas.idMateria', $request->idMateria)
             ->where('alumno_entrega_tareas.re_hacer', "1")
@@ -495,7 +493,7 @@ class ProfesorCreaTarea extends Controller
      * @param Request $request
      * @return \Illuminate\Support\Collection
      */
-    public function getReHacerTareasForAlumno($idGrupo, Request $request): \Illuminate\Support\Collection
+    public function getReHacerTareasForAlumno(Request $request): \Illuminate\Support\Collection
     {
         $peticionSQL2 = DB::table('profesor_crea_tareas')
             ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
@@ -504,7 +502,7 @@ class ProfesorCreaTarea extends Controller
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
             ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.id')
-            ->where('profesor_crea_tareas.idGrupo', $idGrupo->idGrupo)
+            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
             ->where('alumno_entrega_tareas.idAlumnos', $request->idUsuario)
             ->where('alumno_entrega_tareas.re_hacer', "1")
             ->orderBy('profesor_crea_tareas.idTareas', 'desc')
@@ -534,15 +532,15 @@ class ProfesorCreaTarea extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function deleteReHacerTareas($eliminarArhivosReHacer, Request $request)
+    public function deleteReHacerTareas($eliminarArchivosReHacer, Request $request)
     {
-        foreach ($eliminarArhivosReHacer as $t) {
+        foreach ($eliminarArchivosReHacer as $t) {
             Storage::disk('ftp')->delete($t->nombreArchivo);
-            $arhivosId = archivosReHacerTarea::where('id', $t->id)->first();
-            $arhivosId->delete();
+            $archivosId = archivosReHacerTarea::where('id', $t->id)->first();
+            $archivosId->delete();
         }
         DB::delete('delete from re_hacer_tareas where idTareas="' . $request->idTareas . '";');
-        return $arhivosId;
+        
     }
 
     /**
@@ -550,15 +548,15 @@ class ProfesorCreaTarea extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function deleteEntregasTareas($eliminarArhivosEntrega, Request $request)
+    public function deleteEntregasTareas($eliminarArchivosEntrega, Request $request)
     {
-        foreach ($eliminarArhivosEntrega as $u) {
+        foreach ($eliminarArchivosEntrega as $u) {
             Storage::disk('ftp')->delete($u->nombreArchivo);
-            $arhivosId = archivosEntrega::where('id', $u->id)->first();
-            $arhivosId->delete();
+            $archivosId = archivosEntrega::where('id', $u->id)->first();
+            $archivosId->delete();
         }
         DB::delete('delete from alumno_entrega_tareas where idTareas="' . $request->idTareas . '";');
-        return $arhivosId;
+      
     }
 
     /**
@@ -567,12 +565,12 @@ class ProfesorCreaTarea extends Controller
      * @param $eliminarTarea
      * @return void
      */
-    public function deleteTareaProfesor($eliminarArhivos, Request $request, $eliminarTarea): void
+    public function deleteTareaProfesor($eliminarArchivos, Request $request, $eliminarTarea): void
     {
-        foreach ($eliminarArhivos as $p) {
+        foreach ($eliminarArchivos as $p) {
             Storage::disk('ftp')->delete($p->nombreArchivo);
-            $arhivosId = archivosTarea::where('id', $p->id)->first();
-            $arhivosId->delete();
+            $archivosId = archivosTarea::where('id', $p->id)->first();
+            $archivosId->delete();
         }
         DB::delete('delete from profesor_crea_tareas where idTareas="' . $request->idTareas . '";');
         $eliminarTarea->delete();
