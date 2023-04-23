@@ -322,7 +322,7 @@ class ProfesorEscribeForo extends Controller
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
             ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
-            ->where('grupos_tienen_profesor.deleted_at', NULL)
+            
             ->orderBy('id', 'desc')
             ->take($request->limit)
             ->distinct()
@@ -386,7 +386,6 @@ class ProfesorEscribeForo extends Controller
         $idGrupo = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
             ->where('alumnos_pertenecen_grupos.idAlumnos', $request->idUsuario)
-            ->where('alumnos_pertenecen_grupos.deleted_at', NULL)
             ->get();
         return $idGrupo;
     }

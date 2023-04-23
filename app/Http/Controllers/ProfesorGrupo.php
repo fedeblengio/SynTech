@@ -16,7 +16,6 @@ class ProfesorGrupo extends Controller
                           ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
                           ->join('usuarios', 'usuarios.id', '=', 'grupos_tienen_profesor.idProfesor')
                           ->where('idProfesor', $request->idProfesor)
-                          ->where('grupos_tienen_profesor.deleted_at', NULL)
                           ->get();
 
         return response()->json($profesor_grupo);
@@ -32,7 +31,6 @@ class ProfesorGrupo extends Controller
             ->join('usuarios', 'usuarios.id', '=', 'grupos_tienen_profesor.idProfesor')
             ->where('grupos_tienen_profesor.idGrupo', $request->idGrupo)
             ->where('grupos_tienen_profesor.idProfesor', $request->idUsuario)
-            ->where('grupos_tienen_profesor.deleted_at', NULL)
             ->get();
         }else{
             $materias=DB::table('grupos_tienen_profesor')

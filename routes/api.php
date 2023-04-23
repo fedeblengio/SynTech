@@ -13,11 +13,7 @@ use Illuminate\Support\Facades\DB;
 |
 */
 
-// TESTING CODE SIMPLE NOTE
-Route::get('/test', function () {
-  return  "sadasd";
-});
-//
+
 
 
 
