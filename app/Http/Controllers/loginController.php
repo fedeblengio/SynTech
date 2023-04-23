@@ -100,8 +100,6 @@ class loginController extends Controller
     }
 
 
-
-
     public function cargarImagen(Request $request)
     {
         try {

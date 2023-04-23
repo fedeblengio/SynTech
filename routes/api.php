@@ -18,15 +18,21 @@ Route::post('/login', 'App\Http\Controllers\loginController@connect');
 //
 
 Route::middleware(['verificar_token'])->group(function () {
+
+  // GET AND POST PROFILE IMAGE
   Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen');
   Route::get('/imagen-perfil/{id}', 'App\Http\Controllers\loginController@traerImagen');
+  // MATERIAS DADO UN GRUPO 
+  Route::get('/grupo/{id}/materia', 'App\Http\Controllers\ProfesorGrupo@listarMateriasGrupo');
+  //
+  // FTP GET FILE
+  Route::get('/archivo/{archivo}', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); 
+  //
 });
 
 
 
-// FTP SAVE FILE
-Route::get('/traerArchivo', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); //SE UsA
-//
+
 
 
 
@@ -48,9 +54,7 @@ Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy')->middl
 Route::get('/traerGrupos', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos')->middleware('verificar_token');
 //
 
-// MATERIAS DADO UN GRUPO 
-Route::get('/listarMaterias', 'App\Http\Controllers\ProfesorGrupo@listarMateriasGrupo')->middleware('verificar_token'); //SE UsA
-//
+
 
 // GRUPOS MATERIA DADO UN PROFESOR
 Route::get('/profesor-grupo', 'App\Http\Controllers\ProfesorGrupo@listarProfesorGrupo')->middleware('verificar_token'); //SE UsA

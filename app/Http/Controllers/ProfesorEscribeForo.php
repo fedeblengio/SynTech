@@ -37,9 +37,16 @@ class ProfesorEscribeForo extends Controller
     }
 
 
-    public function traerArchivo(Request $request)
+    public function traerArchivo($archivo)
     {
-        return Storage::disk('ftp')->get($request->archivo);
+        if(empty($archivo)){
+            return response()->json(['error' => 'Archivo no encontrado'], 404);
+        }
+        try{
+            return Storage::disk('ftp')->get($archivo);
+        }catch(\Exception $e){
+            return response()->json(['error' => 'Archivo no encontrado'], 404);
+        }
     }
 
     public function show(Request $request)
