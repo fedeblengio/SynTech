@@ -144,9 +144,9 @@ class loginController extends Controller
         }
     }
 
-    public function traerImagen(Request $request)
+    public function traerImagen($id)
     {
-        $usuario = usuarios::where('id', $request->username)->first();
+        $usuario = usuarios::findOrFail($id);
         $base64imagen = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
         return $base64imagen;
     }

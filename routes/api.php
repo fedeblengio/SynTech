@@ -13,7 +13,14 @@ use Illuminate\Support\Facades\DB;
 |
 */
 
+// LOGIN
+Route::post('/login', 'App\Http\Controllers\loginController@connect'); 
+//
 
+Route::middleware(['verificar_token'])->group(function () {
+  Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen');
+  Route::get('/imagen-perfil/{id}', 'App\Http\Controllers\loginController@traerImagen');
+});
 
 
 
@@ -21,14 +28,10 @@ use Illuminate\Support\Facades\DB;
 Route::get('/traerArchivo', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); //SE UsA
 //
 
-// LOGIN
-Route::post('/login', 'App\Http\Controllers\loginController@connect'); //SE UsA
-//
+
 
 // USUARIOS
-Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen')->middleware('verificar_token'); //SE UsA
-// TRAER IMAGEN FTP B64
-Route::get('/imagen-perfil', 'App\Http\Controllers\loginController@traerImagen')->middleware('verificar_token'); //SE UsA
+
 // CAMBIAR CONTRASEÑA
 Route::put('/usuario', 'App\Http\Controllers\usuariosController@update')->middleware('verificar_token'); //SE UsA
 // CAMBIAR EMAIL Y GENERO
