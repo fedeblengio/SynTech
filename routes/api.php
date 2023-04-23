@@ -28,8 +28,17 @@ Route::middleware(['verificar_token'])->group(function () {
   // FTP GET FILE
   Route::get('/archivo/{archivo}', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); 
   //
+
+  //USUARIO
+  Route::put('/usuario/{id}/contrasenia', 'App\Http\Controllers\usuariosController@changePassword');
+  Route::put('/usuario/{id}', 'App\Http\Controllers\usuariosController@updateUserInfo');
+  Route::get('/usuario/{id}','App\Http\Controllers\usuariosController@show');
 });
 
+
+// LISTAR TODOS DATOS DE UN USUARIO 
+
+//
 
 
 
@@ -38,13 +47,7 @@ Route::middleware(['verificar_token'])->group(function () {
 
 // USUARIOS
 
-// CAMBIAR CONTRASEÑA
-Route::put('/usuario', 'App\Http\Controllers\usuariosController@update')->middleware('verificar_token'); //SE UsA
-// CAMBIAR EMAIL Y GENERO
-Route::put('/usuario-db', 'App\Http\Controllers\usuariosController@update_db')->middleware('verificar_token'); //SE UsA
-// LISTAR TODOS DATOS DE UN USUARIO 
-Route::get('/usuario','App\Http\Controllers\usuariosController@show')->middleware('verificar_token'); //SE UsA
-//
+
 
 //FORO PRINCIPAL PUBLICACIONES  
 Route::get('/foros', 'App\Http\Controllers\ProfesorEscribeForo@index')->middleware('verificar_token'); //SE UsA
