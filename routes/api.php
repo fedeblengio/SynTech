@@ -24,36 +24,23 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::get('/imagen-perfil/{id}', 'App\Http\Controllers\loginController@traerImagen');
   // MATERIAS DADO UN GRUPO 
   Route::get('/grupo/{id}/materia', 'App\Http\Controllers\ProfesorGrupo@listarMateriasGrupo');
-  //
   // FTP GET FILE
   Route::get('/archivo/{archivo}', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); 
-  //
-
   //USUARIO
   Route::put('/usuario/{id}/contrasenia', 'App\Http\Controllers\usuariosController@changePassword');
   Route::put('/usuario/{id}', 'App\Http\Controllers\usuariosController@updateUserInfo');
   Route::get('/usuario/{id}','App\Http\Controllers\usuariosController@show');
+  //FORO PRINCIPAL PUBLICACIONES
+  Route::get('/foro/grupo/{idGrupo}/materia/{idMateria}', 'App\Http\Controllers\ProfesorEscribeForo@getForoId');
+  Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show');
+  Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store');
+  Route::delete('/foro/{id}','App\Http\Controllers\ProfesorEscribeForo@destroy');
+
+  //
 });
 
 
-// LISTAR TODOS DATOS DE UN USUARIO 
 
-//
-
-
-
-
-
-
-// USUARIOS
-
-
-
-//FORO PRINCIPAL PUBLICACIONES  
-Route::get('/foros', 'App\Http\Controllers\ProfesorEscribeForo@index')->middleware('verificar_token'); //SE UsA
-Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show')->middleware('verificar_token'); //SE UsA
-Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store')->middleware('verificar_token'); //SE UsA
-Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy')->middleware('verificar_token'); //SE UsA
 Route::get('/traerGrupos', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos')->middleware('verificar_token');
 //
 
