@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\usuarios;
 use Illuminate\Support\Facades\Storage;
 use App\Models\datosForo;
 use App\Models\Foro;
@@ -21,20 +22,21 @@ class ProfesorEscribeForo extends Controller
             ->where('idGrupo', $idGrupo)->first());
     }
 
-    public function traerGrupos(Request $request)
+    public function traerGrupos(Request $request,$id)
     {
-        if ($request->ou == 'Profesor') {
-            $request["idProfesor"] = $request->idUsuario;
+        $usuario = usuarios::findOrFail($id);
+        if ($usuario->ou == 'Profesor') {
+            $request["idProfesor"] = $usuario->id;
             return ProfesorGrupo::listarProfesorGrupo($request);
-        } else if ($request->ou == 'Alumno') {
-            return self::traerGruposAlumnos($request);
+        } else if ($usuario->ou == 'Alumno') {
+            return self::traerGruposAlumnos($usuario->id);
         }
     }
 
 
-    public function traerGruposAlumnos($request)
+    public function traerGruposAlumnos($id)
     {
-        $gruposAlumno = alumnoGrupo::select('idGrupo')->where('idAlumnos', $request->idUsuario)->get();
+        $gruposAlumno = alumnoGrupo::select('idGrupo')->where('idAlumnos', $id)->get();
         return response()->json($gruposAlumno);
     }
 

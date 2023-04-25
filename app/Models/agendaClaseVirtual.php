@@ -9,4 +9,14 @@ class agendaClaseVirtual extends Model
 {
     use HasFactory;
     protected $table = 'agenda_clase_virtual';
+
+    protected $fillable = [
+        'idProfesor',
+        'idMateria',
+        'idGrupo',
+        'fecha_inicio',
+        'fecha_fin',
+    ];
+
+
 }

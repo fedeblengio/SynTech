@@ -30,25 +30,25 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::put('/usuario/{id}/contrasenia', 'App\Http\Controllers\usuariosController@changePassword');
   Route::put('/usuario/{id}', 'App\Http\Controllers\usuariosController@updateUserInfo');
   Route::get('/usuario/{id}','App\Http\Controllers\usuariosController@show');
+  Route::get('/usuario/{id}/grupo', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos');
   //FORO PRINCIPAL PUBLICACIONES
   Route::get('/foro/grupo/{idGrupo}/materia/{idMateria}', 'App\Http\Controllers\ProfesorEscribeForo@getForoId');
   Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show');
   Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store');
   Route::delete('/foro/{id}','App\Http\Controllers\ProfesorEscribeForo@destroy');
 
-  //
+  //AGENDA CLASE VIRTUAL
+  Route::get('/agenda-clase/usuario/{id}/grupo/{idGrupo}', 'App\Http\Controllers\AgendaClaseVirtualController@show');
+  Route::get('/agenda-clase/profesor/{idProfesor}/grupo/{idGrupo}/materia', 'App\Http\Controllers\AgendaClaseVirtualController@getMateriasFromProfesorGrupo');
+  Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store');
+  Route::delete('/agenda-clase/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@destroy');
+
+  Route::get('/evento/usuario/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@consultaEventos');
+
+
 });
 
 
-
-Route::get('/traerGrupos', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos')->middleware('verificar_token');
-//
-
-
-
-// GRUPOS MATERIA DADO UN PROFESOR
-Route::get('/profesor-grupo', 'App\Http\Controllers\ProfesorGrupo@listarProfesorGrupo')->middleware('verificar_token'); //SE UsA
-//
 
 // TAREAS
 Route::get('/tareas-corregir', 'App\Http\Controllers\ProfesorCreaTarea@tareasParaCorregir')->middleware('verificar_token'); //SE UsA
@@ -69,14 +69,7 @@ Route::get('/visualizar-entrega', 'App\Http\Controllers\AlumnoEntregaTarea@visua
 Route::get('/promedio', 'App\Http\Controllers\AlumnoEntregaTarea@promedioMateria')->middleware('verificar_token'); //SE UsA
 //
 
-// AGENDA CLASE VIRTUAL
-Route::get('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@show')->middleware('verificar_token'); //SE UsA
-Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store')->middleware('verificar_token'); //SE USA
-/* Route::put('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@update')->middleware('verificar_token'); */
-Route::delete('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@destroy')->middleware('verificar_token'); //SE USA
-Route::get('/agenda-clase-eventos', 'App\Http\Controllers\AgendaClaseVirtualController@consultaEvento')->middleware('verificar_token'); //SE UsA
-Route::get('/agenda-clase-grupos', 'App\Http\Controllers\AgendaClaseVirtualController@consultaGruposMateria')->middleware('verificar_token'); //SE USA
-//
+
 
 // LISTA CLASE VIRTUAL
 Route::post('/lista-clase', 'App\Http\Controllers\GrupoController@store')->middleware('verificar_token'); //SE UsA
@@ -105,13 +98,4 @@ Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); /
 Route::post('/noticia','App\Http\Controllers\materialPublicoController@store')->middleware('verificar_token');
 Route::delete('/noticia','App\Http\Controllers\materialPublicoController@destroy')->middleware('verificar_token');
 //
-
-// ENDPOINTS EQUISDES // USELESS NO BORRAR
-
-//TAREA 
-/* Route::get('/traerTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traerTareasGrupo')->middleware('verificar_token');
-Route::get('/traerArchivoTarea','App\Http\Controllers\ProfesorCreaTarea@traerArchivo'); */
-
-/* Route::get('/tareas','App\Http\Controllers\ProfesorCreaTarea@show')->middleware('verificar_token');
- */
 
