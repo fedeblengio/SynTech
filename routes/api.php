@@ -13,49 +13,42 @@ use Illuminate\Support\Facades\DB;
 |
 */
 
-// TESTING CODE SIMPLE NOTE
-Route::get('/test', function () {
-  return  "sadasd";
-});
-//
-
-
-
-// FTP SAVE FILE
-Route::get('/traerArchivo', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); //SE UsA
-//
-
 // LOGIN
-Route::post('/login', 'App\Http\Controllers\loginController@connect'); //SE UsA
+Route::post('/login', 'App\Http\Controllers\loginController@connect'); 
 //
 
-// USUARIOS
-Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen')->middleware('verificar_token'); //SE UsA
-// TRAER IMAGEN FTP B64
-Route::get('/imagen-perfil', 'App\Http\Controllers\loginController@traerImagen')->middleware('verificar_token'); //SE UsA
-// CAMBIAR CONTRASEÑA
-Route::put('/usuario', 'App\Http\Controllers\usuariosController@update')->middleware('verificar_token'); //SE UsA
-// CAMBIAR EMAIL Y GENERO
-Route::put('/usuario-db', 'App\Http\Controllers\usuariosController@update_db')->middleware('verificar_token'); //SE UsA
-// LISTAR TODOS DATOS DE UN USUARIO 
-Route::get('/usuario','App\Http\Controllers\usuariosController@show')->middleware('verificar_token'); //SE UsA
-//
+Route::middleware(['verificar_token'])->group(function () {
 
-//FORO PRINCIPAL PUBLICACIONES  
-Route::get('/foros', 'App\Http\Controllers\ProfesorEscribeForo@index')->middleware('verificar_token'); //SE UsA
-Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show')->middleware('verificar_token'); //SE UsA
-Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store')->middleware('verificar_token'); //SE UsA
-Route::delete('/foro','App\Http\Controllers\ProfesorEscribeForo@destroy')->middleware('verificar_token'); //SE UsA
-Route::get('/traerGrupos', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos')->middleware('verificar_token');
-//
+  // GET AND POST PROFILE IMAGE
+  Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen');
+  Route::get('/imagen-perfil/{id}', 'App\Http\Controllers\loginController@traerImagen');
+  // MATERIAS DADO UN GRUPO 
+  Route::get('/grupo/{id}/materia', 'App\Http\Controllers\ProfesorGrupo@listarMateriasGrupo');
+  // FTP GET FILE
+  Route::get('/archivo/{archivo}', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); 
+  //USUARIO
+  Route::put('/usuario/{id}/contrasenia', 'App\Http\Controllers\usuariosController@changePassword');
+  Route::put('/usuario/{id}', 'App\Http\Controllers\usuariosController@updateUserInfo');
+  Route::get('/usuario/{id}','App\Http\Controllers\usuariosController@show');
+  Route::get('/usuario/{id}/grupo', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos');
+  //FORO PRINCIPAL PUBLICACIONES
+  Route::get('/foro/grupo/{idGrupo}/materia/{idMateria}', 'App\Http\Controllers\ProfesorEscribeForo@getForoId');
+  Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show');
+  Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store');
+  Route::delete('/foro/{id}','App\Http\Controllers\ProfesorEscribeForo@destroy');
 
-// MATERIAS DADO UN GRUPO 
-Route::get('/listarMaterias', 'App\Http\Controllers\ProfesorGrupo@listarMateriasGrupo')->middleware('verificar_token'); //SE UsA
-//
+  //AGENDA CLASE VIRTUAL
+  Route::get('/agenda-clase/usuario/{id}/grupo/{idGrupo}', 'App\Http\Controllers\AgendaClaseVirtualController@show');
+  Route::get('/agenda-clase/profesor/{idProfesor}/grupo/{idGrupo}/materia', 'App\Http\Controllers\AgendaClaseVirtualController@getMateriasFromProfesorGrupo');
+  Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store');
+  Route::delete('/agenda-clase/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@destroy');
 
-// GRUPOS MATERIA DADO UN PROFESOR
-Route::get('/profesor-grupo', 'App\Http\Controllers\ProfesorGrupo@listarProfesorGrupo')->middleware('verificar_token'); //SE UsA
-//
+  Route::get('/evento/usuario/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@consultaEventos');
+
+
+});
+
+
 
 // TAREAS
 Route::get('/tareas-corregir', 'App\Http\Controllers\ProfesorCreaTarea@tareasParaCorregir')->middleware('verificar_token'); //SE UsA
@@ -76,14 +69,7 @@ Route::get('/visualizar-entrega', 'App\Http\Controllers\AlumnoEntregaTarea@visua
 Route::get('/promedio', 'App\Http\Controllers\AlumnoEntregaTarea@promedioMateria')->middleware('verificar_token'); //SE UsA
 //
 
-// AGENDA CLASE VIRTUAL
-Route::get('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@show')->middleware('verificar_token'); //SE UsA
-Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store')->middleware('verificar_token'); //SE USA
-/* Route::put('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@update')->middleware('verificar_token'); */
-Route::delete('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@destroy')->middleware('verificar_token'); //SE USA
-Route::get('/agenda-clase-eventos', 'App\Http\Controllers\AgendaClaseVirtualController@consultaEvento')->middleware('verificar_token'); //SE UsA
-Route::get('/agenda-clase-grupos', 'App\Http\Controllers\AgendaClaseVirtualController@consultaGruposMateria')->middleware('verificar_token'); //SE USA
-//
+
 
 // LISTA CLASE VIRTUAL
 Route::post('/lista-clase', 'App\Http\Controllers\GrupoController@store')->middleware('verificar_token'); //SE UsA
@@ -112,13 +98,4 @@ Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); /
 Route::post('/noticia','App\Http\Controllers\materialPublicoController@store')->middleware('verificar_token');
 Route::delete('/noticia','App\Http\Controllers\materialPublicoController@destroy')->middleware('verificar_token');
 //
-
-// ENDPOINTS EQUISDES // USELESS NO BORRAR
-
-//TAREA 
-/* Route::get('/traerTareasGrupo','App\Http\Controllers\ProfesorCreaTarea@traerTareasGrupo')->middleware('verificar_token');
-Route::get('/traerArchivoTarea','App\Http\Controllers\ProfesorCreaTarea@traerArchivo'); */
-
-/* Route::get('/tareas','App\Http\Controllers\ProfesorCreaTarea@show')->middleware('verificar_token');
- */
 
