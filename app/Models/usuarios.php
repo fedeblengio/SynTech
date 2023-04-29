@@ -10,4 +10,12 @@ class usuarios extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
+    protected $fillable = [
+        'nombre',
+        'email',
+        'genero',
+    ];
+
+    protected $guarded = ['id','ou'];
 }

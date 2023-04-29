@@ -28,35 +28,20 @@ class loginController extends Controller
     {
 
         $u = usuarios::where('id', $request->username)->first();
-        $grupoProfesor = GruposProfesores::where('idProfesor', $request->username)->first();
-        $grupoAlumno = alumnoGrupo::where('idAlumnos', $request->username)->first();
-
-        switch ($u->ou) {
-            case ('Bedelias');
-                return response()->json(['error' => 'Unauthenticated.'], 401);
-                break;
-            case ('Profesor'):
-                if(!$grupoProfesor){
-                return response()->json(['error' => 'Unauthenticated.'], 401);
-                }
-                break;
-            case ('Alumno'):
-                if(!$grupoAlumno){
-                return response()->json(['error' => 'Unauthenticated.'], 401);
-                }
-                break;
+       
+        if(!$this->isUserValidForSite($u)){
+            
+            return response()->json(['error' => 'Unauthenticated.'], 401);
         }
-
+   
         $connection = new Connection([
-            'hosts' => ['192.168.50.139'],
+            'hosts' => [env('LDAP_HOST')],
         ]);
-
-        $datos = self::traerDatos($u);
-
+    
         $connection->connect();
 
-
         if ($connection->auth()->attempt($request->username . '@syntech.intra', $request->password, $stayBound = true)) {
+            $datos = self::traerDatos($u);
             return [
                 'connection' => 'Success',
                 'datos' => $datos,
@@ -66,9 +51,19 @@ class loginController extends Controller
         }
     }
 
+    private function isUserValidForSite($u){
+
+        $grupoProfesor = GruposProfesores::where('idProfesor', $u->id)->first();
+        $grupoAlumno = alumnoGrupo::where('idAlumnos', $u->id)->first();
+      
+        if($u->ou == 'Bedelias' || $u->ou == 'Profesor' && !$grupoProfesor || $u->ou == 'Alumno' && !$grupoAlumno ){
+            return false;
+        }
+        return true;
+    }
+
     public function traerDatos($u)
     {
-
 
         $datos = [
             "username" => $u->id,
@@ -103,8 +98,6 @@ class loginController extends Controller
         $t->fecha_vencimiento = Carbon::now()->addMinutes(90);
         $t->save();
     }
-
-
 
 
     public function cargarImagen(Request $request)
@@ -144,9 +137,9 @@ class loginController extends Controller
         }
     }
 
-    public function traerImagen(Request $request)
+    public function traerImagen($id)
     {
-        $usuario = usuarios::where('id', $request->username)->first();
+        $usuario = usuarios::findOrFail($id);
         $base64imagen = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
         return $base64imagen;
     }

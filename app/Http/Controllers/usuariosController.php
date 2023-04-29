@@ -13,10 +13,14 @@ use LdapRecord\Models\ActiveDirectory\User;
 
 class usuariosController extends Controller
 {
-    public function update(Request $request)
+    public function changePassword(Request $request,$id)
     {
+        $request->validate([
+            'newPassword' => 'required|string|min:8'
+        ]);
+       
         try {
-            $user = User::find('cn=' . $request->username . ',ou=UsuarioSistema,dc=syntech,dc=intra');
+            $user = User::find('cn=' . $id . ',ou=UsuarioSistema,dc=syntech,dc=intra');
             $user->unicodePwd = $request->newPassword;
             $user->save();
             $user->refresh();
@@ -27,41 +31,34 @@ class usuariosController extends Controller
         }
     }
 
-    public function update_db(Request $request)
+    public function updateUserInfo(Request $request,$id)
     {
+        $request->validate([
+            'nombre' => 'string',
+            'email' => 'email',
+            'genero' => 'string'
+        ]);
+        
+        $usuario = usuarios::findOrFail($id);
         try {
-            $usuarios = usuarios::where('id', $request->username)->first();
-            if ($request->nuevoEmail == null && $request->nuevoNombre == null) {
-                DB::update('UPDATE usuarios SET genero="' . $request->genero . '" ,nombre="' . $usuarios->nombre . '" ,  email="' . $usuarios->email . '" WHERE id="' . $request->username . '";');
-            }
-            if ($request->genero == null && $request->nuevoNombre == null) {
-                DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" , nombre="' . $usuarios->nombre . '" ,  email="' . $request->nuevoEmail . '" WHERE id="' . $request->username . '";');
-            }
-            if ($request->genero == null && $request->nuevoEmail == null) {
-                DB::update('UPDATE usuarios SET genero="' . $usuarios->genero . '" , nombre="' . $request->nuevoNombre . '" ,  email="' . $usuarios->email . '" WHERE id="' . $request->username . '";');
-            }
+            $usuario->fill($request->all());
+            $usuario->save();
             RegistrosController::store("USUARIO",$request->header('token'),"UPDATE","");
-            return response()->json(["token" => self::updateToken($request)], 200);
+            return response()->json(["token" => self::updateToken($request,$id)], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
     }
 
-    public function show(Request $request)
+    public function show($id)
     {
-        $a  = usuarios::where('id', $request->idUsuario)->first();
-        $alumno = [
-            "username" => $a->id,
-            "nombre" => $a->nombre,
-            "email" => $a->email,
-            "ou" => $a->ou,
-            "genero" => $a->genero,
-            "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($a->imagen_perfil)),
-        ];
-        return $alumno;
+        $user  = usuarios::findOrFail($id);
+        $user['username'] = $user->id;
+        $user['imagen_perfil'] = base64_encode(Storage::disk('ftp')->get($user->imagen_perfil));
+        return $user;
     }
 
-    public function updateToken($request)
+    public function updateToken($request,$id)
     {
 
         $t = token::where('token', $request->header('token'))->first();
@@ -69,7 +66,7 @@ class usuariosController extends Controller
             $t->delete();
         }
 
-        $u = usuarios::where('id', $request->username)->first();
+        $u = usuarios::findOrFail($id);
 
         $datos = [
             "username" => $u->id,
