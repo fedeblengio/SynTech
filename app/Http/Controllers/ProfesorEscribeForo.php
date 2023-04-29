@@ -446,7 +446,7 @@ class ProfesorEscribeForo extends Controller
         $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
         Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
         $archivosForo = new archivosForo;
-        $archivosForo->idDato = $idDatos->id;
+        $archivosForo->idDato = $idDatos;
         $archivosForo->idForo = $request->idForo;
         $archivosForo->nombreArchivo = $nombreArchivo;
         $archivosForo->save();
