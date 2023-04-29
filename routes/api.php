@@ -32,7 +32,6 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::get('/usuario/{id}','App\Http\Controllers\usuariosController@show');
   Route::get('/usuario/{id}/grupo', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos');
   //FORO PRINCIPAL PUBLICACIONES
-  Route::get('/foro/grupo/{idGrupo}/materia/{idMateria}', 'App\Http\Controllers\ProfesorEscribeForo@getForoId');
   Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show');
   Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store');
   Route::delete('/foro/{id}','App\Http\Controllers\ProfesorEscribeForo@destroy');
