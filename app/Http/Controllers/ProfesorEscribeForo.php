@@ -287,13 +287,15 @@ class ProfesorEscribeForo extends Controller
     {
         $request->validate(
             [
-                'idForo' => 'required',
+                'idGrupo' => 'required',
+                'idMateria' => 'required',
                 'idUsuario' => 'required',
                 'mensaje' => 'string',
                 'archivos' => 'array | nullable',
                 'nombresArchivo' => 'array | nullable'
             ]
         );
+
 
         $datoForo = $this->agregarDatosForo($request);
         if ($request->archivos) {
@@ -307,9 +309,10 @@ class ProfesorEscribeForo extends Controller
     }
 
     public function agregarDatosForo(Request $request)
-    {
+    {   
+        $foro = ProfesorForoGrupo::where('idGrupo', $request->idGrupo)->where('idMateria', $request->idMateria)->first();
         $datosForo = new datosForo;
-        $datosForo->idForo = $request->idForo;
+        $datosForo->idForo = $foro->idForo;
         $datosForo->idUsuario = $request->idUsuario;
         $datosForo->mensaje = $request->mensaje;
         $datosForo->save();
@@ -443,11 +446,12 @@ class ProfesorEscribeForo extends Controller
 
     public function subirArchivoForo(Request $request, int $i, $idDatos)
     {
+        $foro = ProfesorForoGrupo::where('idGrupo', $request->idGrupo)->where('idMateria', $request->idMateria)->first();
         $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
         Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
         $archivosForo = new archivosForo;
-        $archivosForo->idDato = $idDatos->id;
-        $archivosForo->idForo = $request->idForo;
+        $archivosForo->idDato = $idDatos;
+        $archivosForo->idForo = $foro->idForo;
         $archivosForo->nombreArchivo = $nombreArchivo;
         $archivosForo->save();
     }
