@@ -22,8 +22,7 @@ Route::middleware(['verificar_token'])->group(function () {
   // GET AND POST PROFILE IMAGE
   Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen');
   Route::get('/imagen-perfil/{id}', 'App\Http\Controllers\loginController@traerImagen');
-  // MATERIAS DADO UN GRUPO 
-  Route::get('/grupo/{id}/materia', 'App\Http\Controllers\ProfesorGrupo@listarMateriasGrupo');
+
   // FTP GET FILE
   Route::get('/archivo/{archivo}', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); 
   //USUARIO
@@ -49,7 +48,8 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::delete('/noticia/{id}','App\Http\Controllers\materialPublicoController@destroy'); 
 
   // GRUPO
-  Route::get('/grupo/{idGrupo}/materia/{idMateria}/usuarios', 'App\Http\Controllers\GrupoController@listarUsuariosGrupo');
+  Route::get('/grupo/{id}/materia', 'App\Http\Controllers\ProfesorGrupo@listarMateriasGrupo');
+  Route::get('/grupo/{idGrupo}/materia/{idMateria}/usuarios', 'App\Http\Controllers\GrupoController@listarAlumnos');
 });
 Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); // ENDPOINT PUBLICO
 
@@ -94,9 +94,6 @@ Route::put('/alumnoTarea', 'App\Http\Controllers\AlumnoEntregaTarea@update')->mi
 Route::get('/alumno', 'App\Http\Controllers\alumnos@show')->middleware('verificar_token'); */
 //
 
-// GRUPOS
-Route::get('/listar-alumnos', 'App\Http\Controllers\GrupoController@listarAlumnos')->middleware('verificar_token'); //SE UsA
-//
 
 
 
