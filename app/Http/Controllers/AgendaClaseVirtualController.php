@@ -92,7 +92,7 @@ class AgendaClaseVirtualController extends Controller
 
     private function getAlumnoGrupos($usuario): \Illuminate\Support\Collection
     {
-        return alumnoGrupo::where('idAlumno', $usuario->id)->pluck('idGrupo');
+        return alumnoGrupo::where('idAlumnos', $usuario->id)->pluck('idGrupo');
     }
 
     public function consultaAlumnoEvento($usuario)

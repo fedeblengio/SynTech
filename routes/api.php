@@ -41,11 +41,17 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::get('/agenda-clase/profesor/{idProfesor}/grupo/{idGrupo}/materia', 'App\Http\Controllers\AgendaClaseVirtualController@getMateriasFromProfesorGrupo');
   Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store');
   Route::delete('/agenda-clase/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@destroy');
-
+  // EVENTOS
   Route::get('/evento/usuario/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@consultaEventos');
 
+  // NOTICIA
+  Route::post('/noticia','App\Http\Controllers\materialPublicoController@store');
+  Route::delete('/noticia/{id}','App\Http\Controllers\materialPublicoController@destroy'); 
 
+  // GRUPO
+  Route::get('/grupo/{idGrupo}/materia/{idMateria}/usuarios', 'App\Http\Controllers\GrupoController@listarUsuariosGrupo');
 });
+Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); // ENDPOINT PUBLICO
 
 
 
@@ -92,9 +98,5 @@ Route::get('/alumno', 'App\Http\Controllers\alumnos@show')->middleware('verifica
 Route::get('/listar-alumnos', 'App\Http\Controllers\GrupoController@listarAlumnos')->middleware('verificar_token'); //SE UsA
 //
 
-//NOTICIAS
-Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); //SE UsA
-Route::post('/noticia','App\Http\Controllers\materialPublicoController@store')->middleware('verificar_token');
-Route::delete('/noticia','App\Http\Controllers\materialPublicoController@destroy')->middleware('verificar_token');
-//
+
 
