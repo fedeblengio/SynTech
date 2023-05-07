@@ -334,7 +334,7 @@ class ProfesorCreaTarea extends Controller
     }
 
    
-    public function asignarTarea(Request $request, $idTareas): void
+    public function asignarTarea(Request $request, $idTareas)
     {
         $profesorTareas = new ProfesorTarea;
         $profesorTareas->idMateria = $request->idMateria;
@@ -345,7 +345,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function subirArchivoTarea(Request $request, int $i, $idTareas): void
+    public function subirArchivoTarea(Request $request, int $i, $idTareas)
     {
         $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
         Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
@@ -356,7 +356,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getAlumnosEmail(Request $request): \Illuminate\Support\Collection
+    public function getAlumnosEmail(Request $request)
     {
         $alumnos = DB::table('alumnos_pertenecen_grupos')
             ->select('usuarios.email')
@@ -367,7 +367,7 @@ class ProfesorCreaTarea extends Controller
     }
 
     
-    public function getTareasProfesor($idGrupo,$idMateria,$idUsuario): \Illuminate\Support\Collection
+    public function getTareasProfesor($idGrupo,$idMateria,$idUsuario)
     {
         $peticionSQL = DB::table('profesor_crea_tareas')
             ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo', 'tareas.descripcion', 'tareas.fecha_vencimiento')
@@ -384,7 +384,7 @@ class ProfesorCreaTarea extends Controller
     }
 
    
-    public function getDatosTarea(Request $request): \Illuminate\Support\Collection
+    public function getDatosTarea(Request $request)
     {
         $peticionSQL = DB::table('tareas')
             ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento', 'tareas.titulo', 'tareas.descripcion')
@@ -395,7 +395,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getArchivosTarea($p): \Illuminate\Support\Collection
+    public function getArchivosTarea($p)
     {
         $peticionSQLFiltrada = DB::table('archivos_tarea')
             ->select('id AS idArchivo', 'nombreArchivo AS archivo')
@@ -406,7 +406,7 @@ class ProfesorCreaTarea extends Controller
     }
 
  
-    public function getImagenPerfil($postAuthor): \Illuminate\Support\Collection
+    public function getImagenPerfil($postAuthor)
     {
         $usuario = DB::table('usuarios')
             ->select('imagen_perfil', 'id', 'nombre')
@@ -416,7 +416,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getIdGrupoAlumno(Request $request): \Illuminate\Support\Collection
+    public function getIdGrupoAlumno(Request $request)
     {
         $idGrupo = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
@@ -426,7 +426,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getTareasMateriaForAlumno($variable, $variable2, $variable3): array
+    public function getTareasMateriaForAlumno($variable, $variable2, $variable3)
     {
         $peticionSQL = DB::select(
             DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2 AND idMateria=:variable3) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.id = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
@@ -435,7 +435,7 @@ class ProfesorCreaTarea extends Controller
         return $peticionSQL;
     }
 
-    public function getReHacerTareasMateriaForAlumno($idGrupo,$idMateria,$idUsuario): \Illuminate\Support\Collection
+    public function getReHacerTareasMateriaForAlumno($idGrupo,$idMateria,$idUsuario)
     {
         $peticionSQL2 = DB::table('profesor_crea_tareas')
             ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
@@ -454,7 +454,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getTareasForAlumno($variable, $variable2): array
+    public function getTareasForAlumno($variable, $variable2)
     {
         $peticionSQL = DB::select(
             DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.id = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
@@ -464,7 +464,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getReHacerTareasForAlumno($idGrupo,$idUsuario): \Illuminate\Support\Collection
+    public function getReHacerTareasForAlumno($idGrupo,$idUsuario)
     {
         $peticionSQL2 = DB::table('profesor_crea_tareas')
             ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
@@ -482,7 +482,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getTareasSinCalificacion(Request $request): \Illuminate\Support\Collection
+    public function getTareasSinCalificacion(Request $request)
     {
         $peticionSQL = DB::table('tareas')
             ->select('tareas.id as idTarea', 'tareas.titulo', 'profesor_crea_tareas.idMateria', 'profesor_crea_tareas.idGrupo')
@@ -519,7 +519,7 @@ class ProfesorCreaTarea extends Controller
     }
 
  
-    public function deleteTareaProfesor($eliminarArchivos, Request $request): void
+    public function deleteTareaProfesor($eliminarArchivos, Request $request)
     {
         foreach ($eliminarArchivos as $p) {
             Storage::disk('ftp')->delete($p->nombreArchivo);
