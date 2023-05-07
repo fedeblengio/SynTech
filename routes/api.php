@@ -50,17 +50,19 @@ Route::middleware(['verificar_token'])->group(function () {
   // GRUPO
   Route::get('/grupo/{id}/materia', 'App\Http\Controllers\ProfesorGrupo@listarMateriasGrupo');
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/usuarios', 'App\Http\Controllers\GrupoController@listarAlumnos');
-});
-Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); // ENDPOINT PUBLICO
+  
+  Route::get('/grupo/{idGrupo}/materia/{idMateria}/usuarios/{idUsuario}/tarea', 'App\Http\Controllers\ProfesorCreaTarea@listarTareas');
+  Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@store');
+  Route::delete('/tarea/{id}', 'App\Http\Controllers\ProfesorCreaTarea@destroy'); 
 
+});
 
 
 // TAREAS
 Route::get('/tareas-corregir', 'App\Http\Controllers\ProfesorCreaTarea@tareasParaCorregir')->middleware('verificar_token'); //SE UsA
 Route::get('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@traerTarea')->middleware('verificar_token'); //SE UsA
-Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@store')->middleware('verificar_token'); //SE UsA
-Route::delete('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@destroy')->middleware('verificar_token'); //SE UsA
-Route::get('/tareas', 'App\Http\Controllers\ProfesorCreaTarea@listarTareas')->middleware('verificar_token'); //SE UsA
+
+
 Route::post('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@seleccion')->middleware('verificar_token'); //SE UsA
 Route::get('/notas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@TareaNotaAlumnoMateria')->middleware('verificar_token'); //SE UsA
 //
@@ -97,3 +99,4 @@ Route::get('/alumno', 'App\Http\Controllers\alumnos@show')->middleware('verifica
 
 
 
+Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); // ENDPOINT PUBLICO
