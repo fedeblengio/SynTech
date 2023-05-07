@@ -143,8 +143,8 @@ class ProfesorCreaTarea extends Controller
 
     }
 
-    public function traerTarea(Request $request){
-        $peticionSQL = $this->getDatosTarea($request);
+    public function traerTarea($id){
+        $peticionSQL = $this->getDatosTarea($id);
 
 
         $dataResponse = array();
@@ -269,13 +269,7 @@ class ProfesorCreaTarea extends Controller
         return response()->json($tareas);
     }
 
-    public function tareasParaCorregir(Request $request){
-
-        $peticionSQL = $this->getTareasSinCalificacion($request);
-
-        return response()->json($peticionSQL);
-    }
-
+ 
 
     public function update(Request $request)
     {
@@ -384,12 +378,12 @@ class ProfesorCreaTarea extends Controller
     }
 
    
-    public function getDatosTarea(Request $request)
+    public function getDatosTarea($id)
     {
         $peticionSQL = DB::table('tareas')
             ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento', 'tareas.titulo', 'tareas.descripcion')
             ->join('profesor_crea_tareas', 'tareas.id', '=', 'profesor_crea_tareas.idTareas')
-            ->where('tareas.id', $request->idTarea)
+            ->where('tareas.id', $id)
             ->get();
         return $peticionSQL;
     }
@@ -482,18 +476,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getTareasSinCalificacion(Request $request)
-    {
-        $peticionSQL = DB::table('tareas')
-            ->select('tareas.id as idTarea', 'tareas.titulo', 'profesor_crea_tareas.idMateria', 'profesor_crea_tareas.idGrupo')
-            ->join('profesor_crea_tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
-            ->join('alumno_entrega_tareas', 'profesor_crea_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
-            ->where('profesor_crea_tareas.idProfesor', $request->idProfesor)
-            ->whereNull('alumno_entrega_tareas.calificacion')
-            ->distinct()
-            ->get();
-        return $peticionSQL;
-    }
+   
 
    
     public function deleteReHacerTareas($eliminarArchivosReHacer, Request $request)

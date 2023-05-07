@@ -28,18 +28,7 @@ class AlumnoEntregaTarea extends Controller
 
 
 
-    /* public function store(Request $request)
-    {
-        try {
-            if ($request->hasFile("archivo")) {
-                $nombreArchivo = $request->nombre;
-                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivo, 'r+'));
-            }
-            return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'Error'], 406);
-        }
-    } */
+   
     public function visualizarEntrega(Request $request)
     {
         $primera_entrega = $this->getPrimeraEntregaAlumno($request);
@@ -83,9 +72,16 @@ class AlumnoEntregaTarea extends Controller
 
         return response()->json($aux);
     }
-    public function seleccion(Request $request)
+    public function entregarTarea($idTarea,$idAlumno,Request $request)
     {
-        return $request->re_hacer == 1 ? self::reHacerTarea($request) : self::subirTarea($request);
+        $request->validate([
+            'mensaje' => 'required | string',
+            're_hacer' => 'required | boolean',
+            'archivos'=> 'array',
+            'nombresArchivo' => 'array'
+        ]);
+
+        return $request->re_hacer == 1 ? self::reHacerTarea($request,$idTarea,$idAlumno) : self::subirTarea($request,$idTarea,$idAlumno);
     }
 
 
@@ -212,37 +208,35 @@ class AlumnoEntregaTarea extends Controller
 
     }
 
-    public function subirTarea($request)
+    public function subirTarea($request,$idTarea,$idAlumno)
     {
-
-        $this->subirEntrega($request);
+        $this->subirEntrega($request,$idTarea,$idAlumno);
 
         if ($request->archivos) {
-
-            $this->subirArchivosEntrega($request);
+            $this->subirArchivosEntrega($request,$idTarea,$idAlumno);
         }
-        RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE",$request->idAlumnos);
+        RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE",$idAlumno);
         return response()->json(['status' => 'Success'], 200);
     }
 
-    public function reHacerTarea($request)
+    public function reHacerTarea($request,$idTarea,$idAlumno)
     {
+        try{
+            $this->subirReHacerTarea($request,$idTarea,$idAlumno);
 
-        $this->subirReHacerTarea($request);
-
-
-        if ($request->archivos) {
-
-            $this->subirArchivosReHacerTarea($request);
+            if ($request->archivos) {
+    
+                $this->subirArchivosReHacerTarea($request,$idTarea,$idAlumno);
+            }   
+                AlumnoEntrega::where('idTareas', $idTarea)->where('idAlumnos', $idAlumno)->update(['re_hacer' => 0]);
+                RegistrosController::store("RE-ENTREGA TAREA",$request->header('token'),"CREATE",$idAlumno);
+    
+            return response()->json(['status' => 'Success'], 200);
+           
+        }catch(\Exception $e){
+            return response()->json(['status' => 'Error'], 400);
         }
-        $existe = AlumnoEntrega::where('idTareas', $request->idTareas)->where('idAlumnos', $request->idAlumnos)->first();
-        /*   $reHacer=0; */
-        if ($existe)
-            DB::update('UPDATE alumno_entrega_tareas SET re_hacer="0" WHERE idTareas="' . $request->idTareas . '" AND idAlumnos="' . $request->idAlumnos . '";');
-
-            RegistrosController::store("RE-ENTREGA TAREA",$request->header('token'),"CREATE",$request->idAlumnos);
-
-        return response()->json(['status' => 'Success'], 200);
+           
     }
 
 
@@ -527,11 +521,8 @@ class AlumnoEntregaTarea extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getPrimeraEntregaAlumno(Request $request): \Illuminate\Support\Collection
+ 
+    public function getPrimeraEntregaAlumno(Request $request)
     {
         $primera_entrega = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
@@ -542,11 +533,7 @@ class AlumnoEntregaTarea extends Controller
         return $primera_entrega;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getSegundaEntregaAlumno(Request $request): \Illuminate\Support\Collection
+    public function getSegundaEntregaAlumno(Request $request)
     {
         $segunda_entrega = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 'usuarios.nombre AS nombreAlumno', 're_hacer_tareas.created_at AS fecha_entrega', 're_hacer_tareas.calificacion AS calificacion', 're_hacer_tareas.mensaje AS mensajeAlumno', 're_hacer_tareas.mensaje_profesor AS mensajeProfesor')
@@ -557,11 +544,8 @@ class AlumnoEntregaTarea extends Controller
         return $segunda_entrega;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getImagenPerfilAlumno(Request $request): \Illuminate\Support\Collection
+    
+    public function getImagenPerfilAlumno(Request $request)
     {
         $imagen_perfil_alumno = DB::table('usuarios')
             ->select('usuarios.imagen_perfil AS img')
@@ -570,11 +554,8 @@ class AlumnoEntregaTarea extends Controller
         return $imagen_perfil_alumno;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getArchivosTareaAlumno(Request $request): \Illuminate\Support\Collection
+  
+    public function getArchivosTareaAlumno(Request $request)
     {
         $traerArchivosTareaAlumno = DB::table('archivos_entrega')
             ->select('nombreArchivo AS archivoAlumno')
@@ -585,11 +566,8 @@ class AlumnoEntregaTarea extends Controller
         return $traerArchivosTareaAlumno;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getArchivosTareaAlumno2(Request $request): \Illuminate\Support\Collection
+  
+    public function getArchivosTareaAlumno2(Request $request)
     {
         $traerArchivosTareaAlumno2 = DB::table('archivos_re_hacer_tarea')
             ->select('nombreArchivo AS archivoAlumno')
@@ -600,11 +578,8 @@ class AlumnoEntregaTarea extends Controller
         return $traerArchivosTareaAlumno2;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getCalificacionPrimeraEntrega(Request $request): \Illuminate\Support\Collection
+   
+    public function getCalificacionPrimeraEntrega(Request $request)
     {
         $primera_entrega = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno', 'tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
@@ -618,11 +593,7 @@ class AlumnoEntregaTarea extends Controller
         return $primera_entrega;
     }
 
-    /**
-     * @param $p
-     * @param Request $request
-     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|object|null
-     */
+   
     public function getCalificacionSegundaEntrega($p, Request $request)
     {
         $segunda_entrega = DB::table('re_hacer_tareas')
@@ -638,12 +609,8 @@ class AlumnoEntregaTarea extends Controller
         return $segunda_entrega;
     }
 
-    /**
-     * @param Request $request
-     * @param Carbon $fecha_actual
-     * @return \Illuminate\Support\Collection
-     */
-    public function getCantidadClasesListadas(Request $request, Carbon $fecha_actual): \Illuminate\Support\Collection
+ 
+    public function getCantidadClasesListadas(Request $request, Carbon $fecha_actual)
     {
         $cantClasesListadas = DB::table('agenda_clase_virtual')
             ->select(DB::raw('count(*) as totalClase'))
@@ -654,10 +621,7 @@ class AlumnoEntregaTarea extends Controller
         return $cantClasesListadas;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|object|null
-     */
+   
     public function getTareasTotalesMateriaGrupo(Request $request)
     {
         $tareasTotales = DB::table('profesor_crea_tareas')
@@ -669,11 +633,8 @@ class AlumnoEntregaTarea extends Controller
         return $tareasTotales;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getAlumnosGrupo(Request $request): \Illuminate\Support\Collection
+ 
+    public function getAlumnosGrupo(Request $request)
     {
         $alumnos = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idAlumnos', 'usuarios.nombre')
@@ -683,12 +644,7 @@ class AlumnoEntregaTarea extends Controller
         return $alumnos;
     }
 
-    /**
-     * @param Request $request
-     * @param $a
-     * @return \Illuminate\Support\Collection
-     */
-    public function cantidadFaltasPorAlumno(Request $request, $a): \Illuminate\Support\Collection
+    public function cantidadFaltasPorAlumno(Request $request, $a)
     {
         $cantFaltas = DB::table('agenda_clase_virtual')
             ->select(DB::raw('count(*) as totalClase'))
@@ -701,12 +657,8 @@ class AlumnoEntregaTarea extends Controller
         return $cantFaltas;
     }
 
-    /**
-     * @param $a
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function datosPrimeraEntrega($a, Request $request): \Illuminate\Support\Collection
+ 
+    public function datosPrimeraEntrega($a, Request $request)
     {
         $primera_entrega = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno', 'tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
@@ -721,12 +673,9 @@ class AlumnoEntregaTarea extends Controller
         return $primera_entrega;
     }
 
-    /**
-     * @param $a
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function datosSegundaEntrega($a, Request $request): \Illuminate\Support\Collection
+   
+
+    public function datosSegundaEntrega($a, Request $request)
     {
         $segunda_entrega = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.calificacion', 're_hacer_tareas.idTareas')
@@ -740,48 +689,37 @@ class AlumnoEntregaTarea extends Controller
         return $segunda_entrega;
     }
 
-    /**
-     * @param $request
-     * @return void
-     * @throws \Exception
-     */
-    public function subirArchivosEntrega($request): void
+  
+    public function subirArchivosEntrega($request,$idTarea,$idAlumno)
     {
         for ($i = 0; $i < count($request->nombresArchivo); $i++) {
             $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
             Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
             $archivosEntrega = new archivosEntrega;
-            $archivosEntrega->idTareas = $request->idTareas;
-            $archivosEntrega->idAlumnos = $request->idAlumnos;
+            $archivosEntrega->idTareas = $idTarea;
+            $archivosEntrega->idAlumnos = $idAlumno;
             $archivosEntrega->nombreArchivo = $nombreArchivo;
             $archivosEntrega->save();
         }
     }
 
-    /**
-     * @param $request
-     * @return void
-     * @throws \Exception
-     */
-    public function subirArchivosReHacerTarea($request): void
+  
+    public function subirArchivosReHacerTarea($request,$idTarea,$idAlumno)
     {
         for ($i = 0; $i < count($request->nombresArchivo); $i++) {
             $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
             Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
             $archivosReHacer = new archivosReHacerTarea;
-            $archivosReHacer->idTareas = $request->idTareas;
-            $archivosReHacer->idTareasNueva = $request->idTareas;
-            $archivosReHacer->idAlumnos = $request->idAlumnos;
+            $archivosReHacer->idTareas = $idTarea;
+            $archivosReHacer->idTareasNueva = $idTarea;
+            $archivosReHacer->idAlumnos = $idAlumno;
             $archivosReHacer->nombreArchivo = $nombreArchivo;
             $archivosReHacer->save();
         }
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getAllEntregasGrupoMateria(Request $request): \Illuminate\Support\Collection
+   
+    public function getAllEntregasGrupoMateria(Request $request)
     {
         $entregas = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
@@ -797,11 +735,7 @@ class AlumnoEntregaTarea extends Controller
         return $entregas;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getEntregasCorregidasGrupoMateria(Request $request): \Illuminate\Support\Collection
+    public function getEntregasCorregidasGrupoMateria(Request $request)
     {
         $entregasCorregidas = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
@@ -817,11 +751,8 @@ class AlumnoEntregaTarea extends Controller
         return $entregasCorregidas;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getAllEntregasReHacerGrupoMateria(Request $request): \Illuminate\Support\Collection
+
+    public function getAllEntregasReHacerGrupoMateria(Request $request)
     {
         $entregasReHacer = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
@@ -837,11 +768,8 @@ class AlumnoEntregaTarea extends Controller
         return $entregasReHacer;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getEntregasReHacerCorregidasGrupoMateria(Request $request): \Illuminate\Support\Collection
+ 
+    public function getEntregasReHacerCorregidasGrupoMateria(Request $request)
     {
         $entregasReHacerCorregidas = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'tareas.descripcion', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
@@ -857,39 +785,30 @@ class AlumnoEntregaTarea extends Controller
         return $entregasReHacerCorregidas;
     }
 
-    /**
-     * @param $request
-     * @return void
-     */
-    public function subirEntrega($request): void
+   
+    public function subirEntrega($request,$idTarea,$idAlumno)
     {
         $alumnoTarea = new AlumnoEntrega;
-        $alumnoTarea->idTareas = $request->idTareas;
-        $alumnoTarea->idAlumnos = $request->idAlumnos;
+        $alumnoTarea->idTareas = $idTarea;
+        $alumnoTarea->idAlumnos = $idAlumno;
         $alumnoTarea->mensaje = $request->mensaje;
         $alumnoTarea->re_hacer = 0;
         $alumnoTarea->save();
     }
 
-    /**
-     * @param $request
-     * @return void
-     */
-    public function subirReHacerTarea($request): void
+   
+    public function subirReHacerTarea($request,$idTarea,$idAlumno)
     {
         $alumnoReHacer = new AlumnoReHacerTarea;
-        $alumnoReHacer->idTareasNueva = $request->idTareas;
-        $alumnoReHacer->idTareas = $request->idTareas;
-        $alumnoReHacer->idAlumnos = $request->idAlumnos;
+        $alumnoReHacer->idTareasNueva = $idTarea;
+        $alumnoReHacer->idTareas = $idTarea;
+        $alumnoReHacer->idAlumnos = $idAlumno;
         $alumnoReHacer->mensaje = $request->mensaje;
         $alumnoReHacer->save();
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getEntregasAlumno(Request $request): \Illuminate\Support\Collection
+  
+    public function getEntregasAlumno(Request $request)
     {
         $entregas = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'alumno_entrega_tareas.re_hacer AS re_hacer', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
@@ -902,11 +821,8 @@ class AlumnoEntregaTarea extends Controller
         return $entregas;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getEntregaAlumno(Request $request): \Illuminate\Support\Collection
+   
+    public function getEntregaAlumno(Request $request)
     {
         $peticionSQL = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensaje', 'usuarios.nombre AS nombreUsuario')
@@ -917,11 +833,8 @@ class AlumnoEntregaTarea extends Controller
         return $peticionSQL;
     }
 
-    /**
-     * @param $p
-     * @return \Illuminate\Support\Collection
-     */
-    public function getArchivosEntrega($p): \Illuminate\Support\Collection
+  
+    public function getArchivosEntrega($p)
     {
         $peticionSQLFiltrada = DB::table('archivos_entrega')
             ->select('id AS idArchivo', 'nombreArchivo AS archivo')
@@ -932,11 +845,8 @@ class AlumnoEntregaTarea extends Controller
         return $peticionSQLFiltrada;
     }
 
-    /**
-     * @param $postAuthor
-     * @return \Illuminate\Support\Collection
-     */
-    public function getImgPerfil($postAuthor): \Illuminate\Support\Collection
+  
+    public function getImgPerfil($postAuthor)
     {
         $imgPerfil = DB::table('usuarios')
             ->select('imagen_perfil')
@@ -945,11 +855,8 @@ class AlumnoEntregaTarea extends Controller
         return $imgPerfil;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getReHacerEntregaAlumno(Request $request): \Illuminate\Support\Collection
+  
+    public function getReHacerEntregaAlumno(Request $request)
     {
         $peticionSQL = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.idTareas AS idTareas', 're_hacer_tareas.idAlumnos AS idAlumnos', 're_hacer_tareas.created_at AS fecha', 're_hacer_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario')
@@ -960,11 +867,8 @@ class AlumnoEntregaTarea extends Controller
         return $peticionSQL;
     }
 
-    /**
-     * @param $p
-     * @return \Illuminate\Support\Collection
-     */
-    public function getArchivosReHacerEntrega($p): \Illuminate\Support\Collection
+
+    public function getArchivosReHacerEntrega($p)
     {
         $peticionSQLFiltrada = DB::table('archivos_re_hacer_tarea')
             ->select('id AS idArchivo', 'nombreArchivo AS archivo')
