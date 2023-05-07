@@ -70,7 +70,6 @@ Route::middleware(['verificar_token'])->group(function () {
 });
 
 
-Route::get('/visualizar-entrega', 'App\Http\Controllers\AlumnoEntregaTarea@visualizarEntrega')->middleware('verificar_token'); //SE UsA
 Route::get('/promedio', 'App\Http\Controllers\AlumnoEntregaTarea@promedioMateria')->middleware('verificar_token'); //SE UsA
 //
 
