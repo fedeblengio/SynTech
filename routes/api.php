@@ -52,27 +52,24 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/usuarios', 'App\Http\Controllers\GrupoController@listarAlumnos');
   
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/usuarios/{idUsuario}/tarea', 'App\Http\Controllers\ProfesorCreaTarea@listarTareas');
+  Route::get('/grupo/{idGrupo}/materia/{idMateria}/alumno/{idUsuario}/notas', 'App\Http\Controllers\AlumnoEntregaTarea@TareaNotaAlumnoMateria');
+
   Route::get('/tarea/{id}', 'App\Http\Controllers\ProfesorCreaTarea@traerTarea'); 
   Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@store');
   Route::delete('/tarea/{id}', 'App\Http\Controllers\ProfesorCreaTarea@destroy'); 
 
-  Route::post('/tarea/{idTarea}/alumno/{idAlumno}/entrega', 'App\Http\Controllers\AlumnoEntregaTarea@entregarTarea')->middleware('verificar_token');
+  Route::post('/tarea/{idTarea}/alumno/{idAlumno}/entrega', 'App\Http\Controllers\AlumnoEntregaTarea@entregarTarea');
+  Route::get('/tarea/{idTarea}/alumno/{idAlumno}/entrega', 'App\Http\Controllers\AlumnoEntregaTarea@entregaAlumno');
+  Route::get('/tarea/{idTarea}/alumno/{idAlumno}/re-entrega', 'App\Http\Controllers\AlumnoEntregaTarea@entregaAlumnoReHacer');
+  Route::get('/tarea/alumno/{idUsuario}/entregas', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregasAlumno');
 
+  Route::get('/grupo/{idGrupo}/materia/{idMateria}/tarea/{idTarea}/entrega', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregas');
+  Route::put('/tarea/{idTarea}/alumno/{idAlumno}/correccion', 'App\Http\Controllers\AlumnoEntregaTarea@verificarCorreccion');
+  
+  Route::get('/tarea/{idTarea}/alumno/{idAlumno}/registro', 'App\Http\Controllers\AlumnoEntregaTarea@visualizarEntrega'); 
 });
 
 
-// TAREAS
-Route::get('/tareas-corregir', 'App\Http\Controllers\ProfesorCreaTarea@tareasParaCorregir')->middleware('verificar_token'); //SE UsA
-
-
-Route::get('/notas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@TareaNotaAlumnoMateria')->middleware('verificar_token'); //SE UsA
-//
-
-// ENTREGAS 
-Route::get('/entregas-grupo', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregas')->middleware('verificar_token'); //SE UsA
-Route::get('/entregas-alumnos', 'App\Http\Controllers\AlumnoEntregaTarea@listarEntregasAlumno')->middleware('verificar_token'); //SE UsA
-Route::get('/entregas-alumno', 'App\Http\Controllers\AlumnoEntregaTarea@entregaAlumno')->middleware('verificar_token'); //SE UsA
-Route::put('/entregas-correccion', 'App\Http\Controllers\AlumnoEntregaTarea@verificar_correcion')->middleware('verificar_token'); //SE UsA
 Route::get('/visualizar-entrega', 'App\Http\Controllers\AlumnoEntregaTarea@visualizarEntrega')->middleware('verificar_token'); //SE UsA
 Route::get('/promedio', 'App\Http\Controllers\AlumnoEntregaTarea@promedioMateria')->middleware('verificar_token'); //SE UsA
 //
