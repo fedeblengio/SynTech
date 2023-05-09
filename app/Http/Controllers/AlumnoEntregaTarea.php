@@ -142,19 +142,11 @@ class AlumnoEntregaTarea extends Controller
         
         $cantClasesListadas = self::getCantidadClasesListadas($idGrupo,$idMateria);
 
-
-        $tareasTotales = self::getTareasTotalesMateriaGrupo($idGrupo,$idMateria);
-
-        $totalTarea= empty($tareasTotales->totalTareas)? 0 :  $tareasTotales->totalTareas;
-
         $alumnos = self::getAlumnosGrupo($idGrupo);
       
 
         $dataResponse = array();
 
-
-        $sumaNotaPrimera = 0;
-        $sumaNotaSegunda = 0;
             foreach ($alumnos as $a){
           
              

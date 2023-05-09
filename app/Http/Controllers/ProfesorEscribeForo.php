@@ -341,7 +341,7 @@ class ProfesorEscribeForo extends Controller
     }
 
 
-    public function getPublicacionesForoForProfesor($request): \Illuminate\Support\Collection
+    public function getPublicacionesForoForProfesor($request)
     {
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre AS materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
@@ -361,7 +361,7 @@ class ProfesorEscribeForo extends Controller
     }
 
 
-    public function getArchivosForo($p): \Illuminate\Support\Collection
+    public function getArchivosForo($p)
     {
         $peticionSQLFiltrada = DB::table('archivos_foro')
             ->select('nombreArchivo AS archivo')
@@ -372,7 +372,7 @@ class ProfesorEscribeForo extends Controller
     }
 
 
-    public function getImagenPefil($postAuthor): \Illuminate\Support\Collection
+    public function getImagenPefil($postAuthor)
     {
         $imgPerfil = DB::table('usuarios')
             ->select('imagen_perfil')
@@ -382,7 +382,7 @@ class ProfesorEscribeForo extends Controller
     }
 
 
-    public function getPublicacionesForoMateriaForProfesor($request): \Illuminate\Support\Collection
+    public function getPublicacionesForoMateriaForProfesor($request)
     {
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
@@ -399,7 +399,7 @@ class ProfesorEscribeForo extends Controller
     }
 
 
-    public function getIdGrupoAlumno($request): \Illuminate\Support\Collection
+    public function getIdGrupoAlumno($request)
     {
         $idGrupo = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
@@ -409,7 +409,7 @@ class ProfesorEscribeForo extends Controller
     }
 
 
-    public function getPublicacionesForoForGrupo($request): \Illuminate\Support\Collection
+    public function getPublicacionesForoForGrupo($request)
     {
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
@@ -425,7 +425,7 @@ class ProfesorEscribeForo extends Controller
     }
 
 
-    public function getPublicacionesForoMateriaForGrupo($request): \Illuminate\Support\Collection
+    public function getPublicacionesForoMateriaForGrupo($request)
     {
         $peticionSQL = DB::table('profesor_estan_grupo_foro')
             ->select('datosForo.id AS id', 'datosForo.idForo AS idForo', 'profesor_estan_grupo_foro.idGrupo', 'materias.nombre as materia', 'datosForo.idUsuario AS idUsuario', 'usuarios.nombre AS nombreAutor', 'datosForo.mensaje AS mensaje', 'datosForo.created_at AS fecha', 'datosForo.idUsuario as postAuthor')
