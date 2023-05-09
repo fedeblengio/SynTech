@@ -74,15 +74,15 @@ class materialPublicoController extends Controller
         return response()->json(['status' => 'Success'], 200);
     }
 
-    public function destroy(Request $request)
+    public function destroy($id,Request $request)
     {
 
-        $materialPublico = material_publico::where('id', $request->id)->first();
-        $arhivosMaterialPublico = archivos_material_publico::where('idMaterialPublico', $request->id)->get();
-        foreach ($arhivosMaterialPublico as $p) {
-            $this->deleteArchivosMaterialPublico($p);
-        }
+        $materialPublico = material_publico::findOrFail($id);
+        $arhivosMaterialPublico = archivos_material_publico::where('idMaterialPublico', $materialPublico->id)->get();
         try {
+            foreach ($arhivosMaterialPublico as $p) {
+                $this->deleteArchivosMaterialPublico($p);
+            }
             $materialPublico->delete();
             RegistrosController::store("PUBLICACION PUBLICA", $request->header('token'), "DELETE", $request->idUsuario);
             return response()->json(['status' => 'Success'], 200);
@@ -174,7 +174,6 @@ class materialPublicoController extends Controller
     public function deleteArchivosMaterialPublico($p): void
     {
         Storage::disk('ftp')->delete($p->nombreArchivo);
-        $arhivosId = archivos_material_publico::where('id', $p->id)->first();
-        $arhivosId->delete();
+        $p->delete();
     }
 }

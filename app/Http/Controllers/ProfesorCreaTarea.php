@@ -26,24 +26,40 @@ class ProfesorCreaTarea extends Controller
 
     public function store(Request $request)
     {
-        $this->agregarTarea($request);
+        $request->validate([
+            'idGrupo' => 'required',
+            'idMateria' => 'required',
+            'idUsuario' => 'required',
+            'titulo' => 'required | string',
+            'descripcion' => 'required | string',
+            'fechaVencimiento' => 'required',
+          
+        ]);  
+        $idTarea = $this->agregarTarea($request);
+     
+        $this->asignarTarea($request, $idTarea);
 
-        $idTareas = DB::table('tareas')->orderBy('created_at', 'desc')->limit(1)->get('id');
-
-        $this->asignarTarea($request, $idTareas[0]);
-
-        $nombreUsuario = usuarios::where('id', $request->idUsuario)->first();
-        $nombreMateria = materia::where('id', $request->idMateria)->first();
+       
 
         if ($request->archivos) {
             for ($i=0; $i < count($request->nombresArchivo); $i++){
-                $this->subirArchivoTarea($request, $i, $idTareas[0]);
+                $this->subirArchivoTarea($request, $i, $idTarea);
             }
         }
+        $this->enviarEmailAvisoTarea($request);
+
+        RegistrosController::store("TAREA",$request->header('token'),"CREATE",$request->idGrupo);
+
+        return response()->json(['status' => 'Success'], 200);
+    }
+
+    public function enviarEmailAvisoTarea($request){
+        $usuario = usuarios::findOrFail($request->idUsuario);
+        $materia = materia::findOrFail($request->idMateria);
 
         $details = [
-            'nombreUsuario' => $nombreUsuario->nombre,
-            'nombreMateria' => $nombreMateria->nombre,
+            'nombreUsuario' => $usuario->nombre,
+            'nombreMateria' => $materia->nombre,
             'grupo' => $request->idGrupo
         ];
 
@@ -53,34 +69,31 @@ class ProfesorCreaTarea extends Controller
             Mail::to($a->email)->send(new tareaMail($details));
         }
 
-
-        RegistrosController::store("TAREA",$request->header('token'),"CREATE",$request->idGrupo);
-
-        return response()->json(['status' => 'Success'], 200);
     }
 
 
 
-    public function listarTareas(Request $request)
+    public function listarTareas($idGrupo,$idMateria,$idUsuario)
     {
-        if ($request->ou == 'Profesor') {
-            return  self::consultaProfesor($request);
-        } else if ($request->ou == 'Alumno') {
-            return self::consultaAlumno($request);
+        $usuario = usuarios::findOrFail($idUsuario);
+        if ($usuario->ou == 'Profesor') {
+            return  self::consultaProfesor($idGrupo,$idMateria,$idUsuario);
+        } else if ($usuario->ou == 'Alumno') {
+            return self::consultaAlumno($idGrupo,$idMateria,$idUsuario);
         }
     }
 
 
-    /*                                                      */
-    public function consultaProfesor(Request $request)
+
+    public function consultaProfesor($idGrupo,$idMateria,$idUsuario)
     {
-        if($request->idMateria){
-            $peticionSQL = $this->getTareasProfesor($request);
+        if($idMateria){
+            $peticionSQL = $this->getTareasProfesor($idGrupo,$idMateria,$idUsuario);
 
             $TareasNoVencidas = array();
             $TareasVencidas = array();
             foreach ($peticionSQL as $p) {
-                $fecha_actual = Carbon::now()->subMinutes(23);
+                $fecha_actual = Carbon::now();
                 $fecha_inicio = Carbon::parse($p->fecha_vencimiento)->addHours(24);
 
                 if($fecha_inicio>=$fecha_actual ){
@@ -130,8 +143,8 @@ class ProfesorCreaTarea extends Controller
 
     }
 
-    public function traerTarea(Request $request){
-        $peticionSQL = $this->getDatosTarea($request);
+    public function traerTarea($id){
+        $peticionSQL = $this->getDatosTarea($id);
 
 
         $dataResponse = array();
@@ -151,7 +164,7 @@ class ProfesorCreaTarea extends Controller
 
             foreach ($peticionSQLFiltrada as $p2) {
                 $resultado = Str::contains($p2->archivo, ['.pdf','.PDF','.docx']);
-              /*   $resultado = strpos($p2->archivo, ".pdf"); */
+            
 
                 if ($resultado != '') {
                     array_push($arrayArchivos, $p2);
@@ -189,20 +202,18 @@ class ProfesorCreaTarea extends Controller
 
 
 
-    public function consultaAlumno(Request $request)
+    public function consultaAlumno($idGrupo,$idMateria,$idUsuario)
     {
-        $variable =  $request->idUsuario;
-        $variable2 = $request->idGrupo;
-        $variable3 = $request->idMateria;
-        if ($request->idMateria){
+        $variable =  $idUsuario;
+        $variable2 = $idGrupo;
+        $variable3 = $idMateria;
+        if ($idMateria){
             $peticionSQL = $this->getTareasMateriaForAlumno($variable, $variable2, $variable3);
-            $peticionSQL2 = $this->getReHacerTareasMateriaForAlumno($request);
+            $peticionSQL2 = $this->getReHacerTareasMateriaForAlumno($idGrupo,$idMateria,$idUsuario);
         }else{
             $peticionSQL = $this->getTareasForAlumno($variable, $variable2);
-            $peticionSQL2 = $this->getReHacerTareasForAlumno($request);
+            $peticionSQL2 = $this->getReHacerTareasForAlumno($idGrupo,$idUsuario);
         }
-
-
 
         $TareasNoVencidas = array();
         $TareasVencidas = array();
@@ -211,7 +222,7 @@ class ProfesorCreaTarea extends Controller
         foreach ($peticionSQL as $t) {
 
 
-            $fecha_actual = Carbon::now()->subMinutes(23);
+            $fecha_actual = Carbon::now();
             $fecha_vencimiento = Carbon::parse($t->fecha_vencimiento)->addHours(24);
             $booelan = true;
 
@@ -258,13 +269,7 @@ class ProfesorCreaTarea extends Controller
         return response()->json($tareas);
     }
 
-    public function tareasParaCorregir(Request $request){
-
-        $peticionSQL = $this->getTareasSinCalificacion($request);
-
-        return response()->json($peticionSQL);
-    }
-
+ 
 
     public function update(Request $request)
     {
@@ -282,77 +287,70 @@ class ProfesorCreaTarea extends Controller
         }
     }
 
-    public function destroy(Request $request)
+    public function destroy($id, Request $request)
     {
 
-        $eliminarTarea = Tarea::where('id', $request->idTareas)->first();
-        $eliminarArchivos = archivosTarea::where('idTarea', $request->idTareas)->get();
-        $eliminarArhivosReHacer = archivosReHacerTarea::where('idTareas', $request->idTareas)->get();
-        $eliminarArhivosEntrega = archivosEntrega::where('idTareas', $request->idTareas)->get();
-          /* try { */
-             self::deleteReHacerTareas($eliminarArhivosReHacer, $request);
-             self::deleteEntregasTareas($eliminarArhivosEntrega, $request);
-             self::deleteTareaProfesor($eliminarArchivos, $request, $eliminarTarea);
+        $eliminarTarea = Tarea::findOrFail($id);
+       
+        
+        $eliminarArchivos = archivosTarea::where('idTarea', $eliminarTarea->id)->get();
+        $eliminarArhivosReHacer = archivosReHacerTarea::where('idTareas', $eliminarTarea->id)->get();
+        $eliminarArhivosEntrega = archivosEntrega::where('idTareas', $eliminarTarea->id)->get();
+   
 
-             RegistrosController::store("TAREA",$request->header('token'),"DELETE",$eliminarTarea->titulo);
-
-
-             return response()->json(['status' => 'Success'], 200);
-           /*   } catch (\Throwable $th) {  */
-            return response()->json(['status' => 'Bad Request'], 400);
-          /* }  */
+        if(!empty($eliminarArhivosReHacer)){
+            self::deleteReHacerTareas($eliminarArhivosReHacer, $request);
+        }
+        if(!empty($eliminarArhivosEntrega)){
+            self::deleteEntregasTareas($eliminarArhivosEntrega, $request);
+        }
+        if(!empty($eliminarArchivos)){
+            self::deleteTareaProfesor($eliminarArchivos, $request);
+        }
+    
+        ProfesorTarea::where('idTareas', $eliminarTarea->id)->delete();
+        $eliminarTarea->delete();
+            RegistrosController::store("TAREA",$request->header('token'),"DELETE",$eliminarTarea->titulo);
+            return response()->json(['status' => 'Success'], 200);
+        
     }
 
-    /**
-     * @param Request $request
-     * @return void
-     */
-    public function agregarTarea(Request $request): void
+   
+    public function agregarTarea(Request $request)
     {
         $tarea = new Tarea;
         $tarea->titulo = $request->titulo;
         $tarea->descripcion = $request->descripcion;
         $tarea->fecha_vencimiento = $request->fechaVencimiento;
         $tarea->save();
+     
+        return $tarea->id;
     }
 
-    /**
-     * @param Request $request
-     * @param $idTareas
-     * @return void
-     */
-    public function asignarTarea(Request $request, $idTareas): void
+   
+    public function asignarTarea(Request $request, $idTareas)
     {
         $profesorTareas = new ProfesorTarea;
         $profesorTareas->idMateria = $request->idMateria;
-        $profesorTareas->idTareas = $idTareas->id;
+        $profesorTareas->idTareas = $idTareas;
         $profesorTareas->idGrupo = $request->idGrupo;
         $profesorTareas->idProfesor = $request->idUsuario;
         $profesorTareas->save();
     }
 
-    /**
-     * @param Request $request
-     * @param int $i
-     * @param $idTareas
-     * @return void
-     * @throws \Exception
-     */
-    public function subirArchivoTarea(Request $request, int $i, $idTareas): void
+  
+    public function subirArchivoTarea(Request $request, int $i, $idTareas)
     {
         $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
         Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
         $archivosTarea = new archivosTarea;
-        $archivosTarea->idTarea = $idTareas->id;
+        $archivosTarea->idTarea = $idTareas;
         $archivosTarea->nombreArchivo = $nombreArchivo;
         $archivosTarea->save();
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getAlumnosEmail(Request $request): \Illuminate\Support\Collection
+  
+    public function getAlumnosEmail(Request $request)
     {
         $alumnos = DB::table('alumnos_pertenecen_grupos')
             ->select('usuarios.email')
@@ -362,11 +360,8 @@ class ProfesorCreaTarea extends Controller
         return $alumnos;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getTareasProfesor(Request $request): \Illuminate\Support\Collection
+    
+    public function getTareasProfesor($idGrupo,$idMateria,$idUsuario)
     {
         $peticionSQL = DB::table('profesor_crea_tareas')
             ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'usuarios.nombre AS nombreUsuario', 'materias.id AS idMateria', 'materias.nombre AS nombreMateria', 'profesor_crea_tareas.idGrupo', 'grupos.nombreCompleto AS turnoGrupo', 'tareas.titulo', 'tareas.descripcion', 'tareas.fecha_vencimiento')
@@ -374,33 +369,27 @@ class ProfesorCreaTarea extends Controller
             ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
             ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.id')
-            ->where('profesor_crea_tareas.idProfesor', $request->idUsuario)
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->where('profesor_crea_tareas.idProfesor', $idUsuario)
+            ->where('profesor_crea_tareas.idMateria', $idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $idGrupo)
             ->orderBy('profesor_crea_tareas.idTareas', 'desc')
             ->get();
         return $peticionSQL;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getDatosTarea(Request $request): \Illuminate\Support\Collection
+   
+    public function getDatosTarea($id)
     {
         $peticionSQL = DB::table('tareas')
             ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento', 'tareas.titulo', 'tareas.descripcion')
             ->join('profesor_crea_tareas', 'tareas.id', '=', 'profesor_crea_tareas.idTareas')
-            ->where('tareas.id', $request->idTarea)
+            ->where('tareas.id', $id)
             ->get();
         return $peticionSQL;
     }
 
-    /**
-     * @param $p
-     * @return \Illuminate\Support\Collection
-     */
-    public function getArchivosTarea($p): \Illuminate\Support\Collection
+  
+    public function getArchivosTarea($p)
     {
         $peticionSQLFiltrada = DB::table('archivos_tarea')
             ->select('id AS idArchivo', 'nombreArchivo AS archivo')
@@ -410,11 +399,8 @@ class ProfesorCreaTarea extends Controller
         return $peticionSQLFiltrada;
     }
 
-    /**
-     * @param $postAuthor
-     * @return \Illuminate\Support\Collection
-     */
-    public function getImagenPerfil($postAuthor): \Illuminate\Support\Collection
+ 
+    public function getImagenPerfil($postAuthor)
     {
         $usuario = DB::table('usuarios')
             ->select('imagen_perfil', 'id', 'nombre')
@@ -423,11 +409,8 @@ class ProfesorCreaTarea extends Controller
         return $usuario;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getIdGrupoAlumno(Request $request): \Illuminate\Support\Collection
+  
+    public function getIdGrupoAlumno(Request $request)
     {
         $idGrupo = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo')
@@ -436,13 +419,8 @@ class ProfesorCreaTarea extends Controller
         return $idGrupo;
     }
 
-    /**
-     * @param $variable
-     * @param $variable2
-     * @param $variable3
-     * @return array
-     */
-    public function getTareasMateriaForAlumno($variable, $variable2, $variable3): array
+  
+    public function getTareasMateriaForAlumno($variable, $variable2, $variable3)
     {
         $peticionSQL = DB::select(
             DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2 AND idMateria=:variable3) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.id = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
@@ -451,12 +429,7 @@ class ProfesorCreaTarea extends Controller
         return $peticionSQL;
     }
 
-    /**
-     * @param $idGrupo
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getReHacerTareasMateriaForAlumno(Request $request): \Illuminate\Support\Collection
+    public function getReHacerTareasMateriaForAlumno($idGrupo,$idMateria,$idUsuario)
     {
         $peticionSQL2 = DB::table('profesor_crea_tareas')
             ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
@@ -465,21 +438,17 @@ class ProfesorCreaTarea extends Controller
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
             ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.id')
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-            ->where('alumno_entrega_tareas.idAlumnos', $request->idUsuario)
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $idGrupo)
+            ->where('alumno_entrega_tareas.idAlumnos', $idUsuario)
+            ->where('profesor_crea_tareas.idMateria', $idMateria)
             ->where('alumno_entrega_tareas.re_hacer', "1")
             ->orderBy('profesor_crea_tareas.idTareas', 'desc')
             ->get();
         return $peticionSQL2;
     }
 
-    /**
-     * @param $variable
-     * @param $variable2
-     * @return array
-     */
-    public function getTareasForAlumno($variable, $variable2): array
+  
+    public function getTareasForAlumno($variable, $variable2)
     {
         $peticionSQL = DB::select(
             DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.id = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
@@ -488,12 +457,8 @@ class ProfesorCreaTarea extends Controller
         return $peticionSQL;
     }
 
-    /**
-     * @param $idGrupo
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getReHacerTareasForAlumno(Request $request): \Illuminate\Support\Collection
+  
+    public function getReHacerTareasForAlumno($idGrupo,$idUsuario)
     {
         $peticionSQL2 = DB::table('profesor_crea_tareas')
             ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
@@ -502,78 +467,50 @@ class ProfesorCreaTarea extends Controller
             ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
             ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
             ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.id')
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
-            ->where('alumno_entrega_tareas.idAlumnos', $request->idUsuario)
+            ->where('profesor_crea_tareas.idGrupo', $idGrupo)
+            ->where('alumno_entrega_tareas.idAlumnos', $idUsuario)
             ->where('alumno_entrega_tareas.re_hacer', "1")
             ->orderBy('profesor_crea_tareas.idTareas', 'desc')
             ->get();
         return $peticionSQL2;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getTareasSinCalificacion(Request $request): \Illuminate\Support\Collection
-    {
-        $peticionSQL = DB::table('tareas')
-            ->select('tareas.id as idTarea', 'tareas.titulo', 'profesor_crea_tareas.idMateria', 'profesor_crea_tareas.idGrupo')
-            ->join('profesor_crea_tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
-            ->join('alumno_entrega_tareas', 'profesor_crea_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
-            ->where('profesor_crea_tareas.idProfesor', $request->idProfesor)
-            ->whereNull('alumno_entrega_tareas.calificacion')
-            ->distinct()
-            ->get();
-        return $peticionSQL;
-    }
+  
+   
 
-    /**
-     * @param $eliminarArhivosReHacer
-     * @param Request $request
-     * @return mixed
-     */
+   
     public function deleteReHacerTareas($eliminarArchivosReHacer, Request $request)
     {
         foreach ($eliminarArchivosReHacer as $t) {
             Storage::disk('ftp')->delete($t->nombreArchivo);
             $archivosId = archivosReHacerTarea::where('id', $t->id)->first();
             $archivosId->delete();
+            $t->delete();
         }
-        DB::delete('delete from re_hacer_tareas where idTareas="' . $request->idTareas . '";');
-        
+       
     }
 
-    /**
-     * @param $eliminarArhivosEntrega
-     * @param Request $request
-     * @return mixed
-     */
+  
     public function deleteEntregasTareas($eliminarArchivosEntrega, Request $request)
     {
         foreach ($eliminarArchivosEntrega as $u) {
             Storage::disk('ftp')->delete($u->nombreArchivo);
             $archivosId = archivosEntrega::where('id', $u->id)->first();
             $archivosId->delete();
+            $u->delete();
         }
-        DB::delete('delete from alumno_entrega_tareas where idTareas="' . $request->idTareas . '";');
-      
     }
 
-    /**
-     * @param $eliminarArhivos
-     * @param Request $request
-     * @param $eliminarTarea
-     * @return void
-     */
-    public function deleteTareaProfesor($eliminarArchivos, Request $request, $eliminarTarea): void
+ 
+    public function deleteTareaProfesor($eliminarArchivos, Request $request)
     {
         foreach ($eliminarArchivos as $p) {
             Storage::disk('ftp')->delete($p->nombreArchivo);
             $archivosId = archivosTarea::where('id', $p->id)->first();
             $archivosId->delete();
+            $p->delete();
         }
-        DB::delete('delete from profesor_crea_tareas where idTareas="' . $request->idTareas . '";');
-        $eliminarTarea->delete();
+        
     }
 
 
