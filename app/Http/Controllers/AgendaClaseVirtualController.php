@@ -146,7 +146,7 @@ class AgendaClaseVirtualController extends Controller
 
     private function getAgendaClaseProfesor($usuario, $idGrupo)
     {
-        return agendaClaseVirtual::where('idProfesor', $usuario->id)->where('idGrupo', $idGrupo)->where('fecha_fin', '>', Carbon::now())->orderBy('fecha_inicio', 'asc')->get();
+        return agendaClaseVirtual::where('idProfesor', $usuario->id)->where('idGrupo', $idGrupo)->whereDate('fecha_fin', '>', Carbon::now())->orderBy('fecha_inicio', 'asc')->get();
     }
 
     public function consultaProfesorEvento($usuario)
@@ -211,17 +211,17 @@ class AgendaClaseVirtualController extends Controller
 
     public function getAgendaClaseOfGrupo($idGrupo)
     {
-        return agendaClaseVirtual::where('idGrupo', $idGrupo)->where('fecha_fin', '>', Carbon::now())->orderBy('fecha_inicio', 'asc')->get();
+        return agendaClaseVirtual::where('idGrupo', $idGrupo)->whereDate('fecha_fin', '>', Carbon::now())->orderBy('fecha_inicio', 'asc')->get();
     }
 
     public function getAgendaClasesVirtualTodayAlumno($idGrupos): \Illuminate\Support\Collection
     {
-        return agendaClaseVirtual::whereIn('idGrupo', $idGrupos)->where('fecha_fin', '>', Carbon::now())->whereDate('fecha_inicio', Carbon::today())->orderBy('fecha_inicio', 'asc')->get();
+        return agendaClaseVirtual::whereIn('idGrupo', $idGrupos)->whereDate('fecha_fin', '>', Carbon::now())->whereDate('fecha_inicio', Carbon::today())->orderBy('fecha_inicio', 'asc')->get();
     }
 
 
     public function getAgendaClaseVirtualToday($usuario): \Illuminate\Support\Collection
     {
-        return agendaClaseVirtual::where('idProfesor', $usuario->id)->where('fecha_fin', '>', Carbon::now())->whereDate('fecha_inicio', Carbon::today())->orderBy('fecha_inicio', 'asc')->get();
+        return agendaClaseVirtual::where('idProfesor', $usuario->id)->whereDate('fecha_fin', '>', Carbon::now())->whereDate('fecha_inicio', Carbon::today())->orderBy('fecha_inicio', 'asc')->get();
     }
 }
