@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\usuarios;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\RegistrosController;
 use Illuminate\Http\Request;
@@ -23,7 +24,8 @@ class ProfesorGrupo extends Controller
 
     public function listarMateriasGrupo(Request $request,$id)
     {
-        if ($request->ou == 'Profesor'){
+        $usuario = usuarios::where('id', $request->idUsuario)->first();
+        if ($usuario->ou == 'Profesor'){
             $materias=DB::table('grupos_tienen_profesor')
             ->select('grupos_tienen_profesor.idMateria AS idMateria', 'materias.nombre AS Materia', 'grupos_tienen_profesor.idGrupo AS idGrupo','grupos.nombreCompleto', 'grupos_tienen_profesor.idProfesor AS idProfesor', 'usuarios.nombre AS Profesor' )
             ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
