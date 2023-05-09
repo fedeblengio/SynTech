@@ -137,20 +137,18 @@ class AlumnoEntregaTarea extends Controller
     }
 
 
-    public function promedioMateria(Request $request){
+    public function promedioMateria($idGrupo,$idMateria){
 
-        $fecha_actual = Carbon::now()->subMinutes(23);
-        $cantClasesListadas = self::getCantidadClasesListadas($request, $fecha_actual);
+        
+        $cantClasesListadas = self::getCantidadClasesListadas($idGrupo,$idMateria);
 
 
-        $tareasTotales = self::getTareasTotalesMateriaGrupo($request);
+        $tareasTotales = self::getTareasTotalesMateriaGrupo($idGrupo,$idMateria);
 
-        $totalTarea= $tareasTotales->totalTareas;
+        $totalTarea= empty($tareasTotales->totalTareas)? 0 :  $tareasTotales->totalTareas;
 
-        $alumnos = alumnoGrupo::where('idGrupo', $request->idGrupo)->get();
-
-        $alumnos = self::getAlumnosGrupo($request);
-
+        $alumnos = self::getAlumnosGrupo($idGrupo);
+      
 
         $dataResponse = array();
 
@@ -158,48 +156,40 @@ class AlumnoEntregaTarea extends Controller
         $sumaNotaPrimera = 0;
         $sumaNotaSegunda = 0;
             foreach ($alumnos as $a){
-                $cantFaltas = self::cantidadFaltasPorAlumno($request, $a);
-
-                $primera_entrega = self::datosPrimeraEntrega($a, $request);
-                $segunda_entrega = self::datosSegundaEntrega($a, $request);
-                foreach ($segunda_entrega as $s){
-                    foreach ($primera_entrega as $p) {
-                        if($p->idTareas == $s->idTareas){ 
-                            $sumaNotaSegunda = $sumaNotaSegunda + $s->calificacion;
-                        }else{
-                            $sumaNotaPrimera = $sumaNotaPrimera + $p->calificacion;
-                        } 
-                    }       
-            }
-
-            $sumaTotal=$sumaNotaPrimera+$sumaNotaSegunda;
-
-            if($totalTarea==0){
-                $promedio=0;
-            }else{
-                $promedio=$sumaTotal/$totalTarea;
-            }
-
-            $cantidadFaltas=$cantFaltas[0]->totalClase;
-            $totalClases=$cantClasesListadas[0]->totalClase;
-
-            if($totalClases==0){
+          
+             
+                $cantFaltas = self::cantidadFaltasPorAlumno($idGrupo,$idMateria, $a);
+              
+                $segunda_entrega = self::datosSegundaEntrega($a, $idGrupo,$idMateria);
+          
+                $primera_entrega = self::datosPrimeraEntrega($a,$idMateria,$segunda_entrega->pluck('idTareas'));
+             
+                $notas = $primera_entrega->pluck('calificacion')->merge($segunda_entrega->pluck('calificacion'));
+            
+      
+            
+            $cantidadFaltas=empty($cantFaltas->totalClase) ? 0 : (int)$cantFaltas->totalClase;
+            $totalClases=empty($cantClasesListadas->totalClase) ? 0 : (int)$cantClasesListadas->totalClase;
+               
+            if((int) $totalClases==0){
                 $porcentajeFaltas=0;
             }else{
                 $porcentajeFaltas=(100*$cantidadFaltas)/$totalClases;
             }
-
+            
             $datos = [
+                "promedio" => count($notas->toArray()) > 0 ? round(array_sum($notas->toArray()) / count($notas->toArray())) : 0, 
                 "idAlumnos"=>$a->idAlumnos,
                 "nombreAlumno"=>$a->nombre,
-                "promedio" => round($promedio),
                 "asistencia"=>$a->idAlumnos,
                 "porcentajeFaltas"=>round($porcentajeFaltas),
                 "cantidadFaltas"=>$cantidadFaltas,
                 "cantidadClases"=>$totalClases
             ];
 
-            array_push($dataResponse, $datos);
+      
+
+            array_push($dataResponse, $datos);  
 
 
         }
@@ -580,55 +570,59 @@ class AlumnoEntregaTarea extends Controller
     }
 
  
-    public function getCantidadClasesListadas(Request $request, Carbon $fecha_actual)
+    public function getCantidadClasesListadas($idGrupo,$idMateria)
     {
+        $fecha_actual = Carbon::now();
         $cantClasesListadas = DB::table('agenda_clase_virtual')
             ->select(DB::raw('count(*) as totalClase'))
-            ->where('agenda_clase_virtual.idMateria', $request->idMateria)
-            ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+            ->where('agenda_clase_virtual.idMateria', $idMateria)
+            ->where('agenda_clase_virtual.idGrupo', $idGrupo)
             ->where('agenda_clase_virtual.fecha_fin', '<=', $fecha_actual)
-            ->get();
+            ->toSql();
+           
         return $cantClasesListadas;
     }
 
    
-    public function getTareasTotalesMateriaGrupo(Request $request)
+    public function getTareasTotalesMateriaGrupo($idGrupo,$idMateria)
     {
+       
         $tareasTotales = DB::table('profesor_crea_tareas')
             ->select(DB::raw('count(*) as totalTareas'))
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->where('profesor_crea_tareas.idMateria', $idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $idGrupo)
             ->groupBy('idMateria', 'idGrupo')
             ->first();
+
         return $tareasTotales;
     }
 
  
-    public function getAlumnosGrupo(Request $request)
+    public function getAlumnosGrupo($idGrupo)
     {
         $alumnos = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idAlumnos', 'usuarios.nombre')
             ->join('usuarios', 'alumnos_pertenecen_grupos.idAlumnos', '=', 'usuarios.id')
-            ->where('alumnos_pertenecen_grupos.idGrupo', $request->idGrupo)
+            ->where('alumnos_pertenecen_grupos.idGrupo', $idGrupo)
             ->get();
         return $alumnos;
     }
 
-    public function cantidadFaltasPorAlumno(Request $request, $a)
+    public function cantidadFaltasPorAlumno($idGrupo,$idMateria, $a)
     {
         $cantFaltas = DB::table('agenda_clase_virtual')
             ->select(DB::raw('count(*) as totalClase'))
             ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
-            ->where('agenda_clase_virtual.idMateria', $request->idMateria)
-            ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+            ->where('agenda_clase_virtual.idMateria', $idMateria)
+            ->where('agenda_clase_virtual.idGrupo', $idGrupo)
             ->where('lista_aula_virtual.idAlumnos', $a->idAlumnos)
             ->where('lista_aula_virtual.asistencia', '0')
-            ->get();
+            ->first();
         return $cantFaltas;
     }
 
  
-    public function datosPrimeraEntrega($a, Request $request)
+    public function datosPrimeraEntrega($a,$idMateria,$idTareasReEntrega)
     {
         $primera_entrega = DB::table('alumno_entrega_tareas')
             ->select('alumno_entrega_tareas.idTareas AS idTareas', 'alumno_entrega_tareas.idAlumnos', 'usuarios.nombre as nombreAlumno', 'tareas.titulo', 'tareas.descripcion', 'alumno_entrega_tareas.created_at AS fecha', 'alumno_entrega_tareas.calificacion AS calificacion', 'alumno_entrega_tareas.mensaje AS mensajeAlumno', 'alumno_entrega_tareas.mensaje_profesor AS mensajeProfesor')
@@ -636,16 +630,16 @@ class AlumnoEntregaTarea extends Controller
             ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
             ->join('usuarios', 'usuarios.id', '=', 'alumno_entrega_tareas.idAlumnos')
             ->leftJoin('re_hacer_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idAlumnos')
+            ->whereNotIn('alumno_entrega_tareas.idTareas', $idTareasReEntrega)
+            ->where('profesor_crea_tareas.idMateria', $idMateria)
             ->where('alumno_entrega_tareas.idAlumnos', $a->idAlumnos)
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
             ->get();
         return $primera_entrega;
     }
 
    
 
-    public function datosSegundaEntrega($a, Request $request)
+    public function datosSegundaEntrega($a, $idGrupo,$idMateria)
     {
         $segunda_entrega = DB::table('re_hacer_tareas')
             ->select('re_hacer_tareas.calificacion', 're_hacer_tareas.idTareas')
@@ -653,8 +647,8 @@ class AlumnoEntregaTarea extends Controller
             ->join('alumno_entrega_tareas', 're_hacer_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
             ->join('tareas', 'tareas.id', '=', 're_hacer_tareas.idTareas')
             ->where('alumno_entrega_tareas.idAlumnos', $a->idAlumnos)
-            ->where('profesor_crea_tareas.idMateria', $request->idMateria)
-            ->where('profesor_crea_tareas.idGrupo', $request->idGrupo)
+            ->where('profesor_crea_tareas.idMateria', $idMateria)
+            ->where('profesor_crea_tareas.idGrupo', $idGrupo)
             ->get();
         return $segunda_entrega;
     }
