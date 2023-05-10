@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\usuarios;
+use App\Notifications\EntregaAlumnoTareaNotificacion;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Tarea;
 use App\Models\GruposProfesores;
@@ -197,6 +199,7 @@ class AlumnoEntregaTarea extends Controller
         if ($request->archivos) {
             $this->subirArchivosEntrega($request,$idTarea,$idAlumno);
         }
+        $this->notificarProfesor($idTarea,'entrega');
         RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE",$idAlumno);
         return response()->json(['status' => 'Success'], 200);
     }
@@ -210,9 +213,10 @@ class AlumnoEntregaTarea extends Controller
     
                 $this->subirArchivosReHacerTarea($request,$idTarea,$idAlumno);
             }   
+            $this->notificarProfesor($idTarea,'re-entrega');
                 AlumnoEntrega::where('idTareas', $idTarea)->where('idAlumnos', $idAlumno)->update(['re_hacer' => 0]);
                 RegistrosController::store("RE-ENTREGA TAREA",$request->header('token'),"CREATE",$idAlumno);
-    
+
             return response()->json(['status' => 'Success'], 200);
            
         }catch(\Exception $e){
@@ -220,6 +224,23 @@ class AlumnoEntregaTarea extends Controller
         }
            
     }
+
+    public function notificarProfesor($idTarea,$tipo){
+        try{
+            $tarea = ProfesorTarea::where('idTareas', $idTarea)->first();
+            $usuario = usuarios::find($tarea->idProfesor);
+    
+            $details = [
+                'tipo' => $tipo,
+                'deeplink' =>'/listado-entregas/'.$tarea->idGrupo.'/'.$tarea->idMateria.'/'.$idTarea.'/'
+            ];
+            $usuario->notify(new EntregaAlumnoTareaNotificacion($details));
+        }catch(\Exception $e){
+            return ['status' => 'Error'];
+        }
+    
+    }
+
 
 
 
