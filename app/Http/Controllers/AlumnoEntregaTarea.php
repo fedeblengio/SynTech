@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\materia;
+use App\Models\usuarios;
+use App\Notifications\CorreccionTareaNotificacion;
+use App\Notifications\EntregaAlumnoTareaNotificacion;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Tarea;
 use App\Models\GruposProfesores;
@@ -192,13 +196,26 @@ class AlumnoEntregaTarea extends Controller
 
     public function subirTarea($request,$idTarea,$idAlumno)
     {
-        $this->subirEntrega($request,$idTarea,$idAlumno);
+        $request->validate([
+            'mensaje' => 'required | string',
+            'archivos'=> 'array',
+            'nombresArchivo' => 'array'
+        ]);
+    
+      
+        try{
+            $this->subirEntrega($request,$idTarea,$idAlumno);
 
-        if ($request->archivos) {
-            $this->subirArchivosEntrega($request,$idTarea,$idAlumno);
+            if ($request->archivos) {
+                $this->subirArchivosEntrega($request,$idTarea,$idAlumno);
+            }
+            $this->notificarProfesor($idTarea,$idAlumno,'entrega');
+            RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE",$idAlumno);
+            return response()->json(['status' => 'Success'], 200);
+        }catch(\Exception $e){
+            return response()->json(['status' => 'Error'], 400);
         }
-        RegistrosController::store("ENTREGA TAREA",$request->header('token'),"CREATE",$idAlumno);
-        return response()->json(['status' => 'Success'], 200);
+       
     }
 
     public function reHacerTarea($request,$idTarea,$idAlumno)
@@ -210,9 +227,10 @@ class AlumnoEntregaTarea extends Controller
     
                 $this->subirArchivosReHacerTarea($request,$idTarea,$idAlumno);
             }   
+          
                 AlumnoEntrega::where('idTareas', $idTarea)->where('idAlumnos', $idAlumno)->update(['re_hacer' => 0]);
                 RegistrosController::store("RE-ENTREGA TAREA",$request->header('token'),"CREATE",$idAlumno);
-    
+                $this->notificarProfesor($idTarea, $idAlumno,'re-entrega');
             return response()->json(['status' => 'Success'], 200);
            
         }catch(\Exception $e){
@@ -220,6 +238,23 @@ class AlumnoEntregaTarea extends Controller
         }
            
     }
+
+    public function notificarProfesor($idTarea,$idAlumno,$tipo){
+     
+            $tarea = ProfesorTarea::where('idTareas', $idTarea)->first();
+            $usuario = usuarios::find($tarea->idProfesor);
+            $alumno =  usuarios::find($idAlumno);
+            
+            $details = [
+                'tipo' => $tipo,
+                'alumno' => $alumno->nombre,
+                'deeplink' =>'/listado-entregas/'.$tarea->idGrupo.'/'.$tarea->idMateria.'/'.$idTarea.'/'
+            ];
+            $usuario->notify(new EntregaAlumnoTareaNotificacion($details));
+      
+    
+    }
+
 
 
 
@@ -453,11 +488,31 @@ class AlumnoEntregaTarea extends Controller
                     'mensaje_profesor' => $request->mensaje,
                     're_hacer' => $request->re_hacer,
                 ]);
+                $this->enviarNotificacionCorreccion($idAlumno,$idTarea,"correccion", $request->re_hacer);
                 RegistrosController::store("CORRECION ENTREGA",$request->header('token'),"UPDATE","");
                 return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
+    }
+
+    private function enviarNotificacionCorreccion($idAlumno,$idTarea,$tipo,$reHacer){
+        $tarea = ProfesorTarea::where('idTareas',$idTarea)->first();
+        $materia = materia::find($tarea->idMateria);
+        $alumno = usuarios::where('id',$idAlumno)->first();
+        $details = [
+            're_entrega' => $reHacer,
+            'tipo' => $tipo,
+            'materia'=>$materia->nombre,
+            'deeplink' =>'/visualizar-tarea/'.$idTarea.'/'.$idAlumno.'/'
+        ];
+        if($reHacer == 1){
+            $details['deeplink'] =  '/listado-tareas/'.$tarea->idGrupo.'/'.$materia->nombre.'/'.$tarea->idMateria;
+        }else{
+            $details['deeplink'] = '/visualizar-tarea/'.$idTarea.'/'.$idAlumno.'/';
+        }
+       
+        $alumno->notify(new CorreccionTareaNotificacion($details));
     }
 
 
@@ -467,6 +522,7 @@ class AlumnoEntregaTarea extends Controller
         try {
                 AlumnoReHacerTarea::where('idTareas', $idTarea)->where('idAlumnos', $idAlumno)->update(['calificacion' => $request->calificacion, 'mensaje_profesor' => $request->mensaje]);
                 RegistrosController::store("CORRECION RE-ENTREGA",$request->header('token'),"UPDATE","");
+                $this->enviarNotificacionCorreccion($idAlumno,$idTarea,"re-correccion",0);
                 return response()->json(['status' => 'Success'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);

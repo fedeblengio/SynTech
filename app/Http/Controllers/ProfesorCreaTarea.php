@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\alumnoGrupo;
+use App\Notifications\NuevaTareaNotificacion;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Tarea;
@@ -46,29 +48,30 @@ class ProfesorCreaTarea extends Controller
                 $this->subirArchivoTarea($request, $i, $idTarea);
             }
         }
-        $this->enviarEmailAvisoTarea($request);
+        $this->enviarAvisoTarea($request);
 
         RegistrosController::store("TAREA",$request->header('token'),"CREATE",$request->idGrupo);
 
         return response()->json(['status' => 'Success'], 200);
     }
 
-    public function enviarEmailAvisoTarea($request){
+    public function enviarAvisoTarea($request){
         $usuario = usuarios::findOrFail($request->idUsuario);
         $materia = materia::findOrFail($request->idMateria);
 
         $details = [
             'nombreUsuario' => $usuario->nombre,
             'nombreMateria' => $materia->nombre,
-            'grupo' => $request->idGrupo
+            'grupo' => $request->idGrupo,
+            'tipo' => 'tarea',
+            'deeplink' => '/listado-tareas/'.$request->idGrupo.'/'.$materia->nombre.'/'.$request->idMateria
         ];
 
-        $alumnos = $this->getAlumnosEmail($request);
+        $alumnos = $this->getAlumnos($request);
 
         foreach ($alumnos as $a){
-            Mail::to($a->email)->send(new tareaMail($details));
+            $a->notify(new NuevaTareaNotificacion($details));
         }
-
     }
 
 
@@ -204,19 +207,10 @@ class ProfesorCreaTarea extends Controller
 
     public function consultaAlumno($idGrupo,$idMateria,$idUsuario)
     {
-        $variable =  $idUsuario;
-        $variable2 = $idGrupo;
-        $variable3 = $idMateria;
-        if ($idMateria){
-            $peticionSQL = $this->getTareasMateriaForAlumno($variable, $variable2, $variable3);
-            $peticionSQL2 = $this->getReHacerTareasMateriaForAlumno($idGrupo,$idMateria,$idUsuario);
-        }else{
-            $peticionSQL = $this->getTareasForAlumno($variable, $variable2);
-            $peticionSQL2 = $this->getReHacerTareasForAlumno($idGrupo,$idUsuario);
-        }
+        $peticionSQL = $this->getTareasMateriaForAlumno( $idUsuario, $idGrupo, $idMateria);
+        $peticionSQL2 = $this->getReHacerTareasMateriaForAlumno($idUsuario, $idGrupo, $idMateria);
+    
 
-        $TareasNoVencidas = array();
-        $TareasVencidas = array();
         $tarea=array();
         $re_hacer_tarea=array();
         foreach ($peticionSQL as $t) {
@@ -350,14 +344,13 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getAlumnosEmail(Request $request)
+    public function getAlumnos(Request $request)
     {
-        $alumnos = DB::table('alumnos_pertenecen_grupos')
-            ->select('usuarios.email')
-            ->join('usuarios', 'alumnos_pertenecen_grupos.idAlumnos', '=', 'usuarios.id')
-            ->where('alumnos_pertenecen_grupos.idGrupo', $request->idGrupo)
-            ->get();
-        return $alumnos;
+        $alumnos = alumnoGrupo::where('idGrupo', $request->idGrupo)->pluck('idAlumnos');
+
+        $usuarios = usuarios::whereIn('id', $alumnos)->get();
+         
+        return $usuarios;
     }
 
     
@@ -420,16 +413,29 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getTareasMateriaForAlumno($variable, $variable2, $variable3)
+    public function getTareasMateriaForAlumno($idUsuario, $idGrupo ,$idMateria)
     {
-        $peticionSQL = DB::select(
-            DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2 AND idMateria=:variable3) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.id = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
-            array('variable' => $variable, 'variable2' => $variable2, 'variable3' => $variable3)
-        );
+    
+        $peticionSQL = DB::table('profesor_crea_tareas as A')
+        ->select('A.idTareas', 'A.idMateria', 'D.nombre as materia', 'A.idGrupo', 'A.idProfesor', 'E.nombre AS Profesor', 'C.fecha_vencimiento', 'C.descripcion', 'C.titulo')
+        ->leftJoin('alumno_entrega_tareas as B', function ($join) use ($idUsuario) {
+            $join->on('A.idTareas', '=', 'B.idTareas')
+                 ->where('B.idAlumnos', '=', $idUsuario);
+        })
+        ->join('tareas as C', 'C.id', '=', 'A.idTareas')
+        ->join('materias as D', 'D.id', '=', 'A.idMateria')
+        ->join('usuarios as E', 'E.id', '=', 'A.idProfesor')
+        ->where('A.idGrupo', '=', $idGrupo)
+        ->where('A.idMateria', '=', $idMateria)
+        ->whereNull('B.idAlumnos')
+        ->orderBy('A.idTareas', 'DESC')
+        ->get();
+    
+    
         return $peticionSQL;
     }
 
-    public function getReHacerTareasMateriaForAlumno($idGrupo,$idMateria,$idUsuario)
+    public function getReHacerTareasMateriaForAlumno($idUsuario,$idGrupo,$idMateria)
     {
         $peticionSQL2 = DB::table('profesor_crea_tareas')
             ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
@@ -448,33 +454,7 @@ class ProfesorCreaTarea extends Controller
     }
 
   
-    public function getTareasForAlumno($variable, $variable2)
-    {
-        $peticionSQL = DB::select(
-            DB::raw('SELECT A.idTareas , A.idMateria,  D.nombre as materia, A.idGrupo, A.idProfesor,E.nombre AS Profesor, C.fecha_vencimiento ,C.descripcion, C.titulo  FROM (SELECT * from profesor_crea_tareas WHERE idGrupo=:variable2) as A LEFT JOIN (SELECT * FROM alumno_entrega_tareas WHERE idAlumnos=:variable) as B ON A.idTareas = B.idTareas JOIN (SELECT * FROM tareas) as C ON C.id = A.idTareas JOIN (SELECT * FROM materias) as D ON D.id = A.idMateria  JOIN (SELECT * FROM usuarios) as E ON E.id = A.idProfesor WHERE B.idAlumnos IS NULL ORDER BY A.idTareas DESC;'),
-            array('variable' => $variable, 'variable2' => $variable2)
-        );
-        return $peticionSQL;
-    }
-
-  
-    public function getReHacerTareasForAlumno($idGrupo,$idUsuario)
-    {
-        $peticionSQL2 = DB::table('profesor_crea_tareas')
-            ->select('profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idTareas AS idTareas', 'profesor_crea_tareas.idGrupo AS idGrupo', 'profesor_crea_tareas.idProfesor AS idProfesor', 'tareas.fecha_vencimiento AS fecha_vencimiento', 'materias.nombre AS materia', 'tareas.titulo AS titulo', 'tareas.descripcion AS descripcion', 'grupos.nombreCompleto AS nombreGrupo', 'usuarios.nombre AS Profesor')
-            ->join('alumno_entrega_tareas', 'profesor_crea_tareas.idTareas', '=', 'alumno_entrega_tareas.idTareas')
-            ->join('tareas', 'profesor_crea_tareas.idTareas', '=', 'tareas.id')
-            ->join('grupos', 'profesor_crea_tareas.idGrupo', '=', 'grupos.idGrupo')
-            ->join('materias', 'profesor_crea_tareas.idMateria', '=', 'materias.id')
-            ->join('usuarios', 'profesor_crea_tareas.idProfesor', '=', 'usuarios.id')
-            ->where('profesor_crea_tareas.idGrupo', $idGrupo)
-            ->where('alumno_entrega_tareas.idAlumnos', $idUsuario)
-            ->where('alumno_entrega_tareas.re_hacer', "1")
-            ->orderBy('profesor_crea_tareas.idTareas', 'desc')
-            ->get();
-        return $peticionSQL2;
-    }
-
+ 
   
    
 
