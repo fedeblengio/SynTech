@@ -22,7 +22,6 @@ Route::middleware(['verificar_token'])->group(function () {
   // GET AND POST PROFILE IMAGE
   Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen');
   Route::get('/imagen-perfil/{id}', 'App\Http\Controllers\loginController@traerImagen');
-
   // FTP GET FILE
   Route::get('/archivo/{archivo}', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); 
   //USUARIO
@@ -75,13 +74,13 @@ Route::middleware(['verificar_token'])->group(function () {
   
   Route::get('/tarea/{idTarea}/alumno/{idAlumno}/registro', 'App\Http\Controllers\AlumnoEntregaTarea@visualizarEntrega'); 
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/promedio', 'App\Http\Controllers\AlumnoEntregaTarea@promedioMateria');
-
+  
   // NOTIFICACIONES
   Route::get('/notificacion/usuario/{idUsuario}', 'App\Http\Controllers\NotificationController@listarNotificaciones');
   Route::put('/notificacion/{idNotificacion}', 'App\Http\Controllers\NotificationController@marcarLeida');
 });
 
-
+Route::get('/grupo/{idGrupo}/materia/{idMateria}/registro-completo', 'App\Http\Controllers\AlumnoEntregaTarea@descargarRegistroCompleto');
 
 Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); // ENDPOINT PUBLICO
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\alumnoGrupo;
+use App\Models\GruposProfesores;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\usuarios;
@@ -54,8 +56,19 @@ class usuariosController extends Controller
     {
         $user  = usuarios::findOrFail($id);
         $user['username'] = $user->id;
+        $user['grupos'] =$this->getUserGrupos($user);
         $user['imagen_perfil'] = base64_encode(Storage::disk('ftp')->get($user->imagen_perfil));
         return $user;
+    }
+    private function getUserGrupos($user)
+    {
+        if($user->ou == "Profesor"){
+            $grupos = GruposProfesores::where('idProfesor', $user->id)->pluck('idGrupo');
+            return $grupos;
+        }else{
+            $grupos = alumnoGrupo::where('idAlumnos', $user->id)->pluck('idGrupo');
+            return $grupos;
+        }
     }
 
     public function updateToken($request,$id)
