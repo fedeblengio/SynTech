@@ -21,16 +21,15 @@ class LoginTest extends TestCase
     use RefreshDatabase;
    
     
-    public function test_login()
+    public function test_error_login_invalid_user()
     {
         $credentials = $this->createNewUser();
-    
+        
         $response = $this->post('api/login',$credentials);
-
-        $response->assertStatus(200);
+       
+        $response->assertStatus(401);
         $response->assertJsonStructure([
-            'connection',
-            'datos',
+            'error',
         ]);
         $response->assertJson([
             'connection' => 'Success',
@@ -45,13 +44,13 @@ class LoginTest extends TestCase
             'id' => $randomID,
             'ou' => 'Alumno'
         ]);
-        dd($user);
-        $bedelias = alumnos::factory()->create([
+      
+        $alumno = alumnos::factory()->create([
             'id' => $randomID,
             'Cedula_Alumno' => $randomID,
         ]);
 
-        dd($user,$bedelias);
+        
         $this->crearUsuarioLDAP($randomID);
 
         return ['username' => $randomID, 'password' => $randomID];
@@ -60,7 +59,7 @@ class LoginTest extends TestCase
     private function crearUsuarioLDAP($cedula)
     {
 
-        $this->deleteAllUsersInOU();
+        // $this->deleteAllUsersInOU();
 
         $user = (new User)->inside('ou=Testing,dc=syntech,dc=intra');
         $user->cn =$cedula;
@@ -70,6 +69,7 @@ class LoginTest extends TestCase
         $user->refresh();
         $user->userAccountControl = 66048;
         $user->save();
+       
     }
 
   

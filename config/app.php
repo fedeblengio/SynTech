@@ -233,4 +233,6 @@ return [
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
     ],
 
+    'ldap' => require config_path('ldap.php'),
+
 ];

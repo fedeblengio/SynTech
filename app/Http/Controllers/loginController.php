@@ -24,9 +24,13 @@ class loginController extends Controller
         return response()->json($allUsers);
     }
 
+
     public function connect(Request $request)
     {
-
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required',
+        ]);
         $u = usuarios::where('id', $request->username)->first();
         
         if(!empty($u) && !$this->isUserValidForSite($u)){
