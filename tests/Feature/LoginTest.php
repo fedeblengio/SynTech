@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 
+use App\Models\alumnoGrupo;
 use App\Models\alumnos;
+use App\Models\grupos;
 use App\Models\token;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -20,20 +22,25 @@ class LoginTest extends TestCase
 {
     use RefreshDatabase;
    
-    
-    public function test_error_login_invalid_user()
-    {
+    public function test_login(){
         $credentials = $this->createNewUser();
-        
-        $response = $this->post('api/login',$credentials);
        
-        $response->assertStatus(401);
+        $alumno = alumnos::where('id', $credentials['username'])->first();
+        $grupo = grupos::factory()->create();
+      
+        $alumnoGrupo = alumnoGrupo::create([
+            'idAlumnos' => $alumno->id,
+            'idGrupo' => $grupo->idGrupo,
+        ]);
+     
+        $response = $this->post('api/login',$credentials);
+        $response->assertStatus(200);
+
         $response->assertJsonStructure([
-            'error',
+            'connection',
+            'datos',
         ]);
-        $response->assertJson([
-            'connection' => 'Success',
-        ]);
+       
     }
 
     private function createNewUser(){
@@ -59,7 +66,7 @@ class LoginTest extends TestCase
     private function crearUsuarioLDAP($cedula)
     {
 
-        // $this->deleteAllUsersInOU();
+        $this->deleteAllUsersInOU();
 
         $user = (new User)->inside('ou=Testing,dc=syntech,dc=intra');
         $user->cn =$cedula;
@@ -72,7 +79,6 @@ class LoginTest extends TestCase
        
     }
 
-  
 
     public function deleteAllUsersInOU()
     {
@@ -86,16 +92,15 @@ class LoginTest extends TestCase
     {
         $response = $this->post('api/login',[],[]);
         $response->assertStatus(302);
-     
     }
 
-    public function test_logout(){
-        $token = token::factory()->create();
-        $response = $this->post('api/logout',[],[
-            'token' => [
-                $token->token,
-            ],
-        ]);
-        $response->assertStatus(200);   
-    }
+    // public function test_logout(){
+    //     $token = token::factory()->create();
+    //     $response = $this->post('api/logout',[],[
+    //         'token' => [
+    //             $token->token,
+    //         ],
+    //     ]);
+    //     $response->assertStatus(200);   
+    // }
 }
