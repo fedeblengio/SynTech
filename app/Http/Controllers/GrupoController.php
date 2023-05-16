@@ -14,21 +14,17 @@ use App\PDF;
 
 class GrupoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function listarAlumnos(Request $request)
+
+    public function listarAlumnos($idGrupo,$idMateria)
     {
-        $alumnos = $this->getAlumnosGrupoMateria($request);
-        $profesor = $this->getProfesorGrupoMateria($request);
+        $alumnos = $this->getAlumnosGrupoMateria($idGrupo,$idMateria);
+        $profesor = $this->getProfesorGrupoMateria($idGrupo,$idMateria);
 
         $p = [
-            "idGrupo" => $profesor[0]->idGrupo,
-            "idProfesor" => $profesor[0]->idProfesor,
-            "nombre" => $profesor[0]->nombreProfesor,
-            "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($profesor[0]->imagen_perfil)),
+            "idGrupo" => $profesor->idGrupo,
+            "idProfesor" => $profesor->idProfesor,
+            "nombre" => $profesor->nombreProfesor,
+            "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($profesor->imagen_perfil)),
         ];
         $listaAlumnos = array();
 
@@ -51,22 +47,23 @@ class GrupoController extends Controller
         return response()->json($data);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+   
+    public function pasarListaClaseVirtual($idClase, Request $request)
     {
+        $request->validate([
+            'presentes' => 'array',
+            'ausentes' => 'array',
+
+        ]);
         try {
 
             foreach ($request->presentes as $presente) {
-                $this->insertPresentesAulaVirtual($request, $presente);
+                $this->insertPresentesAulaVirtual($idClase, $presente);
             }
             foreach ($request->ausentes as $ausente) {
-                $this->insertAusentesAulaVirtual($request, $ausente);
+                $this->insertAusentesAulaVirtual($idClase, $ausente);
             }
+           
             RegistrosController::store("LISTA",$request->header('token'),"CREATE","");
 
          return response()->json(['status' => 'Success'], 200);
@@ -76,9 +73,9 @@ class GrupoController extends Controller
     }
 
 
-    public function index(Request $request)
+    public function getAllListasFromProfesor($idProfesor)
     {
-        return  self::registroListarTodo($request->idProfesor);
+        return  self::registroListarTodo($idProfesor);
     }
 
     public function registroListarTodo($idProfesor)
@@ -92,27 +89,25 @@ class GrupoController extends Controller
             ->get());
     }
 
-
-
-    public function mostrarFaltasTotalesGlobal(Request $request)
+    public function mostrarFaltasTotalesGlobal($idGrupo,$idMateria)
     {
 
-        $alumnos = $this->getAlumnosGrupoMateria($request);
-        $cantClasesListadas = $this->getCantidadClases($request);
+        $alumnos = $this->getAlumnosGrupoMateria($idGrupo,$idMateria);
+        $cantClasesListadas = $this->getCantidadClases($idGrupo,$idMateria);
 
         $listadoAlumnos = array();
 
     foreach ($alumnos as $a) {
 
-        $cantFaltas = $this->getCantidadFaltas($request, $a);
+        $cantFaltas = $this->getCantidadFaltas($idGrupo,$idMateria, $a);
 
-        $fechas_ausencia = $this->getFechasFaltas($request, $a);
+        $fechas_ausencia = $this->getFechasFaltas($idGrupo,$idMateria, $a);
         $alumno = [
             "idAlumno" => $a->idAlumnos,
             "nombreAlumno" => $a->nombreAlumno,
             "fechas_ausencia"=> $fechas_ausencia,
-            "cantidad_faltas" => $cantFaltas[0]->totalClase,
-            "total_clases" => $cantClasesListadas[0]->totalClase
+            "cantidad_faltas" => $cantFaltas->totalClase,
+            "total_clases" => $cantClasesListadas->totalClase
         ];
         array_push($listadoAlumnos, $alumno);
     }
@@ -130,47 +125,18 @@ class GrupoController extends Controller
             ->where('agenda_clase_virtual.idMateria', $request->idMateria)
             ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
             ->where('lista_aula_virtual.asistencia', "0")
-            ->whereYear('created_at', $fecha_1('Y'))        //->whereYear('created_at', date('Y')) EJEMPLO->whereYear('created_at', date('Y'))
+            ->whereYear('created_at', $fecha_1('Y'))   
             ->groupBy('idAlumnos')
             ->get();
-        /*
-        $alumno=$peticionSQL[0]->idAlumnos;
-        $faltas=0;
 
-        $dataResponse = array();
-        foreach ($peticionSQL as $p) {
-            $fecha_1 = Carbon::parse($request->fecha_filtro)->format('m');
-            $fecha_2 = Carbon::parse($p->created_at)->format('m');
-
-            if($fecha_1 === $fecha_2){  ///COMPARA FECHAS PARA VER SI ES EL MIMSMO MES DE FILTRO
-                $alumno2=$p->idAlumnos;
-
-            if($alumno == $alumno2){ ///COMPARA SI EL ALUMNO SIGUE SIENDO EL MISMO PARA PODER SUMARLE LA FATLA
-                $faltas=$faltas+1;
-                $alumno=$p->idAlumnos;
-            }else{ ///CUANDO EL ALUMNO ES DIFERENTE, TOMA EL ANTERIOR ALUMNO Y GUARADA LAS FALTAS, Y PONE FALTAS=1 PARA EL NUEVO y ALUMNO LO IGUALA AL NUEVO
-                $datos = [
-                    "idAlumnos" => $alumno,
-                    "faltas" => $faltas,
-                ];
-
-                array_push($dataResponse, $datos);
-                $fatlas=1;
-                $alumno=$p->idAlumnos;
-            }
-
-            }
-                    } */
 
         return response()->json($peticionSQL);
     }
 
-
-
-    public function registroClase(Request $request)
+    public function registroClase($idClase)
     {
 
-        $registroClase = listaClaseVirtual::all()->where('idClase', $request->idClase);
+        $registroClase = listaClaseVirtual::all()->where('idClase', $idClase);
         $chequeo = "";
         $dataResponse = array();
         foreach ($registroClase as $p) {
@@ -194,54 +160,23 @@ class GrupoController extends Controller
         return response()->json($dataResponse);
     }
 
-    public function registroAlumno(Request $request)
+
+
+
+    public function modificarLista($idClase,Request $request)
     {
-
-        $registroAlumno = listaClaseVirtual::all()->where('idALumnos', $request->idAlumnos);
-
-
-        foreach ($registroAlumno as $p) {
-            $usuarios = usuarios::where('id', $p->idAlumnos)->first();
-            if ($p->asistencia == "1") {
-                $chequeo = true;
-            } else {
-                $chequeo = false;
-            }
-            $datos = [
-                "idClase" => $p->idClase,
-                "idAlumno" => $p->idAlumnos,
-                "asistencia" => $chequeo,
-                "nombre" => $usuarios->nombre,
-                "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($usuarios->imagen_perfil)),
-            ];
-
-            array_push($dataResponse, $datos);
-        }
-
-        return response()->json($dataResponse);
-    }
-
-
-
-
-
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request)
-    {
+        $request->validate([
+            'presentes' => 'array',
+            'ausentes' => 'array',
+        ]);
         try {
 
             foreach ($request->presentes as $presente) {
-                DB::update('UPDATE lista_aula_virtual set asistencia = 1 where idAlumnos = ?  AND idClase= ?', [$presente,  $request->idClase]);
+                listaClaseVirtual::where('idAlumnos', $presente)->where('idClase', $idClase)->update(['asistencia' => 1]);
+               
             }
             foreach ($request->ausentes as $ausente) {
-                DB::update('UPDATE lista_aula_virtual set asistencia = 0 where idAlumnos = ? AND idClase= ?', [$ausente, $request->idClase]);
+                listaClaseVirtual::where('idAlumnos', $ausente)->where('idClase', $idClase)->update(['asistencia' => 0]);
             }
 
             RegistrosController::store("LISTA",$request->header('token'),"UPDATE","");
@@ -252,114 +187,85 @@ class GrupoController extends Controller
         }
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
-
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getAlumnosGrupoMateria(Request $request): \Illuminate\Support\Collection
+    public function getAlumnosGrupoMateria($idGrupo,$idMateria)
     {
         $alumnos = DB::table('alumnos_pertenecen_grupos')
             ->select('alumnos_pertenecen_grupos.idGrupo AS idGrupo', 'alumnos_pertenecen_grupos.idAlumnos as idAlumnos', 'usuarios.nombre as nombreAlumno', 'usuarios.imagen_perfil')
             ->join('usuarios', 'usuarios.id', '=', 'alumnos_pertenecen_grupos.idAlumnos')
             ->join('profesor_estan_grupo_foro', 'profesor_estan_grupo_foro.idGrupo', '=', 'alumnos_pertenecen_grupos.idGrupo')
-            ->where('alumnos_pertenecen_grupos.idGrupo', $request->idGrupo)
-            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
+            ->where('alumnos_pertenecen_grupos.idGrupo', $idGrupo)
+            ->where('profesor_estan_grupo_foro.idMateria', $idMateria)
             ->get();
         return $alumnos;
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getProfesorGrupoMateria(Request $request): \Illuminate\Support\Collection
+
+    public function getProfesorGrupoMateria($idGrupo,$idMateria)
     {
         $profesor = DB::table('profesor_estan_grupo_foro')
             ->select('profesor_estan_grupo_foro.idGrupo AS idGrupo', 'profesor_estan_grupo_foro.idProfesor', 'usuarios.nombre as nombreProfesor', 'usuarios.imagen_perfil')
             ->join('usuarios', 'usuarios.id', '=', 'profesor_estan_grupo_foro.idProfesor')
-            ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
-            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
-            ->get();
+            ->where('profesor_estan_grupo_foro.idGrupo', $idGrupo)
+            ->where('profesor_estan_grupo_foro.idMateria', $idMateria)
+            ->first();
         return $profesor;
     }
 
-    /**
-     * @param Request $request
-     * @param $presente
-     * @return void
-     */
-    public function insertPresentesAulaVirtual(Request $request, $presente): void
+  
+    public function insertPresentesAulaVirtual($idClase, $presente)
     {
-        DB::insert('INSERT into lista_aula_virtual (idClase, idAlumnos, asistencia, created_at , updated_at) VALUES (?, ?, ?, ? , ?)', [$request->idClase, $presente, 1, Carbon::now(), Carbon::now()]);
+        $nuevaLista = new listaClaseVirtual();
+        $nuevaLista->idClase = $idClase;
+        $nuevaLista->idAlumnos = $presente;
+        $nuevaLista->asistencia = 1;
+        $nuevaLista->save();
     }
 
-    /**
-     * @param Request $request
-     * @param $ausente
-     * @return void
-     */
-    public function insertAusentesAulaVirtual(Request $request, $ausente): void
+
+    public function insertAusentesAulaVirtual($idClase, $ausente)
     {
-        DB::insert('INSERT into lista_aula_virtual (idClase, idAlumnos, asistencia, created_at , updated_at) VALUES (?, ?, ?, ? , ?)', [$request->idClase, $ausente, 0, Carbon::now(), Carbon::now()]);
+        $nuevaLista = new listaClaseVirtual();
+        $nuevaLista->idClase = $idClase;
+        $nuevaLista->idAlumnos = $ausente;
+        $nuevaLista->asistencia = 0;
+        $nuevaLista->save();
+
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Support\Collection
-     */
-    public function getCantidadClases(Request $request): \Illuminate\Support\Collection
+   
+    public function getCantidadClases($idGrupo,$idMateria)
     {
         $cantClasesListadas = DB::table('agenda_clase_virtual')
             ->select(DB::raw('count(*) as totalClase'))
             ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
-            ->where('agenda_clase_virtual.idMateria', $request->idMateria)
-            ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
-            ->get();
+            ->where('agenda_clase_virtual.idMateria', $idMateria)
+            ->where('agenda_clase_virtual.idGrupo', $idGrupo)
+            ->first();
         return $cantClasesListadas;
     }
 
-    /**
-     * @param Request $request
-     * @param $a
-     * @return \Illuminate\Support\Collection
-     */
-    public function getCantidadFaltas(Request $request, $a): \Illuminate\Support\Collection
+  
+    public function getCantidadFaltas($idGrupo,$idMateria, $a)
     {
         $cantFaltas = DB::table('agenda_clase_virtual')
             ->select(DB::raw('count(*) as totalClase'))
             ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
-            ->where('agenda_clase_virtual.idMateria', $request->idMateria)
-            ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+            ->where('agenda_clase_virtual.idMateria', $idMateria)
+            ->where('agenda_clase_virtual.idGrupo', $idGrupo)
             ->where('lista_aula_virtual.idAlumnos', $a->idAlumnos)
             ->where('lista_aula_virtual.asistencia', '0')
-            ->get();
+            ->first();
         return $cantFaltas;
     }
 
-    /**
-     * @param Request $request
-     * @param $a
-     * @return \Illuminate\Support\Collection
-     */
-    public function getFechasFaltas(Request $request, $a): \Illuminate\Support\Collection
+   
+    public function getFechasFaltas($idGrupo,$idMateria, $a)
     {
         $fechas_ausencia = DB::table('agenda_clase_virtual')
             ->select('agenda_clase_virtual.fecha_inicio as fecha_clase')
             ->join('lista_aula_virtual', 'agenda_clase_virtual.id', '=', 'lista_aula_virtual.idClase')
-            ->where('agenda_clase_virtual.idMateria', $request->idMateria)
-            ->where('agenda_clase_virtual.idGrupo', $request->idGrupo)
+            ->where('agenda_clase_virtual.idMateria', $idMateria)
+            ->where('agenda_clase_virtual.idGrupo', $idGrupo)
             ->where('lista_aula_virtual.idAlumnos', $a->idAlumnos)
             ->where('lista_aula_virtual.asistencia', '0')
             ->get();
