@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTokensTable extends Migration
+class Materias extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreateTokensTable extends Migration
      */
     public function up()
     {
-        Schema::create('tokens', function (Blueprint $table) {
+        Schema::create('materias', function (Blueprint $table) {
             $table->id();
-            $table->binary('token');
+            $table->string("nombre");
             $table->timestamps();
-            $table->string('fecha_vencimiento');
+            $table->softDeletes();
         });
     }
 
@@ -28,6 +28,6 @@ class CreateTokensTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tokens');
+        Schema::dropIfExists('materias');
     }
 }

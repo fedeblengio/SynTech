@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTokensTable extends Migration
+class ArchivosTarea extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,15 @@ class CreateTokensTable extends Migration
      */
     public function up()
     {
-        Schema::create('tokens', function (Blueprint $table) {
+        Schema::create('archivos_tarea', function (Blueprint $table) {
             $table->id();
-            $table->binary('token');
+            $table->unsignedBigInteger('idTarea');
+            $table->string('nombreArchivo')->nullable();
             $table->timestamps();
-            $table->string('fecha_vencimiento');
         });
+        Schema::table('archivos_tarea', function(Blueprint $table) {
+            $table->foreign('idTarea')->references('id')->on('tareas');
+        }); 
     }
 
     /**
@@ -28,6 +31,6 @@ class CreateTokensTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tokens');
+        Schema::dropIfExists('archivos_tarea');
     }
 }
