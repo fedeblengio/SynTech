@@ -35,7 +35,7 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::delete('/foro/{id}','App\Http\Controllers\ProfesorEscribeForo@destroy');
 
   //AGENDA CLASE VIRTUAL
-  Route::get('/agenda-clase/usuario/{id}/grupo/{idGrupo}', 'App\Http\Controllers\AgendaClaseVirtualController@show');
+  Route::get('/agenda-clase/usuario/{id}/grupo/{idGrupo}', 'App\Http\Controllers\AgendaClaseVirtualController@index');
   Route::get('/agenda-clase/profesor/{idProfesor}/grupo/{idGrupo}/materia', 'App\Http\Controllers\AgendaClaseVirtualController@getMateriasFromProfesorGrupo');
   Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store');
   Route::delete('/agenda-clase/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@destroy');

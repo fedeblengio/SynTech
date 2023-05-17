@@ -29,16 +29,19 @@ class AgendaClaseVirtualController extends Controller
 
         try {
             $agendarClaseVirtual = new agendaClaseVirtual;
+            $data = $request->all();
+            $data['fecha_inicio']= Carbon::parse($data['fecha_inicio']);
+            $data['fecha_fin']= Carbon::parse($data['fecha_fin']);
             $agendarClaseVirtual->fill($request->all());
             $agendarClaseVirtual->save();
             RegistrosController::store("Clase Virtual", $request->header('token'), "CREATE", $request->idGrupo);
-            return response()->json(['status' => 'Success'], 200);
+            return response()->json($agendarClaseVirtual, 201);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
     }
 
-    public function show($id, $idGrupo)
+    public function index($id, $idGrupo)
     {
         $usuario = usuarios::findOrFail($id);
 
@@ -123,7 +126,7 @@ class AgendaClaseVirtualController extends Controller
     public function consultaProfesor($usuario, $idGrupo)
     {
         $agendaClase = $this->getAgendaClaseProfesor($usuario, $idGrupo);
-
+        dd($agendaClase);
         $dataResponse = array();
 
         foreach ($agendaClase as $clase) {
@@ -146,7 +149,8 @@ class AgendaClaseVirtualController extends Controller
 
     private function getAgendaClaseProfesor($usuario, $idGrupo)
     {
-        return agendaClaseVirtual::where('idProfesor', $usuario->id)->where('idGrupo', $idGrupo)->whereDate('fecha_fin', '>', Carbon::now())->orderBy('fecha_inicio', 'asc')->get();
+        //->whereDate('fecha_fin', '>', Carbon::now())->orderBy('fecha_inicio', 'asc')
+        return agendaClaseVirtual::where('idProfesor', $usuario->id)->where('idGrupo', $idGrupo)->whereDate('fecha_fin', '>', Carbon::now())->get();
     }
 
     public function consultaProfesorEvento($usuario)
