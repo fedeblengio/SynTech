@@ -53,17 +53,14 @@ class GrupoController extends Controller
         $request->validate([
             'presentes' => 'array',
             'ausentes' => 'array',
-
         ]);
         try {
-
             foreach ($request->presentes as $presente) {
                 $this->insertPresentesAulaVirtual($idClase, $presente);
             }
             foreach ($request->ausentes as $ausente) {
                 $this->insertAusentesAulaVirtual($idClase, $ausente);
             }
-           
             RegistrosController::store("LISTA",$request->header('token'),"CREATE","");
 
          return response()->json(['status' => 'Success'], 200);
@@ -75,6 +72,7 @@ class GrupoController extends Controller
 
     public function getAllListasFromProfesor($idProfesor)
     {
+     
         return  self::registroListarTodo($idProfesor);
     }
 
@@ -214,6 +212,7 @@ class GrupoController extends Controller
   
     public function insertPresentesAulaVirtual($idClase, $presente)
     {
+    
         $nuevaLista = new listaClaseVirtual();
         $nuevaLista->idClase = $idClase;
         $nuevaLista->idAlumnos = $presente;

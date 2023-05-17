@@ -7,6 +7,7 @@ use App\Models\alumnoGrupo;
 use App\Models\alumnos;
 use App\Models\grupos;
 use App\Models\GruposProfesores;
+use App\Models\listaClaseVirtual;
 use App\Models\token;
 use App\Models\materia;
 use App\Models\profesores;
@@ -114,6 +115,36 @@ class AgendaClaseVirtualControllerTest extends TestCase
 
         $response->assertStatus(302);
     }
+    public function test_eliminar_clase_virtual(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+        ]);
+
+        $response = $this->delete('api/agenda-clase/'.$claseVirtual->id,[],[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $clase = agendaClaseVirtual::find($claseVirtual->id);
+        $this->assertNull($clase);
+
+        
+    }
+
+    public function test_error_eliminar_clase_virtual(){
+        $info = $this->createDataNecesariaParaTest();
+        $randomID = rand();
+        $response = $this->delete('api/agenda-clase/'.$randomID,[],[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(404);
+    }
 
     public function test_listar_clase_virtual_grupo_profesor()
     {
@@ -186,9 +217,155 @@ class AgendaClaseVirtualControllerTest extends TestCase
                 $info['token'],
             ],
         ]);
-        $response->assertStatus(404);
+        $response->assertStatus(200);
         $this->assertEquals(0, count($response->json()));
     }
+
+    public function test_pasar_lista_clase_virtual(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+        ]);
+
+        $alumno2 = alumnos::find($this->createUser("Alumno"));
+
+        $body = [
+            'presentes' => [$info['alumno']->id],
+            'ausentes' => [$alumno2->id],
+        ];
+
+        $response = $this->post('api/agenda-clase/'.$claseVirtual->id.'/asistencia',$body,[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $listaClase = listaClaseVirtual::where('idClase', $claseVirtual->id)->get();
+        $this->assertEquals(2, count($listaClase));
+    }
+
+    public function test_error_pasar_lista_clase_virtual(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+        ]);
+
+       
+        $response = $this->post('api/agenda-clase/'.$claseVirtual->id.'/asistencia',[],[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+
+        $response->assertStatus(400);
+    }
+    public function test_error_body_pasar_lista_clase_virtual(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+        ]);
+
+        $body = [
+            'presentes' => "B",
+            'ausentes' => "A",
+        ];
+       
+        $response = $this->post('api/agenda-clase/'.$claseVirtual->id.'/asistencia',$body,[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(302);
+    }
+
+    public function test_update_lista_clase_virtual(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+        ]);
+        $listaClase = listaClaseVirtual::factory()->create([
+            'idClase' => $claseVirtual->id,
+            'idAlumnos' => $info['alumno']->id,
+            'asistencia' => 0,
+        ]);
+        $body = [
+            'presentes' =>[ $info['alumno']->id],
+            'ausentes' => [],
+        ];
+        $response = $this->put('api/agenda-clase/'.$claseVirtual->id.'/asistencia',$body,[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $listaClase = listaClaseVirtual::where('idClase', $claseVirtual->id)->where('idAlumnos',$info['alumno']->id)->first();
+        $this->assertEquals(1, $listaClase->asistencia);
+    }
+
+    public function test_error_update_lista_clase_virtual(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+        ]);
+        $listaClase = listaClaseVirtual::factory()->create([
+            'idClase' => $claseVirtual->id,
+            'idAlumnos' => $info['alumno']->id,
+            'asistencia' => 0,
+        ]);
+        $body = [
+            'presentes' => $info['alumno']->id,
+            'ausentes' => [],
+        ];
+        $response = $this->put('api/agenda-clase/'.$claseVirtual->id.'/asistencia',$body,[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(302);
+        $listaClase = listaClaseVirtual::where('idClase', $claseVirtual->id)->where('idAlumnos',$info['alumno']->id)->first();
+        $this->assertEquals(0, $listaClase->asistencia);
+    }
+
+    // public function test_get_registro_clases_pasadas(){
+    //     $info = $this->createDataNecesariaParaTest();
+    //     $claseVirtual = agendaClaseVirtual::factory()->create([
+    //         'idProfesor' => $info['profesor']->id,
+    //         'idMateria' => $info['materia']->id,
+    //         'idGrupo' => $info['grupo']->idGrupo,
+    //         'fecha_inicio' => Carbon::now()->subDays(2),
+    //         'fecha_fin' => Carbon::now()->subDays(2),
+    //     ]);
+    //     $response = $this->get('api/agenda-clase/registro/profesor/'.$info['profesor']->id,[
+    //         'token' => [
+    //             $info['token'],
+    //         ],
+    //     ]);
+    //     $response->assertStatus(200);
+    //     $this->assertEquals(1, count($response->json()));
+    // }
+    // ALMOST DONE CHECK CONSULTA SQL 
+
+
+
+
+
+
+
+
+
+
+   
 
 
 
