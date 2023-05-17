@@ -18,8 +18,8 @@ class AgendaClaseVirtual extends Migration
             $table->string('idProfesor');
             $table->unsignedBigInteger('idMateria');
             $table->string('idGrupo',10);
-            $table->string('fecha_inicio');
-            $table->string('fecha_fin');
+            $table->dateTime('fecha_inicio');
+            $table->dateTime('fecha_fin');
             $table->timestamps();
         });
 

@@ -148,7 +148,7 @@ class AgendaClaseVirtualController extends Controller
 
     private function getAgendaClaseProfesor($usuario, $idGrupo)
     {
-        return agendaClaseVirtual::where('idProfesor', $usuario->id)->where('idGrupo', $idGrupo)->whereDate('fecha_fin', '>', Carbon::now())->whereDate('fecha_fin', '>', Carbon::now())->orderBy('fecha_inicio', 'asc')->get();
+        return agendaClaseVirtual::where('idProfesor', $usuario->id)->where('fecha_fin' , '>', Carbon::now())->orderBy('fecha_inicio', 'asc')->get();
     }
 
     public function consultaProfesorEvento($usuario)
