@@ -6,6 +6,7 @@ use App\Models\agendaClaseVirtual;
 use App\Models\alumnoGrupo;
 use App\Models\alumnos;
 use App\Models\grupos;
+use App\Models\GruposProfesores;
 use App\Models\token;
 use App\Models\materia;
 use App\Models\profesores;
@@ -114,7 +115,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $response->assertStatus(302);
     }
 
-    public function test_listar_clase_virtual_grupo()
+    public function test_listar_clase_virtual_grupo_profesor()
     {
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
@@ -129,15 +130,66 @@ class AgendaClaseVirtualControllerTest extends TestCase
             ],
         ]);
         $response->assertStatus(200);
-        dd($response->json());
+        
         $this->assertEquals(1, count($response->json()));
         $this->assertEquals($response->json()[0]['idProfesor'], $claseVirtual->idProfesor);
         $this->assertEquals($response->json()[0]['idMateria'], $claseVirtual->idMateria);
         $this->assertEquals($response->json()[0]['idGrupo'], $claseVirtual->idGrupo);
+    }
 
-        dd($response);
+    public function test_listar_clase_virtual_grupo_alumno()
+    {
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+        ]);
+
+        $response = $this->get('api/agenda-clase/usuario/' . $info['alumno']->id . '/grupo/' . $info['grupo']->idGrupo, [
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        
+        $this->assertEquals(1, count($response->json()));
+        $this->assertEquals($response->json()[0]['idProfesor'], $claseVirtual->idProfesor);
+        $this->assertEquals($response->json()[0]['idMateria'], $claseVirtual->idMateria);
+        $this->assertEquals($response->json()[0]['idGrupo'], $claseVirtual->idGrupo);
+    }
+
+    public function test_listar_materias_from_grupo_profesor(){
+      
+        $info = $this->createDataNecesariaParaTest();
+        $grupoProfesor = GruposProfesores::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+        ]);
+    
+        $response = $this->get('api/agenda-clase/profesor/'.$info['profesor']->id.'/grupo/'.$grupoProfesor['idGrupo'].'/materia', [
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals(1, count($response->json()));
+        $this->assertEquals($response->json()[0]['id'], $grupoProfesor['idMateria']);
 
     }
+
+    public function test_error_listar_materias_from_grupo(){
+      
+        $info = $this->createDataNecesariaParaTest();
+
+        $response = $this->get('api/agenda-clase/profesor/'.$info['profesor']->id.'/grupo/'.$info['grupo']->idGrupo.'/materia', [
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(404);
+        $this->assertEquals(0, count($response->json()));
+    }
+
 
 
 
