@@ -72,19 +72,13 @@ class GrupoController extends Controller
 
     public function getAllListasFromProfesor($idProfesor)
     {
-     
-        return  self::registroListarTodo($idProfesor);
-    }
-
-    public function registroListarTodo($idProfesor)
-    {
-        return response()->json(DB::table('lista_aula_virtual')
-            ->select('lista_aula_virtual.idClase', 'agenda_clase_virtual.idGrupo', 'agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia', 'materias.id AS idMateria', 'lista_aula_virtual.created_at')
-            ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
-            ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
-            ->where('agenda_clase_virtual.idProfesor', $idProfesor)
-            ->distinct()
-            ->get());
+       return listaClaseVirtual::query()
+                ->select('lista_aula_virtual.idClase', 'agenda_clase_virtual.idGrupo', 'agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia', 'materias.id AS idMateria', 'lista_aula_virtual.created_at')
+                ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
+                ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
+                ->where('agenda_clase_virtual.idProfesor', $idProfesor)
+                ->distinct()
+                ->get();
     }
 
     public function mostrarFaltasTotalesGlobal($idGrupo,$idMateria)

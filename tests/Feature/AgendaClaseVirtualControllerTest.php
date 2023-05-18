@@ -337,24 +337,52 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(0, $listaClase->asistencia);
     }
 
-    // public function test_get_registro_clases_pasadas(){
-    //     $info = $this->createDataNecesariaParaTest();
-    //     $claseVirtual = agendaClaseVirtual::factory()->create([
-    //         'idProfesor' => $info['profesor']->id,
-    //         'idMateria' => $info['materia']->id,
-    //         'idGrupo' => $info['grupo']->idGrupo,
-    //         'fecha_inicio' => Carbon::now()->subDays(2),
-    //         'fecha_fin' => Carbon::now()->subDays(2),
-    //     ]);
-    //     $response = $this->get('api/agenda-clase/registro/profesor/'.$info['profesor']->id,[
-    //         'token' => [
-    //             $info['token'],
-    //         ],
-    //     ]);
-    //     $response->assertStatus(200);
-    //     $this->assertEquals(1, count($response->json()));
-    // }
-    // ALMOST DONE CHECK CONSULTA SQL 
+    public function test_get_registro_clases_pasadas(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+            'fecha_inicio' => Carbon::now()->subDays(2),
+            'fecha_fin' => Carbon::now()->subDays(2),
+        ]);
+        $listaClase = listaClaseVirtual::factory()->create([
+            'idClase' => $claseVirtual->id,
+            'idAlumnos' => $info['alumno']->id,
+            'asistencia' => 0,
+        ]);
+    
+        $response = $this->get('api/agenda-clase/registro/profesor/'.$info['profesor']->id,[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals(1, count($response->json()));
+    }
+
+    public function test_error_get_registro_clases_pasadas(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+            'fecha_inicio' => Carbon::now()->subDays(2),
+            'fecha_fin' => Carbon::now()->subDays(2),
+        ]);
+    
+        $response = $this->get('api/agenda-clase/registro/profesor/'.$info['profesor']->id,[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals(0, count($response->json()));
+    }
+
+    
+ 
+
 
 
 
