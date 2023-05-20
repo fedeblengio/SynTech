@@ -74,9 +74,6 @@ class ProfesorEscribeForoControllerTest extends TestCase
         return $randomID;
     }
 
-    // Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@index');
-    // Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store');
-    // Route::delete('/foro/{id}','App\Http\Controllers\ProfesorEscribeForo@destroy');
     public function test_get_publicaciones_foro()
     {
         $info = $this->createDataNecesariaParaTest();
