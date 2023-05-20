@@ -71,6 +71,17 @@ class UsuarioControllerTest extends TestCase
         ]);
         $this->assertEquals($info['alumno']->id, $response['id']);
     }
+    public function test_error_get_usuario()
+    {
+        $info = $this->createDataNecesariaParaTest();
+        $randomID = rand();
+        $response = $this->get('api/usuario/' . $randomID, [
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(404);
+    }
 
     public function test_get_usuario_grupo(){
         $info = $this->createDataNecesariaParaTest();
