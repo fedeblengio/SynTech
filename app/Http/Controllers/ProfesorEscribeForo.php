@@ -22,7 +22,7 @@ class ProfesorEscribeForo extends Controller
             ->where('idGrupo', $idGrupo)->first());
     }
 
-    public function traerGrupos(Request $request,$id)
+    public function traerGrupos(Request $request, $id)
     {
         $usuario = usuarios::findOrFail($id);
         if ($usuario->ou == 'Profesor') {
@@ -53,22 +53,38 @@ class ProfesorEscribeForo extends Controller
         }
     }
 
-    public function show(Request $request)
+    public function getAllPublicaciones($idGrupo, $idUsuario,$limit)
     {
-        if ($request->idMateria) {
-            if ($request->ou == 'Profesor') {
-                return self::traerPublicacionesProfesorMateria($request);
-            } else if ($request->ou == 'Alumno') {
-                return self::traerPublicacionesAlumnoMateria($request);
-            }
-        } else {
-            if ($request->ou == 'Profesor') {
-                return self::traerPublicacionesProfesor($request);
-            } else if ($request->ou == 'Alumno') {
-                return self::traerPublicacionesAlumno($request);
-            }
+        $usuario = usuarios::findOrFail($idUsuario);
+        $data = [
+            'idUsuario' => $idUsuario,
+            'idGrupo' => $idGrupo,
+            'limit' => $limit
+        ];
+
+        if ($usuario->ou == 'Profesor') {
+            return self::traerPublicacionesProfesor($data);
+        } else if ($usuario->ou == 'Alumno') {
+            return self::traerPublicacionesAlumno($data);
         }
-        return response()->json(['error' => 'No se encontraron publicaciones'], 404);
+    }
+
+    public function getAllPublicacionesMateria($idGrupo, $idUsuario, $idMateria,$limit)
+    {
+        $usuario = usuarios::findOrFail($idUsuario);
+        $data = [
+            'idUsuario' => $idUsuario,
+            'idGrupo' => $idGrupo,
+            'idMateria' => $idMateria,
+            'limit' => $limit,
+        ];
+        if ($usuario->ou == 'Profesor') {
+            return self::traerPublicacionesProfesorMateria($data);
+        } else if ($usuario->ou == 'Alumno') {
+            return self::traerPublicacionesAlumnoMateria($data);
+        }
+
+        return response()->json([]);
     }
 
 
@@ -309,7 +325,7 @@ class ProfesorEscribeForo extends Controller
     }
 
     public function agregarDatosForo(Request $request)
-    {   
+    {
         $foro = ProfesorForoGrupo::where('idGrupo', $request->idGrupo)->where('idMateria', $request->idMateria)->first();
         $datosForo = new datosForo;
         $datosForo->idForo = $foro->idForo;
@@ -323,7 +339,6 @@ class ProfesorEscribeForo extends Controller
 
     public function destroy(Request $request, $id)
     {
-
         $postForo = datosForo::findOrFail($id);
         $arhivosForo = archivosForo::where('idDato', $id)->get();
         foreach ($arhivosForo as $p) {
@@ -350,11 +365,11 @@ class ProfesorEscribeForo extends Controller
             ->join('grupos_tienen_profesor', 'grupos_tienen_profesor.idGrupo', '=', 'profesor_estan_grupo_foro.idGrupo')
             ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
-            ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
-            ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
+            ->where('profesor_estan_grupo_foro.idProfesor', $request['idUsuario'])
+            ->where('profesor_estan_grupo_foro.idGrupo', $request['idGrupo'])
 
             ->orderBy('id', 'desc')
-            ->take($request->limit)
+            ->take($request['limit'])
             ->distinct()
             ->get();
         return $peticionSQL;
@@ -389,11 +404,11 @@ class ProfesorEscribeForo extends Controller
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
             ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
-            ->where('profesor_estan_grupo_foro.idProfesor', $request->idUsuario)
-            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
-            ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
+            ->where('profesor_estan_grupo_foro.idProfesor', $request['idUsuario'])
+            ->where('profesor_estan_grupo_foro.idMateria', $request['idMateria'])
+            ->where('profesor_estan_grupo_foro.idGrupo', $request['idGrupo'])
             ->orderBy('id', 'desc')
-            ->take($request->limit)
+            ->take($request['limit'])
             ->get();
         return $peticionSQL;
     }
@@ -416,9 +431,9 @@ class ProfesorEscribeForo extends Controller
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
             ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
-            ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
+            ->where('profesor_estan_grupo_foro.idGrupo', $request['idGrupo'])
             ->orderBy('id', 'desc')
-            ->take($request->limit)
+            ->take($request['limit'])
             ->distinct()
             ->get();
         return $peticionSQL;
@@ -432,10 +447,10 @@ class ProfesorEscribeForo extends Controller
             ->join('materias', 'materias.id', '=', 'profesor_estan_grupo_foro.idMateria')
             ->join('datosForo', 'datosForo.idForo', '=', 'profesor_estan_grupo_foro.idForo')
             ->join('usuarios', 'usuarios.id', '=', 'datosForo.idUsuario')
-            ->where('profesor_estan_grupo_foro.idGrupo', $request->idGrupo)
-            ->where('profesor_estan_grupo_foro.idMateria', $request->idMateria)
+            ->where('profesor_estan_grupo_foro.idGrupo', $request['idGrupo'])
+            ->where('profesor_estan_grupo_foro.idMateria', $request['idMateria'])
             ->orderBy('id', 'desc')
-            ->take($request->limit)
+            ->take($request['limit'])
             ->get();
         return $peticionSQL;
     }

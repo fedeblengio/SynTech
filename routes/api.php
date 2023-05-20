@@ -30,7 +30,8 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::get('/usuario/{id}','App\Http\Controllers\usuariosController@show');
   Route::get('/usuario/{id}/grupo', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos');
   //FORO PRINCIPAL PUBLICACIONES
-  Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show');
+  Route::get('/foro/grupo/{idGrupo}/usuario/{idUsuario}/{limit}', 'App\Http\Controllers\ProfesorEscribeForo@getAllPublicaciones');
+  Route::get('/foro/grupo/{idGrupo}/usuario/{idUsuario}/materia/{idMateria}/{limit}', 'App\Http\Controllers\ProfesorEscribeForo@getAllPublicacionesMateria');
   Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store');
   Route::delete('/foro/{id}','App\Http\Controllers\ProfesorEscribeForo@destroy');
 
