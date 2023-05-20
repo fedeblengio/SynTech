@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\usuarios;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use App\Models\material_publico;
+use App\Models\MaterialPublico;
 use App\Models\archivos_material_publico;
 use App\Http\Controllers\RegistrosController;
 use Carbon\Carbon;
@@ -63,7 +64,11 @@ class materialPublicoController extends Controller
             'mensaje' => 'string', 
             'idUsuario' => 'required'
         ]);
-
+        $usuario = usuarios::findOrFail($request->idUsuario);
+        if($usuario->ou != "Profesor"){
+            return response()->json(['status' => 'Unauthorized'], 401);
+        }
+        
         $idDatos = $this->agregarMaterialPublico($request);
 
 
@@ -81,7 +86,7 @@ class materialPublicoController extends Controller
     public function destroy($id,Request $request)
     {
 
-        $materialPublico = material_publico::findOrFail($id);
+        $materialPublico = MaterialPublico::findOrFail($id);
         $arhivosMaterialPublico = archivos_material_publico::where('idMaterialPublico', $materialPublico->id)->get();
         try {
             foreach ($arhivosMaterialPublico as $p) {
@@ -133,7 +138,7 @@ class materialPublicoController extends Controller
   
     public function agregarMaterialPublico(Request $request)
     {
-        $materialPublico = new material_publico;
+        $materialPublico = new MaterialPublico;
         $materialPublico->idUsuario = $request->idUsuario;
         $materialPublico->titulo = $request->titulo;
         $materialPublico->mensaje = $request->mensaje;
