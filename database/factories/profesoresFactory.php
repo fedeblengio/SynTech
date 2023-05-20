@@ -2,21 +2,21 @@
 
 namespace Database\Factories;
 
+use App\Models\profesores;
+use App\Models\usuarios;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class profesoresFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array
-     */
+    protected $model = profesores::class;
     public function definition()
     {
-        $random= $this->faker->unique()->randomNumber($nbDigits = 8);
+        $padded_number = str_pad(mt_rand(1, 9999999), 1 - strlen('1'), '0', STR_PAD_LEFT);
+        $randomID = "1". $padded_number;
+     
         return [
-            'id' => $random,
-            'Cedula_Profesor' => $random,
+            'id' =>  $randomID ,
+            'Cedula_Profesor' =>  $randomID ,
         ];
     }
 }

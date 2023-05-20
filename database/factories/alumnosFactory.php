@@ -15,10 +15,12 @@ class alumnosFactory extends Factory
      */
     public function definition()
     {
-        $random= $this->faker->unique()->randomNumber($nbDigits = 8);
+        $padded_number = str_pad(mt_rand(1, 9999999), 1 - strlen('1'), '0', STR_PAD_LEFT);
+        $randomID = "1". $padded_number;
+   
         return [
-            'id' => $random,
-            'Cedula_Alumno' => $random,
+            'id' => $randomID,
+            'Cedula_Alumno' => $randomID,
         ];
     }
 }

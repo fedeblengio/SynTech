@@ -35,15 +35,15 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::delete('/foro/{id}','App\Http\Controllers\ProfesorEscribeForo@destroy');
 
   //AGENDA CLASE VIRTUAL
-  Route::get('/agenda-clase/usuario/{id}/grupo/{idGrupo}', 'App\Http\Controllers\AgendaClaseVirtualController@show');
+  Route::get('/agenda-clase/usuario/{id}/grupo/{idGrupo}', 'App\Http\Controllers\AgendaClaseVirtualController@index');
   Route::get('/agenda-clase/profesor/{idProfesor}/grupo/{idGrupo}/materia', 'App\Http\Controllers\AgendaClaseVirtualController@getMateriasFromProfesorGrupo');
   Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store');
   Route::delete('/agenda-clase/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@destroy');
   // LISTA
   Route::post('/agenda-clase/{idClase}/asistencia', 'App\Http\Controllers\GrupoController@pasarListaClaseVirtual');
   Route::put('/agenda-clase/{idClase}/asistencia', 'App\Http\Controllers\GrupoController@modificarLista');
+  Route::get('/agenda-clase/{idClase}/asistencia', 'App\Http\Controllers\GrupoController@registroClase');
   // REGISTRO
-  Route::get('/agenda-clase/{idClase}/registro', 'App\Http\Controllers\GrupoController@registroClase');
   Route::get('/agenda-clase/registro/profesor/{idProfesor}', 'App\Http\Controllers\GrupoController@getAllListasFromProfesor');
   // EVENTOS
   Route::get('/evento/usuario/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@consultaEventos');
