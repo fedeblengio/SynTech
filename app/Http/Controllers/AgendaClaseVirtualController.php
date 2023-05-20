@@ -54,6 +54,7 @@ class AgendaClaseVirtualController extends Controller
 
     public function consultaEventos(Request $request, $id)
     {
+      
         $usuario = usuarios::findOrFail($id);
         if ($usuario->ou == 'Profesor') {
             return self::consultaProfesorEvento($usuario);
@@ -101,7 +102,7 @@ class AgendaClaseVirtualController extends Controller
     public function consultaAlumnoEvento($usuario)
     {
         $idGrupos = $this->getAlumnoGrupos($usuario);
-
+        
         $agendaClase = $this->getAgendaClasesVirtualTodayAlumno($idGrupos);
 
         $dataResponse = array();
@@ -218,12 +219,10 @@ class AgendaClaseVirtualController extends Controller
 
     public function getAgendaClasesVirtualTodayAlumno($idGrupos)
     {
-        return agendaClaseVirtual::whereIn('idGrupo', $idGrupos)->where('fecha_fin', '>', Carbon::now())->where('fecha_inicio', Carbon::today())->orderBy('fecha_inicio', 'asc')->get();
+       return agendaClaseVirtual::whereIn('idGrupo', $idGrupos)->whereDate('fecha_inicio', Carbon::today())->where('fecha_fin', '>', Carbon::now())->orderBy('fecha_inicio', 'asc')->get();
     }
-
-
     public function getAgendaClaseVirtualToday($usuario)
     {
-        return agendaClaseVirtual::where('idProfesor', $usuario->id)->where('fecha_fin', '>', Carbon::now())->where('fecha_inicio', Carbon::today())->orderBy('fecha_inicio', 'asc')->get();
+        return agendaClaseVirtual::where('idProfesor', $usuario->id)->whereDate('fecha_inicio', Carbon::today())->where('fecha_fin', '>', Carbon::now())->orderBy('fecha_inicio', 'asc')->get();
     }
 }

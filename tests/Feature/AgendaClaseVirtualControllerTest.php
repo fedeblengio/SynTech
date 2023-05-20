@@ -418,6 +418,63 @@ class AgendaClaseVirtualControllerTest extends TestCase
        
     }
 
+    public function test_get_eventos_hoy_alumno(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+            'fecha_inicio' => Carbon::now(),
+            'fecha_fin' => Carbon::now()->addHour(),
+        ]);
+
+        $response = $this->get('api/evento/usuario/'. $info['alumno']->id,[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals(1, count($response->json()));
+    }
+
+    public function test_get_eventos_hoy_profesor(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+            'fecha_inicio' => Carbon::now(),
+            'fecha_fin' => Carbon::now()->addHour(),
+        ]);
+
+        $response = $this->get('api/evento/usuario/'. $info['profesor']->id,[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals(1, count($response->json()));
+    }
+
+    public function test_error_get_eventos_hoy_usuario(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+            'fecha_inicio' => Carbon::now()->addDay(),
+            'fecha_fin' => Carbon::now()->addDay()->addHour(),
+        ]);
+
+        $response = $this->get('api/evento/usuario/'. $info['profesor']->id,[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals(0, count($response->json()));
+    }
+
     
  
 
