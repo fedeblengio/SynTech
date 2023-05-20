@@ -380,6 +380,44 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(0, count($response->json()));
     }
 
+    public function test_get_lista_clase_virtual(){
+        $info = $this->createDataNecesariaParaTest();
+        $claseVirtual = agendaClaseVirtual::factory()->create([
+            'idProfesor' => $info['profesor']->id,
+            'idMateria' => $info['materia']->id,
+            'idGrupo' => $info['grupo']->idGrupo,
+            'fecha_inicio' => Carbon::now()->subDays(2),
+            'fecha_fin' => Carbon::now()->subDays(2),
+        ]);
+        $listaClase = listaClaseVirtual::factory()->create([
+            'idClase' => $claseVirtual->id,
+            'idAlumnos' => $info['alumno']->id,
+            'asistencia' => 0,
+        ]);
+
+        $response = $this->get('api/agenda-clase/'.$claseVirtual->id.'/asistencia/',[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals(1, count($response->json()));
+        $this->assertEquals($response->json()[0]['idAlumno'], $info['alumno']->id);
+    }
+
+    public function test_error_get_lista_clase_virutal(){
+        $info = $this->createDataNecesariaParaTest();
+        $randomID = rand();
+        $response = $this->get('api/agenda-clase/'.$randomID.'/asistencia/',[
+            'token' => [
+                $info['token'],
+            ],
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals(0, count($response->json()));
+       
+    }
+
     
  
 

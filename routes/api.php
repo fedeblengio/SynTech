@@ -42,8 +42,8 @@ Route::middleware(['verificar_token'])->group(function () {
   // LISTA
   Route::post('/agenda-clase/{idClase}/asistencia', 'App\Http\Controllers\GrupoController@pasarListaClaseVirtual');
   Route::put('/agenda-clase/{idClase}/asistencia', 'App\Http\Controllers\GrupoController@modificarLista');
+  Route::get('/agenda-clase/{idClase}/asistencia', 'App\Http\Controllers\GrupoController@registroClase');
   // REGISTRO
-  Route::get('/agenda-clase/{idClase}/registro', 'App\Http\Controllers\GrupoController@registroClase');
   Route::get('/agenda-clase/registro/profesor/{idProfesor}', 'App\Http\Controllers\GrupoController@getAllListasFromProfesor');
   // EVENTOS
   Route::get('/evento/usuario/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@consultaEventos');

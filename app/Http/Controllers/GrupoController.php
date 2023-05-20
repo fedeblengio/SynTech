@@ -129,6 +129,9 @@ class GrupoController extends Controller
     {
 
         $registroClase = listaClaseVirtual::all()->where('idClase', $idClase);
+        if(empty($registroClase)){
+            return response()->json([]);
+        }
         $chequeo = "";
         $dataResponse = array();
         foreach ($registroClase as $p) {
