@@ -191,7 +191,6 @@ class ProfesorCreaTareasControllerTest extends TestCase
 
         $response->assertStatus(302);
     }
-    //   Route::put('/tarea/{idTarea}/alumno/{idAlumno}/correccion', 'App\Http\Controllers\AlumnoEntregaTarea@verificarCorreccion');
     public function test_profesor_corrige_tarea()
     {
         $info = $this->createDataNecesariaParaTest();

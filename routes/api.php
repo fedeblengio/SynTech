@@ -60,7 +60,7 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/usuarios/{idUsuario}/tarea', 'App\Http\Controllers\ProfesorCreaTarea@listarTareas');
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/alumno/{idUsuario}/notas', 'App\Http\Controllers\AlumnoEntregaTarea@TareaNotaAlumnoMateria');
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/registro-faltas', 'App\Http\Controllers\GrupoController@mostrarFaltasTotalesGlobal');
-  
+
   Route::get('/tarea/{id}', 'App\Http\Controllers\ProfesorCreaTarea@traerTarea'); 
   Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@store');
   Route::delete('/tarea/{id}', 'App\Http\Controllers\ProfesorCreaTarea@destroy'); 
@@ -79,6 +79,8 @@ Route::middleware(['verificar_token'])->group(function () {
   // NOTIFICACIONES
   Route::get('/notificacion/usuario/{idUsuario}', 'App\Http\Controllers\NotificationController@listarNotificaciones');
   Route::put('/notificacion/{idNotificacion}', 'App\Http\Controllers\NotificationController@marcarLeida');
+
+  Route::post('/logout', 'App\Http\Controllers\loginController@cerrarSesion');
 });
 
 Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); // ENDPOINT PUBLICO

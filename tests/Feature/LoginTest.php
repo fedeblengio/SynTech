@@ -94,13 +94,13 @@ class LoginTest extends TestCase
         $response->assertStatus(302);
     }
 
-    // public function test_logout(){
-    //     $token = token::factory()->create();
-    //     $response = $this->post('api/logout',[],[
-    //         'token' => [
-    //             $token->token,
-    //         ],
-    //     ]);
-    //     $response->assertStatus(200);   
-    // }
+    public function test_logout(){
+        $token = token::factory()->create();
+        $response = $this->post('api/logout',[],[
+            'token' => [
+                $token->token,
+            ],
+        ]);
+        $response->assertStatus(200);   
+    }
 }

@@ -24,6 +24,15 @@ class loginController extends Controller
         return response()->json($allUsers);
     }
 
+    public function cerrarSesion(Request $request)
+    {
+        $token = token::where('token', $request->header('token'))->first();
+        if($token){
+            $token->delete();
+        }
+        return response()->json(['message' => 'Sesion cerrada'], 200);
+    }
+
 
     public function connect(Request $request)
     {
