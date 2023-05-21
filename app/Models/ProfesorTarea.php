@@ -9,4 +9,11 @@ class ProfesorTarea extends Model
 {
     use HasFactory;
     protected $table = 'profesor_crea_tareas';
+
+    protected $fillable = [
+        'idProfesor',
+        'idGrupo',
+        'idMateria',
+        'idTareas',
+    ];
 }

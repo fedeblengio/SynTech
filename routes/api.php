@@ -79,6 +79,8 @@ Route::middleware(['verificar_token'])->group(function () {
   // NOTIFICACIONES
   Route::get('/notificacion/usuario/{idUsuario}', 'App\Http\Controllers\NotificationController@listarNotificaciones');
   Route::put('/notificacion/{idNotificacion}', 'App\Http\Controllers\NotificationController@marcarLeida');
+
+  Route::post('/logout', 'App\Http\Controllers\loginController@cerrarSesion');
 });
 
 Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); // ENDPOINT PUBLICO

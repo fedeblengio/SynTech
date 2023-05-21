@@ -2,29 +2,22 @@
 
 namespace Tests\Feature;
 
-
 use App\Models\alumnoGrupo;
 use App\Models\alumnos;
 use App\Models\grupos;
 use App\Models\token;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-use Tests\TestCase;
-
-
-
 use App\Models\usuarios;
-
+use App\Notifications\TestNotification;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
+use Tests\TestCase;
 use LdapRecord\Models\ActiveDirectory\User;
-
-
-class LoginTest extends TestCase
+class CambiarContraTest extends TestCase
 {
-    use RefreshDatabase;
-   
-    public function test_login(){
+    use RefreshDatabase;   
+    public function buildUpDataForTesting(){
         $credentials = $this->createNewUser();
-       
+        
         $alumno = alumnos::where('id', $credentials['username'])->first();
         $grupo = grupos::factory()->create();
       
@@ -33,14 +26,7 @@ class LoginTest extends TestCase
             'idGrupo' => $grupo->idGrupo,
         ]);
      
-        $response = $this->post('api/login',$credentials);
-        $response->assertStatus(200);
-
-        $response->assertJsonStructure([
-            'connection',
-            'datos',
-        ]);
-       
+        return $alumno;
     }
 
     private function createNewUser(){
@@ -66,9 +52,7 @@ class LoginTest extends TestCase
     private function crearUsuarioLDAP($cedula)
     {
 
-        $this->deleteAllUsersInOU();
-
-        $user = (new User)->inside('ou=Testing,dc=syntech,dc=intra');
+        $user = (new User)->inside('ou=UsuarioSistema,dc=syntech,dc=intra');
         $user->cn =$cedula;
         $user->unicodePwd = $cedula;
         $user->samaccountname = $cedula;
@@ -79,28 +63,36 @@ class LoginTest extends TestCase
        
     }
 
-
-    public function deleteAllUsersInOU()
-    {
-        $users = User::in('ou=Testing,dc=syntech,dc=intra')->get();
-        foreach ($users as $user) {
-            $user->delete();
-        }
-    }
-
-    public function test_error_login()
-    {
-        $response = $this->post('api/login',[],[]);
-        $response->assertStatus(302);
-    }
-
-    public function test_logout(){
+    public function test_cambiar_passwd(){
+        $alumno = $this->buildUpDataForTesting();
         $token = token::factory()->create();
-        $response = $this->post('api/logout',[],[
+
+        $response = $this->put('api/usuario/'.$alumno->id.'/contrasenia', [
+            'newPassword' => "12345678"
+        ], [
             'token' => [
-                $token->token,
+                $token['token'],
             ],
         ]);
-        $response->assertStatus(200);   
+        $response->assertStatus(200);
+
+        // Test Error case in the same functions cuz Active Directory is a s...
+        $response2 = $this->put('api/usuario/'.$alumno->id.'/contrasenia', [
+            'newPassword' => null
+        ], [
+            'token' => [
+                $token['token'],
+            ],
+        ]);
+        $response2->assertStatus(302);
+        $this->deleteUserFromLdap($alumno);
     }
+
+    private function deleteUserFromLdap($alumno){
+        $user = User::find('cn=' . $alumno->id . ',ou=UsuarioSistema,dc=syntech,dc=intra');
+        $user->delete();
+    }
+
+
+
 }
