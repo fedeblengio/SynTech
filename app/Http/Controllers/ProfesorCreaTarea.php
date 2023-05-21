@@ -41,8 +41,6 @@ class ProfesorCreaTarea extends Controller
      
         $this->asignarTarea($request, $idTarea);
 
-       
-
         if ($request->archivos) {
             for ($i=0; $i < count($request->nombresArchivo); $i++){
                 $this->subirArchivoTarea($request, $i, $idTarea);
@@ -149,7 +147,9 @@ class ProfesorCreaTarea extends Controller
     public function traerTarea($id){
         $peticionSQL = $this->getDatosTarea($id);
 
-
+        if(count($peticionSQL) == 0){
+            return response()->json(['status' => 'Tarea no encontrada'], 404);
+        }
         $dataResponse = array();
 
         foreach ($peticionSQL as $p) {
@@ -161,9 +161,7 @@ class ProfesorCreaTarea extends Controller
             $postAuthor = $p->idProfesor;
 
             $usuario = $this->getImagenPerfil($postAuthor);
-
-
-            $img = base64_encode(Storage::disk('ftp')->get($usuario[0]->imagen_perfil));
+            $img = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
 
             foreach ($peticionSQLFiltrada as $p2) {
                 $resultado = Str::contains($p2->archivo, ['.pdf','.PDF','.docx']);
@@ -182,7 +180,7 @@ class ProfesorCreaTarea extends Controller
                 "idTarea" => $p->idTarea,
                 "profile_picture" => $img,
                 "idProfesor" => $p->idProfesor,
-                "nombreProfesor" => $usuario[0]->nombre,
+                "nombreProfesor" => $usuario->nombre,
                 "idMateria" => $p->idMateria,
                 "fechaVencimiento" => $p->fecha_vencimiento,
                 "titulo" => $p->titulo,
@@ -373,12 +371,12 @@ class ProfesorCreaTarea extends Controller
    
     public function getDatosTarea($id)
     {
-        $peticionSQL = DB::table('tareas')
+            $peticionSQL = DB::table('tareas')
             ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento', 'tareas.titulo', 'tareas.descripcion')
             ->join('profesor_crea_tareas', 'tareas.id', '=', 'profesor_crea_tareas.idTareas')
             ->where('tareas.id', $id)
             ->get();
-        return $peticionSQL;
+            return $peticionSQL; 
     }
 
   
@@ -398,7 +396,7 @@ class ProfesorCreaTarea extends Controller
         $usuario = DB::table('usuarios')
             ->select('imagen_perfil', 'id', 'nombre')
             ->where('id', $postAuthor)
-            ->get();
+            ->first();
         return $usuario;
     }
 

@@ -177,7 +177,6 @@ class AlumnoEntregaTarea extends Controller
                 "promedio" => count($notas->toArray()) > 0 ? round(array_sum($notas->toArray()) / count($notas->toArray())) : 0, 
                 "idAlumnos"=>$a->idAlumnos,
                 "nombreAlumno"=>$a->nombre,
-                "asistencia"=>$a->idAlumnos,
                 "porcentajeFaltas"=>round($porcentajeFaltas),
                 "cantidadFaltas"=>$cantidadFaltas,
                 "cantidadClases"=>$totalClases
@@ -374,7 +373,10 @@ class AlumnoEntregaTarea extends Controller
     {
 
         $peticionSQL = $this->getEntregaAlumno($idTarea,$idAlumno);
-
+      
+        if(count($peticionSQL) == 0){
+            return response()->json(['status' => 'No se encontro entrega'], 404);
+        }
         $dataResponse = array();
 
         foreach ($peticionSQL as $p) {
@@ -421,6 +423,9 @@ class AlumnoEntregaTarea extends Controller
 
         $peticionSQL = $this->getReHacerEntregaAlumno($idTarea,$idAlumno);
 
+        if(count($peticionSQL) == 0){
+            return response()->json(['status' => 'No se encontro re-entrega'], 404);
+        }
         $dataResponse = array();
 
         
@@ -520,7 +525,7 @@ class AlumnoEntregaTarea extends Controller
     {   
        
         try {
-                AlumnoReHacerTarea::where('idTareas', $idTarea)->where('idAlumnos', $idAlumno)->update(['calificacion' => $request->calificacion, 'mensaje_profesor' => $request->mensaje]);
+                 AlumnoReHacerTarea::where('idTareas', $idTarea)->where('idAlumnos', $idAlumno)->update(['calificacion' => $request->calificacion, 'mensaje_profesor' => $request->mensaje]);
                 RegistrosController::store("CORRECION RE-ENTREGA",$request->header('token'),"UPDATE","");
                 $this->enviarNotificacionCorreccion($idAlumno,$idTarea,"re-correccion",0);
                 return response()->json(['status' => 'Success'], 200);

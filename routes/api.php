@@ -60,7 +60,7 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/usuarios/{idUsuario}/tarea', 'App\Http\Controllers\ProfesorCreaTarea@listarTareas');
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/alumno/{idUsuario}/notas', 'App\Http\Controllers\AlumnoEntregaTarea@TareaNotaAlumnoMateria');
   Route::get('/grupo/{idGrupo}/materia/{idMateria}/registro-faltas', 'App\Http\Controllers\GrupoController@mostrarFaltasTotalesGlobal');
-
+  
   Route::get('/tarea/{id}', 'App\Http\Controllers\ProfesorCreaTarea@traerTarea'); 
   Route::post('/tarea', 'App\Http\Controllers\ProfesorCreaTarea@store');
   Route::delete('/tarea/{id}', 'App\Http\Controllers\ProfesorCreaTarea@destroy'); 

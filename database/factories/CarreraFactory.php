@@ -15,12 +15,9 @@ class CarreraFactory extends Factory
     public function definition()
     {
         return [
-            'nombre' => $this->faker->colorName." ".$this->faker->word,
+            'nombre' => $this->faker->colorName." ".$this->faker->word." ".$this->faker->randomNumber(),
             'plan' =>$this->faker->year(),
             'categoria'=>$this->faker->randomElement(['Informatica','Disenio Web','Arte','Mecanica','Arquitectura']),
         ];
-        // 'nombre' => "A",
-        // 'plan' =>"2003",
-        // 'categoria'=>"A",
     }
 }
