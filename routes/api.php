@@ -81,7 +81,5 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::put('/notificacion/{idNotificacion}', 'App\Http\Controllers\NotificationController@marcarLeida');
 });
 
-Route::get('/grupo/{idGrupo}/materia/{idMateria}/registro-completo', 'App\Http\Controllers\AlumnoEntregaTarea@descargarRegistroCompleto');
-
 Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); // ENDPOINT PUBLICO
 
