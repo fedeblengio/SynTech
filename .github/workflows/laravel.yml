@@ -30,16 +30,16 @@ jobs:
       run: |
         mkdir -p database
         touch database/database.sqlite
-    - name: AgendaClaseVirtualControllerTest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
-      run: php artisan test --filter=AgendaClaseVirtualControllerTest 
     - name: AlumnoEntregaTareaControllerTest
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=AlumnoEntregaTareaControllerTest
+    - name: AgendaClaseVirtualControllerTest
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+      run: php artisan test --filter=AgendaClaseVirtualControllerTest 
     - name: materialPublicoControllerTest
       env:
         DB_CONNECTION: sqlite
