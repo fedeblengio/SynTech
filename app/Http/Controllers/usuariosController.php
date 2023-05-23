@@ -46,7 +46,7 @@ class usuariosController extends Controller
             $usuario->fill($request->all());
             $usuario->save();
             RegistrosController::store("USUARIO",$request->header('token'),"UPDATE","");
-            return response()->json(["token" => self::updateToken($request,$id)], 200);
+            return response()->json(["token" => self::updateToken($request,$id), "user"=> self::show($id)], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => 'Bad Request'], 400);
         }
@@ -94,10 +94,8 @@ class usuariosController extends Controller
         $tExist = token::where('token', $base64data)->first();
         if ($tExist) {
             $tExist->delete();
-            self::guardarToken($base64data);
-        } else {
-            self::guardarToken($base64data);
         }
+        self::guardarToken($base64data);
 
         return  $base64data;
     }
