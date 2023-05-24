@@ -7,6 +7,7 @@ use App\Models\usuarios;
 use App\Models\GruposProfesores;
 use App\Models\alumnoGrupo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Support\Str;
 use LdapRecord\Connection;
@@ -24,39 +25,36 @@ class loginController extends Controller
         return response()->json($allUsers);
     }
 
+    public function cerrarSesion(Request $request)
+    {
+        $token = token::where('token', $request->header('token'))->first();
+        if($token){
+            $token->delete();
+        }
+        return response()->json(['message' => 'Sesion cerrada'], 200);
+    }
+
+
     public function connect(Request $request)
     {
-
-        $u = usuarios::where('id', $request->username)->first();
-        $grupoProfesor = GruposProfesores::where('idProfesor', $request->username)->first();
-        $grupoAlumno = alumnoGrupo::where('idAlumnos', $request->username)->first();
-
-        switch ($u->ou) {
-            case ('Bedelias');
-                return response()->json(['error' => 'Unauthenticated.'], 401);
-                break;
-            case ('Profesor'):
-                if(!$grupoProfesor){
-                return response()->json(['error' => 'Unauthenticated.'], 401);
-                }
-                break;
-            case ('Alumno'):
-                if(!$grupoAlumno){
-                return response()->json(['error' => 'Unauthenticated.'], 401);
-                }
-                break;
-        }
-
-        $connection = new Connection([
-            'hosts' => ['192.168.50.139'],
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required',
         ]);
-
-        $datos = self::traerDatos($u);
-
+        $u = usuarios::where('id', $request->username)->first();
+        
+        if(!empty($u) && !$this->isUserValidForSite($u)){
+            return response()->json(['error' => 'Unauthenticated.'], 401);
+        }
+   
+        $connection = new Connection([
+            'hosts' => [env('LDAP_HOST')],
+        ]);
+    
         $connection->connect();
 
-
         if ($connection->auth()->attempt($request->username . '@syntech.intra', $request->password, $stayBound = true)) {
+            $datos = self::traerDatos($u);
             return [
                 'connection' => 'Success',
                 'datos' => $datos,
@@ -66,9 +64,19 @@ class loginController extends Controller
         }
     }
 
+    private function isUserValidForSite($u){
+
+        $grupoProfesor = GruposProfesores::where('idProfesor', $u->id)->first();
+        $grupoAlumno = alumnoGrupo::where('idAlumnos', $u->id)->first();
+      
+        if($u->ou == 'Bedelias' || $u->ou == 'Profesor' && !$grupoProfesor || $u->ou == 'Alumno' && !$grupoAlumno ){
+            return false;
+        }
+        return true;
+    }
+
     public function traerDatos($u)
     {
-
 
         $datos = [
             "username" => $u->id,
@@ -105,13 +113,12 @@ class loginController extends Controller
     }
 
 
-
-
     public function cargarImagen(Request $request)
     {
         try {
             $nombre = "";
-            if ($request->hasFile("archivo")) {
+
+            if ($request->hasFile("archivo") && !App::environment(['testing']) ) {
                 $file = $request->archivo;
 
                 $nombre = time() . "_" . $file->getClientOriginalName();
@@ -134,7 +141,7 @@ class loginController extends Controller
 
             if ($usuarios) {
                 DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE id="' . $request->idUsuario . '";');
-                if ($usuarios->imagen_perfil !== "default_picture.png") {
+                if ($usuarios->imagen_perfil !== "default_picture.png" && !App::environment(['testing'])) {
                     Storage::disk('ftp')->delete($usuarios->imagen_perfil);
                 }
             }
@@ -144,10 +151,14 @@ class loginController extends Controller
         }
     }
 
-    public function traerImagen(Request $request)
+    public function traerImagen($id)
     {
-        $usuario = usuarios::where('id', $request->username)->first();
-        $base64imagen = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
+        $usuario = usuarios::findOrFail($id);
+        $base64imagen=" ";
+        if(!App::environment(['testing'])){
+            $base64imagen = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
+        }
+       
         return $base64imagen;
     }
 }

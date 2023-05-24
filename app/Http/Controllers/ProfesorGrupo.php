@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\usuarios;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\RegistrosController;
 use Illuminate\Http\Request;
@@ -16,23 +17,22 @@ class ProfesorGrupo extends Controller
                           ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
                           ->join('usuarios', 'usuarios.id', '=', 'grupos_tienen_profesor.idProfesor')
                           ->where('idProfesor', $request->idProfesor)
-                          ->where('grupos_tienen_profesor.deleted_at', NULL)
                           ->get();
 
         return response()->json($profesor_grupo);
     }
 
-    public function listarMateriasGrupo(Request $request)
+    public function listarMateriasGrupo(Request $request,$id)
     {
-        if ($request->ou == 'Profesor'){
+        $usuario = usuarios::where('id', $request->idUsuario)->first();
+        if ( $usuario->ou == 'Profesor'){
             $materias=DB::table('grupos_tienen_profesor')
             ->select('grupos_tienen_profesor.idMateria AS idMateria', 'materias.nombre AS Materia', 'grupos_tienen_profesor.idGrupo AS idGrupo','grupos.nombreCompleto', 'grupos_tienen_profesor.idProfesor AS idProfesor', 'usuarios.nombre AS Profesor' )
             ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
             ->join('grupos', 'grupos.idGrupo', '=', 'grupos_tienen_profesor.idGrupo') 
             ->join('usuarios', 'usuarios.id', '=', 'grupos_tienen_profesor.idProfesor')
-            ->where('grupos_tienen_profesor.idGrupo', $request->idGrupo)
+            ->where('grupos_tienen_profesor.idGrupo', $id)
             ->where('grupos_tienen_profesor.idProfesor', $request->idUsuario)
-            ->where('grupos_tienen_profesor.deleted_at', NULL)
             ->get();
         }else{
             $materias=DB::table('grupos_tienen_profesor')
@@ -40,7 +40,7 @@ class ProfesorGrupo extends Controller
             ->join('materias', 'grupos_tienen_profesor.idMateria', '=', 'materias.id')
             ->join('grupos', 'grupos.idGrupo', '=', 'grupos_tienen_profesor.idGrupo') 
             ->join('usuarios', 'usuarios.id', '=', 'grupos_tienen_profesor.idProfesor')
-            ->where('grupos_tienen_profesor.idGrupo', $request->idGrupo)
+            ->where('grupos_tienen_profesor.idGrupo',$id)
             ->get();
         }
 

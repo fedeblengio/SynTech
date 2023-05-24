@@ -8,5 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class alumnoGrupo extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'idAlumnos',
+        'idGrupo',
+    ];
     protected $table = 'alumnos_pertenecen_grupos';
 }
