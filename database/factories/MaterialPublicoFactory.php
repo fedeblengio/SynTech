@@ -12,7 +12,7 @@ class MaterialPublicoFactory extends Factory
     public function definition()
     {
         return [
-            'idUsuario' =>  $this->faker->randomElement(usuarios::pluck('id')),
+            'idUsuario' => $this->faker->randomElement(usuarios::pluck('id')),
             'titulo' => $this->faker->text(30)." ".$this->faker->colorName(),
             'mensaje' => $this->faker->text(100),
             'imgEncabezado'=>'encabezadoPredeterminado.jpg'

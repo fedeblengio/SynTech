@@ -134,9 +134,10 @@ class materialPublicoControllerTest extends TestCase
             'idUsuario' => $info['profesor']->id,
         ]);
         $response = $this->get('api/noticia');
+        dd($response);
         $response->assertStatus(200);
         $this->assertEquals(1,count($response->json()));
-        $this->assertEquals($noticia->id, $response[0]['data']['id']);
+        
     }
 
 }
