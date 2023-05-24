@@ -117,7 +117,7 @@ class materialPublicoController extends Controller
     public function getMaterialPublico(Request $request)
     {
         $peticionSQL = DB::table('material_publicos')
-            ->select('material_publicos.id', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
+            ->select('material_publicos.id', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'usuarios.id  as idUsuario', 'material_publicos.imgEncabezado as imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
             ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
             ->orderBy('id', 'desc')
             ->take($request->limit)
