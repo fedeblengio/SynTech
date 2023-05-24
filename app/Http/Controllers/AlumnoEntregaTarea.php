@@ -71,7 +71,6 @@ class AlumnoEntregaTarea extends Controller
             $aux["imagen_perfil_alumno"] = base64_encode(Storage::disk('ftp')->get($imagen_perfil_alumno));
         }
         $aux = [
-            "imagen_perfil_alumno" => base64_encode(Storage::disk('ftp')->get($imagen_perfil_alumno)),
             "primera_entrega" => $primeraE,
             "segunda_entrega" => $segundaE
         ];
@@ -390,9 +389,11 @@ class AlumnoEntregaTarea extends Controller
             $postAuthor = $p->idAlumnos;
 
             $imgPerfil = $this->getImgPerfil($postAuthor);
-
+            if(!App::environment(['testing'])){
             $img = base64_encode(Storage::disk('ftp')->get($imgPerfil));
-
+            }else{
+                $img = $imgPerfil;
+            }
             foreach ($peticionSQLFiltrada as $p2) {
 
                 strpos($p2->archivo, ".pdf") != null ?  array_push($arrayDeArchivos, $p2->archivo) :  array_push($arrayImagenes, $p2->archivo);
@@ -440,9 +441,11 @@ class AlumnoEntregaTarea extends Controller
                 $postAuthor = $p->idAlumnos;
     
                 $imgPerfil = $this->getImgPerfil($postAuthor);
-    
+                if(!App::environment(['testing'])){
                 $img = base64_encode(Storage::disk('ftp')->get($imgPerfil));
-    
+                }else{
+                    $img = $imgPerfil;
+                }
                 foreach ($peticionSQLFiltrada as $p2) {
     
                     strpos($p2->archivo, ".pdf") != null ?  array_push($arrayDeArchivos, $p2->archivo) :  array_push($arrayImagenes, $p2->archivo);
@@ -713,7 +716,9 @@ class AlumnoEntregaTarea extends Controller
     {
         for ($i = 0; $i < count($request->nombresArchivo); $i++) {
             $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
-            Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+            if(!App::environment(['testing'])){
+                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+            }
             $archivosEntrega = new archivosEntrega;
             $archivosEntrega->idTareas = $idTarea;
             $archivosEntrega->idAlumnos = $idAlumno;
@@ -727,7 +732,9 @@ class AlumnoEntregaTarea extends Controller
     {
         for ($i = 0; $i < count($request->nombresArchivo); $i++) {
             $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
-            Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+            if(!App::environment(['testing'])){
+                Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+            }
             $archivosReHacer = new archivosReHacerTarea;
             $archivosReHacer->idTareas = $idTarea;
             $archivosReHacer->idTareasNueva = $idTarea;
