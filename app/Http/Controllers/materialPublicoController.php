@@ -16,12 +16,11 @@ class materialPublicoController extends Controller
 {
     public function index(Request $request)
     {
-        $limit = 100;
-        // if ($request->idUsuario) {
-        //     $peticionSQL = $this->getMaterialPublicoForUsuario($request);
-        // } else {
-            $peticionSQL = $this->getMaterialPublico($limit);
-        // }
+        if ($request->idUsuario) {
+            $peticionSQL = $this->getMaterialPublicoForUsuario($request);
+        } else {
+            $peticionSQL = $this->getMaterialPublico($request);
+        }
 
         $dataResponse = array();
 
@@ -106,23 +105,24 @@ class materialPublicoController extends Controller
     public function getMaterialPublicoForUsuario(Request $request)
     {
         $peticionSQL = DB::table('material_publicos')
-            ->select('material_publicos.id',  'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
+            ->select('material_publicos.id', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
             ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
             ->where('material_publicos.idUsuario', $request->idUsuario)
-            ->orderBy('id', 'desc')
+            ->orderBy('material_publicos.id', 'desc')
             ->take($request->limit)
             ->get();
         return $peticionSQL;
     }
 
-    public function getMaterialPublico($limit)
+    public function getMaterialPublico(Request $request)
     {
         $peticionSQL = DB::table('material_publicos')
-            ->select('material_publicos.id', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'usuarios.id  as idUsuario', 'material_publicos.imgEncabezado as ', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
+            ->select('material_publicos.id', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'usuarios.id AS idUsuario', 'material_publicos.imgEncabezado AS imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
             ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
-            ->orderBy('id', 'desc')
-            ->take($limit)
+            ->orderBy('material_publicos.id', 'desc')
+            ->take($request->limit)
             ->get();
+
         return $peticionSQL;
     }
 
