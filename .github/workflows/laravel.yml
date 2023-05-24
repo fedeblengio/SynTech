@@ -32,6 +32,8 @@ jobs:
         touch database/database.sqlite
     - name: Cache clear 
       run: php artisan config:cache
+    - name: Config clear  
+      run: php artisan config:clear
     - name: UsuarioControllerTest
       env:
         DB_CONNECTION: sqlite
@@ -62,8 +64,6 @@ jobs:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=ProfesorEscribeForoControllerTest 
-    - name: Config clear  
-      run: php artisan config:clear
     - name: CambiarContraTest
       env:
         DB_CONNECTION: sqlite
