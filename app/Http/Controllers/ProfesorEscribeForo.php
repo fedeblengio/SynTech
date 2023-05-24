@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\usuarios;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use App\Models\datosForo;
 use App\Models\Foro;
@@ -53,7 +54,7 @@ class ProfesorEscribeForo extends Controller
         }
     }
 
-    public function getAllPublicaciones($idGrupo, $idUsuario,$limit)
+    public function getAllPublicaciones($idGrupo, $idUsuario, $limit)
     {
         $usuario = usuarios::findOrFail($idUsuario);
         $data = [
@@ -69,7 +70,7 @@ class ProfesorEscribeForo extends Controller
         }
     }
 
-    public function getAllPublicacionesMateria($idGrupo, $idUsuario, $idMateria,$limit)
+    public function getAllPublicacionesMateria($idGrupo, $idUsuario, $idMateria, $limit)
     {
         $usuario = usuarios::findOrFail($idUsuario);
         $data = [
@@ -105,8 +106,12 @@ class ProfesorEscribeForo extends Controller
             $arrayImagenes = array();
             $postAuthor = $p->postAuthor;
             $imgPerfil = $this->getImagenPefil($postAuthor);
+            if (!App::environment(['testing'])) {
+                $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
+            } else {
+                $img = $imgPerfil[0]->imagen_perfil;
+            }
 
-            $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
 
 
             foreach ($peticionSQLFiltrada as $p2) {
@@ -115,7 +120,12 @@ class ProfesorEscribeForo extends Controller
                 if ($resultado) {
                     array_push($arrayArchivos, $p2->archivo);
                 } else {
-                    array_push($arrayImagenes, base64_encode(Storage::disk('ftp')->get($p2->archivo)));
+                    if (!App::environment(['testing'])) {
+                        array_push($arrayImagenes, base64_encode(Storage::disk('ftp')->get($p2->archivo)));
+                    } else {
+                        array_push($arrayImagenes, $p2->archivo);
+                    }
+
                 }
             }
 
@@ -211,8 +221,12 @@ class ProfesorEscribeForo extends Controller
             $postAuthor = $p->postAuthor;
 
             $imgPerfil = $this->getImagenPefil($postAuthor);
+            if (!App::environment(['testing'])) {
+                $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
+            } else {
+                $img = $imgPerfil[0]->imagen_perfil;
+            }
 
-            $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
 
             foreach ($peticionSQLFiltrada as $p2) {
 
@@ -263,8 +277,12 @@ class ProfesorEscribeForo extends Controller
             $postAuthor = $p->postAuthor;
 
             $imgPerfil = $this->getImagenPefil($postAuthor);
-
-            $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
+            if (!App::environment(['testing'])) {
+                $img = base64_encode(Storage::disk('ftp')->get($imgPerfil[0]->imagen_perfil));
+            }else{
+                $img = $imgPerfil[0]->imagen_perfil;
+            }
+          
 
             foreach ($peticionSQLFiltrada as $p2) {
 
@@ -342,7 +360,10 @@ class ProfesorEscribeForo extends Controller
         $postForo = datosForo::findOrFail($id);
         $arhivosForo = archivosForo::where('idDato', $id)->get();
         foreach ($arhivosForo as $p) {
-            Storage::disk('ftp')->delete($p->nombreArchivo);
+            if (!App::environment(['testing'])) {
+                Storage::disk('ftp')->delete($p->nombreArchivo);
+            }
+          
             $arhivosId = archivosForo::where('id', $p->id)->first();
             $arhivosId->delete();
         }
@@ -463,7 +484,10 @@ class ProfesorEscribeForo extends Controller
     {
         $foro = ProfesorForoGrupo::where('idGrupo', $request->idGrupo)->where('idMateria', $request->idMateria)->first();
         $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
-        Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+        if (!App::environment(['testing'])) {
+            Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+        }
+       
         $archivosForo = new archivosForo;
         $archivosForo->idDato = $idDatos;
         $archivosForo->idForo = $foro->idForo;

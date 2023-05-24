@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -24,8 +25,11 @@ class GrupoController extends Controller
             "idGrupo" => $profesor->idGrupo,
             "idProfesor" => $profesor->idProfesor,
             "nombre" => $profesor->nombreProfesor,
-            "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($profesor->imagen_perfil)),
+         
         ];
+        if(!App::environment(['testing'])){
+            $p["imagen_perfil"] =base64_encode(Storage::disk('ftp')->get($profesor->imagen_perfil));
+        }
         $listaAlumnos = array();
 
         foreach ($alumnos as $a) {
@@ -34,8 +38,11 @@ class GrupoController extends Controller
                 "idGrupo" => $a->idGrupo,
                 "idAlumnos" => $a->idAlumnos,
                 "nombre" => $a->nombreAlumno,
-                "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($a->imagen_perfil)),
             ];
+
+            if(!App::environment(['testing'])){
+                $alumno["imagen_perfil"] = base64_encode(Storage::disk('ftp')->get($a->imagen_perfil));
+            }
             array_push($listaAlumnos, $alumno);
         }
 
@@ -146,8 +153,10 @@ class GrupoController extends Controller
                 "idAlumno" => $p->idAlumnos,
                 "asistencia" => $chequeo,
                 "nombre" => $usuarios->nombre,
-                "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($usuarios->imagen_perfil)),
             ];
+            if(!App::environment(['testing'])){
+                $datos["imagen_perfil"] =base64_encode(Storage::disk('ftp')->get($usuarios->imagen_perfil));
+            }
 
             array_push($dataResponse, $datos);
         }

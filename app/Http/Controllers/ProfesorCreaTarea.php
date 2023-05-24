@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\alumnoGrupo;
 use App\Notifications\NuevaTareaNotificacion;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Tarea;
 use App\Models\AlumnoEntrega;
@@ -161,8 +162,11 @@ class ProfesorCreaTarea extends Controller
             $postAuthor = $p->idProfesor;
 
             $usuario = $this->getImagenPerfil($postAuthor);
+            if (!App::environment(['testing'])) {
             $img = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
-
+            }else{
+                $img = $usuario->imagen_perfil;
+            }
             foreach ($peticionSQLFiltrada as $p2) {
                 $resultado = Str::contains($p2->archivo, ['.pdf','.PDF','.docx']);
             
@@ -334,7 +338,9 @@ class ProfesorCreaTarea extends Controller
     public function subirArchivoTarea(Request $request, int $i, $idTareas)
     {
         $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
+        if (!App::environment(['testing'])) {
         Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+        }
         $archivosTarea = new archivosTarea;
         $archivosTarea->idTarea = $idTareas;
         $archivosTarea->nombreArchivo = $nombreArchivo;
@@ -460,7 +466,9 @@ class ProfesorCreaTarea extends Controller
     public function deleteReHacerTareas($eliminarArchivosReHacer, Request $request)
     {
         foreach ($eliminarArchivosReHacer as $t) {
+            if (!App::environment(['testing'])) {
             Storage::disk('ftp')->delete($t->nombreArchivo);
+            }
             $archivosId = archivosReHacerTarea::where('id', $t->id)->first();
             $archivosId->delete();
             $t->delete();
@@ -472,7 +480,9 @@ class ProfesorCreaTarea extends Controller
     public function deleteEntregasTareas($eliminarArchivosEntrega, Request $request)
     {
         foreach ($eliminarArchivosEntrega as $u) {
+            if (!App::environment(['testing'])) {
             Storage::disk('ftp')->delete($u->nombreArchivo);
+            }
             $archivosId = archivosEntrega::where('id', $u->id)->first();
             $archivosId->delete();
             $u->delete();
@@ -483,7 +493,9 @@ class ProfesorCreaTarea extends Controller
     public function deleteTareaProfesor($eliminarArchivos, Request $request)
     {
         foreach ($eliminarArchivos as $p) {
+            if (!App::environment(['testing'])) {
             Storage::disk('ftp')->delete($p->nombreArchivo);
+            }
             $archivosId = archivosTarea::where('id', $p->id)->first();
             $archivosId->delete();
             $p->delete();
