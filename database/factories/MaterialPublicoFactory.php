@@ -13,7 +13,7 @@ class MaterialPublicoFactory extends Factory
     {
         return [
             'idUsuario' =>  $this->faker->randomElement(usuarios::pluck('id')),
-            'titulo' => $this->faker->text(20),
+            'titulo' => $this->faker->text(30)." ".$this->faker->text(3),
             'mensaje' => $this->faker->text(100),
             'imgEncabezado'=>'encabezadoPredeterminado.jpg'
         ];
