@@ -7,6 +7,7 @@ use App\Models\usuarios;
 use App\Models\GruposProfesores;
 use App\Models\alumnoGrupo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use LdapRecord\Models\ActiveDirectory\User;
 use Illuminate\Support\Str;
 use LdapRecord\Connection;
@@ -24,13 +25,25 @@ class loginController extends Controller
         return response()->json($allUsers);
     }
 
+    public function cerrarSesion(Request $request)
+    {
+        $token = token::where('token', $request->header('token'))->first();
+        if($token){
+            $token->delete();
+        }
+        return response()->json(['message' => 'Sesion cerrada'], 200);
+    }
+
+
     public function connect(Request $request)
     {
-
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required',
+        ]);
         $u = usuarios::where('id', $request->username)->first();
-       
-        if(!$this->isUserValidForSite($u)){
-            
+        
+        if(!empty($u) && !$this->isUserValidForSite($u)){
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }
    
@@ -104,7 +117,8 @@ class loginController extends Controller
     {
         try {
             $nombre = "";
-            if ($request->hasFile("archivo")) {
+
+            if ($request->hasFile("archivo") && !App::environment(['testing']) ) {
                 $file = $request->archivo;
 
                 $nombre = time() . "_" . $file->getClientOriginalName();
@@ -127,7 +141,7 @@ class loginController extends Controller
 
             if ($usuarios) {
                 DB::update('UPDATE usuarios SET imagen_perfil="' . $nombre . '" WHERE id="' . $request->idUsuario . '";');
-                if ($usuarios->imagen_perfil !== "default_picture.png") {
+                if ($usuarios->imagen_perfil !== "default_picture.png" && !App::environment(['testing'])) {
                     Storage::disk('ftp')->delete($usuarios->imagen_perfil);
                 }
             }
@@ -140,7 +154,11 @@ class loginController extends Controller
     public function traerImagen($id)
     {
         $usuario = usuarios::findOrFail($id);
-        $base64imagen = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
+        $base64imagen=" ";
+        if(!App::environment(['testing'])){
+            $base64imagen = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
+        }
+       
         return $base64imagen;
     }
 }
