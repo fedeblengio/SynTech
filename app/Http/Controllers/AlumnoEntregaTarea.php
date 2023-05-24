@@ -19,7 +19,7 @@ use App\Http\Controllers\RegistrosController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\App;
 use function PHPUnit\Framework\isNull;
 
 class AlumnoEntregaTarea extends Controller
@@ -67,7 +67,9 @@ class AlumnoEntregaTarea extends Controller
             "entrega" => $segunda_entrega,
             "archivosAlumno" => $archivosAlumno2,
         ];
-
+        if(!App::environment(['testing'])){
+            $aux["imagen_perfil_alumno"] = base64_encode(Storage::disk('ftp')->get($imagen_perfil_alumno));
+        }
         $aux = [
             "imagen_perfil_alumno" => base64_encode(Storage::disk('ftp')->get($imagen_perfil_alumno)),
             "primera_entrega" => $primeraE,

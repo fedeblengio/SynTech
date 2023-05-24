@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Http\Controllers\RegistrosController;
 use Illuminate\Support\Facades\DB;
 use LdapRecord\Models\ActiveDirectory\User;
+use Illuminate\Support\Facades\App;
 
 class usuariosController extends Controller
 {
@@ -57,7 +58,9 @@ class usuariosController extends Controller
         $user  = usuarios::findOrFail($id);
         $user['username'] = $user->id;
         $user['grupos'] =$this->getUserGrupos($user);
-        $user['imagen_perfil'] = base64_encode(Storage::disk('ftp')->get($user->imagen_perfil));
+        if(!App::environment(['testing'])){
+            $user['imagen_perfil'] = base64_encode(Storage::disk('ftp')->get($user->imagen_perfil));
+        }
         return $user;
     }
     private function getUserGrupos($user)
