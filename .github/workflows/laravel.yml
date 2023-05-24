@@ -32,16 +32,21 @@ jobs:
         touch database/database.sqlite
     - name: Cache clear 
       run: php artisan config:cache
-    - name: AlumnoEntregaTareaControllerTest
+    - name: UsuarioControllerTest
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
-      run: php artisan test --filter=AlumnoEntregaTareaControllerTest
+      run: php artisan test --filter=UsuarioControllerTest
     - name: AgendaClaseVirtualControllerTest
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
-      run: php artisan test --filter=AgendaClaseVirtualControllerTest 
+      run: php artisan test --filter=AgendaClaseVirtualControllerTest
+    - name: AlumnoEntregaTareaControllerTest
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+      run: php artisan test --filter=AlumnoEntregaTareaControllerTest 
     - name: materialPublicoControllerTest
       env:
         DB_CONNECTION: sqlite
@@ -57,11 +62,6 @@ jobs:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=ProfesorEscribeForoControllerTest 
-    - name: UsuarioControllerTest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
-      run: php artisan test --filter=UsuarioControllerTest
     - name: Config clear  
       run: php artisan config:clear
     - name: CambiarContraTest
