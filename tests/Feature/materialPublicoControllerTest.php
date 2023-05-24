@@ -48,9 +48,6 @@ class materialPublicoControllerTest extends TestCase
         return $randomID;
     }
 
-    // Route::post('/noticia','App\Http\Controllers\materialPublicoController@store');
-    // Route::delete('/noticia/{id}','App\Http\Controllers\materialPublicoController@destroy'); 
-
     public function test_publicar_noticia(){
         $info = $this->createDataNecesariaParaTest();
         $mensaje = [
