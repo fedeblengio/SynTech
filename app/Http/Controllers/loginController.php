@@ -42,8 +42,8 @@ class loginController extends Controller
             'password' => 'required',
         ]);
         $u = usuarios::where('id', $request->username)->first();
-   
-        if(empty($u) && !$this->isUserValidForSite($u)){
+        
+        if(empty($u) || !$this->isUserValidForSite($u)){
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }
    
@@ -65,7 +65,7 @@ class loginController extends Controller
     }
 
     private function isUserValidForSite($u){
-
+        
         $grupoProfesor = GruposProfesores::where('idProfesor', $u->id)->first();
         $grupoAlumno = alumnoGrupo::where('idAlumnos', $u->id)->first();
       
