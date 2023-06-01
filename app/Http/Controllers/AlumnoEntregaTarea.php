@@ -67,13 +67,13 @@ class AlumnoEntregaTarea extends Controller
             "entrega" => $segunda_entrega,
             "archivosAlumno" => $archivosAlumno2,
         ];
+   
         if(!App::environment(['testing'])){
             $aux["imagen_perfil_alumno"] = base64_encode(Storage::disk('ftp')->get($imagen_perfil_alumno));
         }
-        $aux = [
-            "primera_entrega" => $primeraE,
-            "segunda_entrega" => $segundaE
-        ];
+        $aux["primera_entrega"]= $primeraE;
+        $aux["segunda_entrega"]= $segundaE;
+    
 
         return response()->json($aux);
     }
