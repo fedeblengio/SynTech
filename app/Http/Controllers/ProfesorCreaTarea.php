@@ -269,21 +269,7 @@ class ProfesorCreaTarea extends Controller
 
  
 
-    public function update(Request $request)
-    {
-        $modificarDatosTarea = Tarea::where('id', $request->id)->first();
-
-        try {
-            $modificarDatosTarea->titulo = $request->titulo;
-            $modificarDatosTarea->descripcion = $request->descripcion;
-            $modificarDatosTarea->fecha_vencimiento = $request->fecha_vencimiento;
-            $modificarDatosTarea->save();
-            RegistrosController::store("TAREA",$request->header('token'),"UPDATE",$request->titulo);
-            return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'Bad Request'], 400);
-        }
-    }
+    
 
     public function destroy($id, Request $request)
     {
