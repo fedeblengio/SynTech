@@ -14,7 +14,6 @@ class NuevaTareaNotificacion extends Notification
     public $details;
 
   
-
     public function __construct($details)
     {
         $this->details = $details;
@@ -24,10 +23,11 @@ class NuevaTareaNotificacion extends Notification
     {
         return ['database'];
     }
+    
 
- 
     public function toArray($notifiable)
     {
         return $this->details;
     }
+
 }

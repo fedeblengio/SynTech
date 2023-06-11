@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Jobs\ProfesorCreaTareaJob;
 use App\Models\alumnoGrupo;
 use App\Notifications\NuevaTareaNotificacion;
 use Carbon\Carbon;
@@ -70,6 +71,7 @@ class ProfesorCreaTarea extends Controller
 
         foreach ($alumnos as $a){
             $a->notify(new NuevaTareaNotificacion($details));
+            dispatch(new ProfesorCreaTareaJob($details,$a));
         }
     }
 
