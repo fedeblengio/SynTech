@@ -62,6 +62,7 @@ class AlumnoEntregaTarea extends Controller
             "entrega" => $primera_entrega,
             "archivosAlumno" => $archivosAlumno1,
         ];
+        
 
         $segundaE = [
             "entrega" => $segunda_entrega,
