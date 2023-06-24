@@ -61,7 +61,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
 
         return $randomID;
     }
-    public function test_crear_clase_virtual()
+    public function testCrearClaseVirtual()
     {
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = [
@@ -84,7 +84,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $response->assertSee($claseVirtual['idGrupo']);
     }
 
-    public function test_error_crear_clase_virtual_sin_token()
+    public function testErrorCrearClaseVirtualSinToken()
     {
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = [
@@ -98,7 +98,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $response = $this->post('api/agenda-clase', $claseVirtual);
         $response->assertStatus(401);
     }
-    public function test_error_crear_clase_virtual()
+    public function testErrorCrearClaseVirtual()
     {
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = [
@@ -115,7 +115,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
 
         $response->assertStatus(302);
     }
-    public function test_eliminar_clase_virtual(){
+    public function testEliminarClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -135,7 +135,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         
     }
 
-    public function test_error_eliminar_clase_virtual(){
+    public function testErrorEliminarClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
         $randomID = rand();
         $response = $this->delete('api/agenda-clase/'.$randomID,[],[
@@ -146,7 +146,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_listar_clase_virtual_grupo_profesor()
+    public function testListarClaseVirtualGrupoProfesor()
     {
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
@@ -168,7 +168,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals($response->json()[0]['idGrupo'], $claseVirtual->idGrupo);
     }
 
-    public function test_listar_clase_virtual_grupo_alumno()
+    public function testListarClaseVirtualGrupoAlumno()
     {
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
@@ -190,7 +190,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals($response->json()[0]['idGrupo'], $claseVirtual->idGrupo);
     }
 
-    public function test_listar_materias_from_grupo_profesor(){
+    public function testListarMateriasFromGrupoProfesor(){
       
         $info = $this->createDataNecesariaParaTest();
         $grupoProfesor = GruposProfesores::factory()->create([
@@ -208,7 +208,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
 
     }
 
-    public function test_error_listar_materias_from_grupo(){
+    public function testErrorListarMateriasFromGrupo(){
       
         $info = $this->createDataNecesariaParaTest();
 
@@ -221,7 +221,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(0, count($response->json()));
     }
 
-    public function test_pasar_lista_clase_virtual(){
+    public function testPasarListaClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -247,7 +247,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(2, count($listaClase));
     }
 
-    public function test_error_pasar_lista_clase_virtual(){
+    public function testErrorPasarListaClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -264,7 +264,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
 
         $response->assertStatus(400);
     }
-    public function test_error_body_pasar_lista_clase_virtual(){
+    public function testErrorBodyPasarListaClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -285,7 +285,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $response->assertStatus(302);
     }
 
-    public function test_update_lista_clase_virtual(){
+    public function testUpdateListaClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -311,7 +311,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(1, $listaClase->asistencia);
     }
 
-    public function test_error_update_lista_clase_virtual(){
+    public function testErrorUpdateListaClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -337,7 +337,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(0, $listaClase->asistencia);
     }
 
-    public function test_get_registro_clases_pasadas(){
+    public function testGetRegistroClasesPasadas(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -361,7 +361,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(1, count($response->json()));
     }
 
-    public function test_error_get_registro_clases_pasadas(){
+    public function testErrorGetRegistroClasesPasadas(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -380,7 +380,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(0, count($response->json()));
     }
 
-    public function test_get_lista_clase_virtual(){
+    public function testGetListaClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -405,7 +405,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals($response->json()[0]['idAlumno'], $info['alumno']->id);
     }
 
-    public function test_error_get_lista_clase_virutal(){
+    public function testErrorGetListaClaseVirutal(){
         $info = $this->createDataNecesariaParaTest();
         $randomID = rand();
         $response = $this->get('api/agenda-clase/'.$randomID.'/asistencia/',[
@@ -418,7 +418,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
        
     }
 
-    public function test_get_eventos_hoy_alumno(){
+    public function testGetEventosHoyAlumno(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -437,7 +437,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(1, count($response->json()));
     }
 
-    public function test_get_eventos_hoy_profesor(){
+    public function testGetEventosHoyProfesor(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
@@ -456,7 +456,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $this->assertEquals(1, count($response->json()));
     }
 
-    public function test_error_get_eventos_hoy_usuario(){
+    public function testErrorGetEventosHoyUsuario(){
         $info = $this->createDataNecesariaParaTest();
         $claseVirtual = agendaClaseVirtual::factory()->create([
             'idProfesor' => $info['profesor']->id,
