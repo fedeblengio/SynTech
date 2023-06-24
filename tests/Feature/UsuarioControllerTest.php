@@ -48,7 +48,7 @@ class UsuarioControllerTest extends TestCase
         return $randomID;
     }    
 
-    public function test_get_usuario()
+    public function testGetUsuario()
     {
         $info = $this->createDataNecesariaParaTest();
         $response = $this->get('api/usuario/' . $info['alumno']->id, [
@@ -71,7 +71,7 @@ class UsuarioControllerTest extends TestCase
         ]);
         $this->assertEquals($info['alumno']->id, $response['id']);
     }
-    public function test_error_get_usuario()
+    public function testErrorGetUsuario()
     {
         $info = $this->createDataNecesariaParaTest();
         $randomID = rand();
@@ -83,7 +83,7 @@ class UsuarioControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_get_usuario_grupo(){
+    public function testGetUsuarioGrupo(){
         $info = $this->createDataNecesariaParaTest();
         $response = $this->get('api/usuario/' . $info['alumno']->id . '/grupo', [
             'token' => [
@@ -97,7 +97,7 @@ class UsuarioControllerTest extends TestCase
             ],
         ]);
     }
-    public function test_modificar_usuario(){
+    public function testModificarUsuario(){
         $info = $this->createDataNecesariaParaTest();
         $modifiedData = [
             'nombre' => 'Nuevo Nombre',
@@ -115,7 +115,7 @@ class UsuarioControllerTest extends TestCase
         $this->assertEquals($alumno->email, $modifiedData['email']);
         $this->assertEquals($alumno->genero, $modifiedData['genero']);   
     }
-    public function test_error_modificar_usuario(){
+    public function testErrorModificarUsuario(){
         $info = $this->createDataNecesariaParaTest();
         $modifiedData = [
             'nombre' => 'Nuevo Nombre',
