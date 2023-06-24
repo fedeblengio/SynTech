@@ -82,6 +82,11 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $response->assertSee($claseVirtual['idProfesor']);
         $response->assertSee($claseVirtual['idMateria']);
         $response->assertSee($claseVirtual['idGrupo']);
+        $this->assertDatabaseHas('agenda_clase_virtual', [
+            'idProfesor' => $claseVirtual['idProfesor'],
+            'idMateria' => $claseVirtual['idMateria'],
+            'idGrupo' => $claseVirtual['idGrupo'],
+        ]);
     }
 
     public function testErrorCrearClaseVirtualSinToken()
@@ -97,6 +102,11 @@ class AgendaClaseVirtualControllerTest extends TestCase
 
         $response = $this->post('api/agenda-clase', $claseVirtual);
         $response->assertStatus(401);
+        $this->assertDatabaseMissing('agenda_clase_virtual', [
+            'idProfesor' => $claseVirtual['idProfesor'],
+            'idMateria' => $claseVirtual['idMateria'],
+            'idGrupo' => $claseVirtual['idGrupo'],
+        ]);
     }
     public function testErrorCrearClaseVirtual()
     {
@@ -114,6 +124,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
         ]);
 
         $response->assertStatus(302);
+    
     }
     public function testEliminarClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
@@ -129,10 +140,12 @@ class AgendaClaseVirtualControllerTest extends TestCase
             ],
         ]);
         $response->assertStatus(200);
-        $clase = agendaClaseVirtual::find($claseVirtual->id);
-        $this->assertNull($clase);
-
-        
+        $this->assertDatabaseMissing('agenda_clase_virtual', [
+            'id'=>$claseVirtual->id,
+            'idProfesor' => $claseVirtual->idProfesor,
+            'idMateria' => $claseVirtual->idMateria,
+            'idGrupo' => $claseVirtual->idGrupo,
+        ]);
     }
 
     public function testErrorEliminarClaseVirtual(){
@@ -144,6 +157,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
             ],
         ]);
         $response->assertStatus(404);
+
     }
 
     public function testListarClaseVirtualGrupoProfesor()
@@ -245,6 +259,11 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $response->assertStatus(200);
         $listaClase = listaClaseVirtual::where('idClase', $claseVirtual->id)->get();
         $this->assertEquals(2, count($listaClase));
+        $this->assertDatabaseHas('lista_aula_virtual', [
+            'idClase' => $claseVirtual->id,
+            'idAlumnos' => $info['alumno']->id,
+            'asistencia' => 1,
+        ]);
     }
 
     public function testErrorPasarListaClaseVirtual(){
