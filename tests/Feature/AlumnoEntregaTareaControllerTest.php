@@ -113,6 +113,12 @@ class AlumnoEntregaTareaControllerTest extends TestCase
             ],
         ]);
         $response->assertStatus(302);
+        $this->assertDatabaseMissing('alumno_entrega_tareas', [
+            'idTareas' => $tarea->idTareas,
+            'idAlumnos' => $info['alumno']->id,
+            'mensaje' => $entrega['mensaje'],
+            're_hacer' => $entrega['re_hacer'],
+        ]);
     }
 
     public function testAlumnoEntregaTareaReHacer()
