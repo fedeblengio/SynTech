@@ -282,6 +282,13 @@ class AgendaClaseVirtualControllerTest extends TestCase
         ]);
 
         $response->assertStatus(400);
+        $this->assertDatabaseMissing(
+            'lista_aula_virtual',
+            [
+                'idClase' => $claseVirtual->id,
+            ]
+        );
+       
     }
     public function testErrorBodyPasarListaClaseVirtual(){
         $info = $this->createDataNecesariaParaTest();
@@ -328,6 +335,11 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $response->assertStatus(200);
         $listaClase = listaClaseVirtual::where('idClase', $claseVirtual->id)->where('idAlumnos',$info['alumno']->id)->first();
         $this->assertEquals(1, $listaClase->asistencia);
+        $this->assertDatabaseHas('lista_aula_virtual', [
+            'idClase' => $claseVirtual->id,
+            'idAlumnos' => $info['alumno']->id,
+            'asistencia' => 1,
+        ]);
     }
 
     public function testErrorUpdateListaClaseVirtual(){
@@ -354,6 +366,11 @@ class AgendaClaseVirtualControllerTest extends TestCase
         $response->assertStatus(302);
         $listaClase = listaClaseVirtual::where('idClase', $claseVirtual->id)->where('idAlumnos',$info['alumno']->id)->first();
         $this->assertEquals(0, $listaClase->asistencia);
+        $this->assertDatabaseHas('lista_aula_virtual', [
+            'idClase' => $claseVirtual->id,
+            'idAlumnos' => $info['alumno']->id,
+            'asistencia' => 0,
+        ]);
     }
 
     public function testGetRegistroClasesPasadas(){
