@@ -80,6 +80,11 @@ class materialPublicoControllerTest extends TestCase
             ],
         ]);
         $response->assertStatus(302);   
+        $this->assertDatabaseMissing('material_publicos', [
+            'idUsuario' => $info['profesor']->id,
+            'titulo' => $mensaje['titulo'],
+            'mensaje' => $mensaje['mensaje'],
+        ]);
     }
 
     public function testErrorPublicarNoticiaIfAlumno(){
@@ -94,7 +99,12 @@ class materialPublicoControllerTest extends TestCase
                 $info['token'],
             ],
         ]);
-        $response->assertStatus(401);   
+        $response->assertStatus(401);
+        $this->assertDatabaseMissing('material_publicos', [
+            'idUsuario' => $info['alumno']->id,
+            'titulo' => $mensaje['titulo'],
+            'mensaje' => $mensaje['mensaje'],
+        ]);  
     }
 
     public function testEliminarNoticia(){
