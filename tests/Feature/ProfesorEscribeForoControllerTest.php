@@ -74,7 +74,7 @@ class ProfesorEscribeForoControllerTest extends TestCase
         return $randomID;
     }
 
-    public function test_get_publicaciones_foro()
+    public function testGetPublicacionesForo()
     {
         $info = $this->createDataNecesariaParaTest();
         $publicacion = datosForo::factory()->create([
@@ -92,7 +92,7 @@ class ProfesorEscribeForoControllerTest extends TestCase
         $this->assertEquals($publicacion->mensaje, $response->json()[0]['data']['mensaje']);
     }
 
-    public function test_get_publicaciones_foro_materia()
+    public function testGetPublicacionesForoMateria()
     {
         $info = $this->createDataNecesariaParaTest();
         $publicacion = datosForo::factory()->create([
@@ -109,7 +109,7 @@ class ProfesorEscribeForoControllerTest extends TestCase
         $this->assertEquals($publicacion->mensaje, $response->json()[0]['data']['mensaje']);
     }
 
-    public function test_delete_publicacion_foro(){
+    public function testDeletePublicacionForo(){
         $info = $this->createDataNecesariaParaTest();
         $publicacion = datosForo::factory()->create([
             'idForo' => $info['foro']->idForo,
@@ -128,7 +128,7 @@ class ProfesorEscribeForoControllerTest extends TestCase
             'idUsuario' => $info['alumno']->id,
         ]);
     }
-    public function test_error_delete_publicacion(){
+    public function testErrorDeletePublicacion(){
         $info = $this->createDataNecesariaParaTest();
         $randomID=mt_rand(9999, 9999999);
         $response = $this->delete('api/foro/'.$randomID,[], [
@@ -139,7 +139,7 @@ class ProfesorEscribeForoControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_store_publicacion_foro()
+    public function testStorePublicacionForo()
     {
         $info = $this->createDataNecesariaParaTest();
         $mensaje = [

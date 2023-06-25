@@ -71,7 +71,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
 
         return $randomID;
     }
-    public function test_listar_tareas_alumno()
+    public function testListarTareasAlumno()
     {
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
@@ -90,7 +90,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
         $this->assertEquals($tarea->idTareas, $response->json()['tareas'][0]['idTarea']);
     }
 
-    public function test_listar_tarea()
+    public function testListarTarea()
     {
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
@@ -108,7 +108,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
         $this->assertEquals($tarea->idTareas, $response->json()['datos']['idTarea']);
     }
 
-    public function test_error_listar_tarea()
+    public function testErrorListarTarea()
     {
         $info = $this->createDataNecesariaParaTest();
         $randomID = rand(300, 1200);
@@ -121,7 +121,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_profesor_crear_tarea()
+    public function testProfesorCrearTarea()
     {
         $info = $this->createDataNecesariaParaTest();
 
@@ -154,7 +154,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
         ]);
     }
 
-    public function test_profesor_crear_tarea_sin_token()
+    public function testProfesorCrearTareaSinToken()
     {
         $info = $this->createDataNecesariaParaTest();
 
@@ -170,7 +170,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_error_profesor_crea_tarea()
+    public function testErrorProfesorCreaTarea()
     {
         $info = $this->createDataNecesariaParaTest();
 
@@ -191,7 +191,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
 
         $response->assertStatus(302);
     }
-    public function test_profesor_corrige_tarea()
+    public function testProfesorCorrigeTarea()
     {
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
@@ -225,7 +225,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
         ]);
     }
 
-    public function test_error_profesor_corrige_tarea()
+    public function testErrorProfesorCorrigeTarea()
     {
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
@@ -253,7 +253,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
         $response->assertStatus(302);
     }
 
-    public function test_profesor_re_corrige_tarea()
+    public function testProfesorReCorrigeTarea()
     {
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
@@ -288,7 +288,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
         ]);
     }
 
-    public function test_profesor_eliminar_tarea()
+    public function testProfesorEliminarTarea()
     {
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
@@ -307,7 +307,7 @@ class ProfesorCreaTareasControllerTest extends TestCase
         ]);
     }
 
-    public function test_error_profesor_eliminar_tarea()
+    public function testErrorProfesorEliminarTarea()
     {
         $info = $this->createDataNecesariaParaTest();
         $randomID = rand(300, 1200);

@@ -22,7 +22,7 @@ class LoginTest extends TestCase
 {
     use RefreshDatabase;
    
-    public function test_login(){
+    public function testLogin(){
         $credentials = $this->createNewUser();
        
         $alumno = alumnos::where('id', $credentials['username'])->first();
@@ -88,13 +88,13 @@ class LoginTest extends TestCase
         }
     }
 
-    public function test_error_login()
+    public function testErrorLogin()
     {
         $response = $this->post('api/login',[],[]);
         $response->assertStatus(302);
     }
 
-    public function test_logout(){
+    public function testLogout(){
         $token = token::factory()->create();
         $response = $this->post('api/logout',[],[
             'token' => [

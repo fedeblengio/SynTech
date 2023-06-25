@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Jobs;
-
+use Illuminate\Support\Facades\App;
 use App\Notifications\NuevaTareaNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -26,6 +26,9 @@ class ProfesorCreaTareaJob implements ShouldQueue
   
     public function handle()
     {
+        if(App::environment(['testing'])){
+           return;
+        }
         $alumnoEmail = $this->alumno->email;
         // Send the email
         Mail::send('emails.nueva_tarea', ['details' => $this->details], function ($message) use ($alumnoEmail) {
