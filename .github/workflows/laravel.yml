@@ -10,6 +10,13 @@ jobs:
   laravel-tests:
 
     runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: mysql
+      DB_DATABASE: laravelTesting
+      DB_HOST: 190.64.41.140
+      DB_PORT: 3330
+      DB_USERNAME: test
+      DB_PASSWORD: SynTech2023
 
     steps:
     - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
@@ -26,52 +33,24 @@ jobs:
       run: chmod -R 777 storage bootstrap/cache
     - name: LDAP TLS
       run: sudo sh -c "echo 'TLS_REQCERT never' > /etc/ldap/ldap.conf"
-    - name: Create Database
-      run: |
-        mkdir -p database
-        touch database/database.sqlite
     - name: Cache clear 
       run: php artisan config:cache
     - name: Config clear  
       run: php artisan config:clear
     - name: UsuarioControllerTest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=UsuarioControllerTest
     - name: AgendaClaseVirtualControllerTest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=AgendaClaseVirtualControllerTest
     - name: AlumnoEntregaTareaControllerTest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=AlumnoEntregaTareaControllerTest 
     - name: Login Test
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=LoginTest
     - name: materialPublicoControllerTest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=materialPublicoControllerTest 
     - name: ProfesorCreaTareasControllerTest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=ProfesorCreaTareasControllerTest 
     - name: ProfesorEscribeForoControllerTest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=ProfesorEscribeForoControllerTest 
     - name: CambiarContraTest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
       run: php artisan test --filter=CambiarContraTest
 
