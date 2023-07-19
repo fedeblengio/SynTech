@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Jobs\ProfesorCreaTareaJob;
 use App\Models\alumnoGrupo;
 use App\Notifications\NuevaTareaNotificacion;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Tarea;
 use App\Models\AlumnoEntrega;
@@ -41,8 +43,6 @@ class ProfesorCreaTarea extends Controller
      
         $this->asignarTarea($request, $idTarea);
 
-       
-
         if ($request->archivos) {
             for ($i=0; $i < count($request->nombresArchivo); $i++){
                 $this->subirArchivoTarea($request, $i, $idTarea);
@@ -71,6 +71,7 @@ class ProfesorCreaTarea extends Controller
 
         foreach ($alumnos as $a){
             $a->notify(new NuevaTareaNotificacion($details));
+            dispatch(new ProfesorCreaTareaJob($details,$a));
         }
     }
 
@@ -149,7 +150,9 @@ class ProfesorCreaTarea extends Controller
     public function traerTarea($id){
         $peticionSQL = $this->getDatosTarea($id);
 
-
+        if(count($peticionSQL) == 0){
+            return response()->json(['status' => 'Tarea no encontrada'], 404);
+        }
         $dataResponse = array();
 
         foreach ($peticionSQL as $p) {
@@ -161,10 +164,11 @@ class ProfesorCreaTarea extends Controller
             $postAuthor = $p->idProfesor;
 
             $usuario = $this->getImagenPerfil($postAuthor);
-
-
-            $img = base64_encode(Storage::disk('ftp')->get($usuario[0]->imagen_perfil));
-
+            if (!App::environment(['testing'])) {
+            $img = base64_encode(Storage::disk('ftp')->get($usuario->imagen_perfil));
+            }else{
+                $img = $usuario->imagen_perfil;
+            }
             foreach ($peticionSQLFiltrada as $p2) {
                 $resultado = Str::contains($p2->archivo, ['.pdf','.PDF','.docx']);
             
@@ -182,7 +186,7 @@ class ProfesorCreaTarea extends Controller
                 "idTarea" => $p->idTarea,
                 "profile_picture" => $img,
                 "idProfesor" => $p->idProfesor,
-                "nombreProfesor" => $usuario[0]->nombre,
+                "nombreProfesor" => $usuario->nombre,
                 "idMateria" => $p->idMateria,
                 "fechaVencimiento" => $p->fecha_vencimiento,
                 "titulo" => $p->titulo,
@@ -265,21 +269,7 @@ class ProfesorCreaTarea extends Controller
 
  
 
-    public function update(Request $request)
-    {
-        $modificarDatosTarea = Tarea::where('id', $request->id)->first();
-
-        try {
-            $modificarDatosTarea->titulo = $request->titulo;
-            $modificarDatosTarea->descripcion = $request->descripcion;
-            $modificarDatosTarea->fecha_vencimiento = $request->fecha_vencimiento;
-            $modificarDatosTarea->save();
-            RegistrosController::store("TAREA",$request->header('token'),"UPDATE",$request->titulo);
-            return response()->json(['status' => 'Success'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'Bad Request'], 400);
-        }
-    }
+    
 
     public function destroy($id, Request $request)
     {
@@ -336,7 +326,9 @@ class ProfesorCreaTarea extends Controller
     public function subirArchivoTarea(Request $request, int $i, $idTareas)
     {
         $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
+        if (!App::environment(['testing'])) {
         Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+        }
         $archivosTarea = new archivosTarea;
         $archivosTarea->idTarea = $idTareas;
         $archivosTarea->nombreArchivo = $nombreArchivo;
@@ -373,12 +365,12 @@ class ProfesorCreaTarea extends Controller
    
     public function getDatosTarea($id)
     {
-        $peticionSQL = DB::table('tareas')
+            $peticionSQL = DB::table('tareas')
             ->select('tareas.id AS idTarea', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria AS idMateria', 'profesor_crea_tareas.idGrupo', 'tareas.titulo', 'tareas.fecha_vencimiento', 'tareas.titulo', 'tareas.descripcion')
             ->join('profesor_crea_tareas', 'tareas.id', '=', 'profesor_crea_tareas.idTareas')
             ->where('tareas.id', $id)
             ->get();
-        return $peticionSQL;
+            return $peticionSQL; 
     }
 
   
@@ -398,7 +390,7 @@ class ProfesorCreaTarea extends Controller
         $usuario = DB::table('usuarios')
             ->select('imagen_perfil', 'id', 'nombre')
             ->where('id', $postAuthor)
-            ->get();
+            ->first();
         return $usuario;
     }
 
@@ -462,7 +454,9 @@ class ProfesorCreaTarea extends Controller
     public function deleteReHacerTareas($eliminarArchivosReHacer, Request $request)
     {
         foreach ($eliminarArchivosReHacer as $t) {
+            if (!App::environment(['testing'])) {
             Storage::disk('ftp')->delete($t->nombreArchivo);
+            }
             $archivosId = archivosReHacerTarea::where('id', $t->id)->first();
             $archivosId->delete();
             $t->delete();
@@ -474,7 +468,9 @@ class ProfesorCreaTarea extends Controller
     public function deleteEntregasTareas($eliminarArchivosEntrega, Request $request)
     {
         foreach ($eliminarArchivosEntrega as $u) {
+            if (!App::environment(['testing'])) {
             Storage::disk('ftp')->delete($u->nombreArchivo);
+            }
             $archivosId = archivosEntrega::where('id', $u->id)->first();
             $archivosId->delete();
             $u->delete();
@@ -485,7 +481,9 @@ class ProfesorCreaTarea extends Controller
     public function deleteTareaProfesor($eliminarArchivos, Request $request)
     {
         foreach ($eliminarArchivos as $p) {
+            if (!App::environment(['testing'])) {
             Storage::disk('ftp')->delete($p->nombreArchivo);
+            }
             $archivosId = archivosTarea::where('id', $p->id)->first();
             $archivosId->delete();
             $p->delete();

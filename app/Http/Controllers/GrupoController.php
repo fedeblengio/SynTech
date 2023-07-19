@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -24,8 +25,11 @@ class GrupoController extends Controller
             "idGrupo" => $profesor->idGrupo,
             "idProfesor" => $profesor->idProfesor,
             "nombre" => $profesor->nombreProfesor,
-            "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($profesor->imagen_perfil)),
+         
         ];
+        if(!App::environment(['testing'])){
+            $p["imagen_perfil"] =base64_encode(Storage::disk('ftp')->get($profesor->imagen_perfil));
+        }
         $listaAlumnos = array();
 
         foreach ($alumnos as $a) {
@@ -34,8 +38,11 @@ class GrupoController extends Controller
                 "idGrupo" => $a->idGrupo,
                 "idAlumnos" => $a->idAlumnos,
                 "nombre" => $a->nombreAlumno,
-                "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($a->imagen_perfil)),
             ];
+
+            if(!App::environment(['testing'])){
+                $alumno["imagen_perfil"] = base64_encode(Storage::disk('ftp')->get($a->imagen_perfil));
+            }
             array_push($listaAlumnos, $alumno);
         }
 
@@ -53,17 +60,14 @@ class GrupoController extends Controller
         $request->validate([
             'presentes' => 'array',
             'ausentes' => 'array',
-
         ]);
         try {
-
             foreach ($request->presentes as $presente) {
                 $this->insertPresentesAulaVirtual($idClase, $presente);
             }
             foreach ($request->ausentes as $ausente) {
                 $this->insertAusentesAulaVirtual($idClase, $ausente);
             }
-           
             RegistrosController::store("LISTA",$request->header('token'),"CREATE","");
 
          return response()->json(['status' => 'Success'], 200);
@@ -75,18 +79,13 @@ class GrupoController extends Controller
 
     public function getAllListasFromProfesor($idProfesor)
     {
-        return  self::registroListarTodo($idProfesor);
-    }
-
-    public function registroListarTodo($idProfesor)
-    {
-        return response()->json(DB::table('lista_aula_virtual')
-            ->select('lista_aula_virtual.idClase', 'agenda_clase_virtual.idGrupo', 'agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia', 'materias.id AS idMateria', 'lista_aula_virtual.created_at')
-            ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
-            ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
-            ->where('agenda_clase_virtual.idProfesor', $idProfesor)
-            ->distinct()
-            ->get());
+       return listaClaseVirtual::query()
+                ->select('lista_aula_virtual.idClase', 'agenda_clase_virtual.idGrupo', 'agenda_clase_virtual.idProfesor as IdProfesor', 'materias.nombre as materia', 'materias.id AS idMateria', 'lista_aula_virtual.created_at')
+                ->join('agenda_clase_virtual', 'lista_aula_virtual.idClase', '=', 'agenda_clase_virtual.id')
+                ->join('materias', 'agenda_clase_virtual.idMateria', '=', 'materias.id')
+                ->where('agenda_clase_virtual.idProfesor', $idProfesor)
+                ->distinct()
+                ->get();
     }
 
     public function mostrarFaltasTotalesGlobal($idGrupo,$idMateria)
@@ -137,6 +136,9 @@ class GrupoController extends Controller
     {
 
         $registroClase = listaClaseVirtual::all()->where('idClase', $idClase);
+        if(empty($registroClase)){
+            return response()->json([]);
+        }
         $chequeo = "";
         $dataResponse = array();
         foreach ($registroClase as $p) {
@@ -151,8 +153,10 @@ class GrupoController extends Controller
                 "idAlumno" => $p->idAlumnos,
                 "asistencia" => $chequeo,
                 "nombre" => $usuarios->nombre,
-                "imagen_perfil" => base64_encode(Storage::disk('ftp')->get($usuarios->imagen_perfil)),
             ];
+            if(!App::environment(['testing'])){
+                $datos["imagen_perfil"] =base64_encode(Storage::disk('ftp')->get($usuarios->imagen_perfil));
+            }
 
             array_push($dataResponse, $datos);
         }
@@ -214,6 +218,7 @@ class GrupoController extends Controller
   
     public function insertPresentesAulaVirtual($idClase, $presente)
     {
+    
         $nuevaLista = new listaClaseVirtual();
         $nuevaLista->idClase = $idClase;
         $nuevaLista->idAlumnos = $presente;

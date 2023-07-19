@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\usuarios;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use App\Models\material_publico;
+use App\Models\MaterialPublico;
 use App\Models\archivos_material_publico;
 use App\Http\Controllers\RegistrosController;
 use Carbon\Carbon;
@@ -14,9 +16,9 @@ class materialPublicoController extends Controller
 {
     public function index(Request $request)
     {
-        if($request->idUsuario){
+        if ($request->idUsuario) {
             $peticionSQL = $this->getMaterialPublicoForUsuario($request);
-        }else{
+        } else {
             $peticionSQL = $this->getMaterialPublico($request);
         }
 
@@ -25,9 +27,9 @@ class materialPublicoController extends Controller
 
         foreach ($peticionSQL as $p) {
             $peticionSQLFiltrada = $this->getArchivosMaterialPublico($p);
-
-            $p->imgEncabezado = base64_encode(Storage::disk('ftp')->get($p->imgEncabezado));
-
+            if (!App::environment(['testing'])) {
+                $p->imgEncabezado = base64_encode(Storage::disk('ftp')->get($p->imgEncabezado));
+            }
             $arrayArchivos = array();
 
 
@@ -57,12 +59,16 @@ class materialPublicoController extends Controller
     }
 
     public function store(Request $request)
-    {   
+    {
         $request->validate([
-            'titulo' => 'string|required', 
-            'mensaje' => 'string', 
+            'titulo' => 'string|required',
+            'mensaje' => 'string',
             'idUsuario' => 'required'
         ]);
+        $usuario = usuarios::findOrFail($request->idUsuario);
+        if ($usuario->ou != "Profesor") {
+            return response()->json(['status' => 'Unauthorized'], 401);
+        }
 
         $idDatos = $this->agregarMaterialPublico($request);
 
@@ -78,10 +84,10 @@ class materialPublicoController extends Controller
         return response()->json(['status' => 'Success'], 200);
     }
 
-    public function destroy($id,Request $request)
+    public function destroy($id, Request $request)
     {
 
-        $materialPublico = material_publico::findOrFail($id);
+        $materialPublico = MaterialPublico::findOrFail($id);
         $arhivosMaterialPublico = archivos_material_publico::where('idMaterialPublico', $materialPublico->id)->get();
         try {
             foreach ($arhivosMaterialPublico as $p) {
@@ -99,10 +105,10 @@ class materialPublicoController extends Controller
     public function getMaterialPublicoForUsuario(Request $request)
     {
         $peticionSQL = DB::table('material_publicos')
-            ->select('material_publicos.id', 'material_publicos.imgEncabezado', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
+            ->select('material_publicos.id', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
             ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
             ->where('material_publicos.idUsuario', $request->idUsuario)
-            ->orderBy('id', 'desc')
+            ->orderBy('material_publicos.id', 'desc')
             ->take($request->limit)
             ->get();
         return $peticionSQL;
@@ -111,11 +117,12 @@ class materialPublicoController extends Controller
     public function getMaterialPublico(Request $request)
     {
         $peticionSQL = DB::table('material_publicos')
-            ->select('material_publicos.id', 'material_publicos.imgEncabezado', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'material_publicos.idUsuario', 'material_publicos.imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
+            ->select('material_publicos.id', 'material_publicos.titulo AS titulo', 'material_publicos.mensaje AS mensaje', 'usuarios.id AS idUsuario', 'material_publicos.imgEncabezado AS imgEncabezado', 'material_publicos.created_at AS fecha', 'usuarios.nombre AS nombreAutor')
             ->join('usuarios', 'usuarios.id', '=', 'material_publicos.idUsuario')
-            ->orderBy('id', 'desc')
+            ->orderBy('material_publicos.id', 'desc')
             ->take($request->limit)
             ->get();
+
         return $peticionSQL;
     }
 
@@ -130,10 +137,10 @@ class materialPublicoController extends Controller
         return $peticionSQLFiltrada;
     }
 
-  
+
     public function agregarMaterialPublico(Request $request)
     {
-        $materialPublico = new material_publico;
+        $materialPublico = new MaterialPublico;
         $materialPublico->idUsuario = $request->idUsuario;
         $materialPublico->titulo = $request->titulo;
         $materialPublico->mensaje = $request->mensaje;
@@ -143,11 +150,13 @@ class materialPublicoController extends Controller
         return $materialPublico;
     }
 
-    
+
     public function subirArchivoMaterialPublico(Request $request, int $i, $idDatos)
     {
         $nombreArchivo = random_int(0, 1000000) . "_" . $request->nombresArchivo[$i];
-        Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+        if (!App::environment(['testing'])) {
+            Storage::disk('ftp')->put($nombreArchivo, fopen($request->archivos[$i], 'r+'));
+        }
         $archivosForo = new archivos_material_publico;
         $archivosForo->idMaterialPublico = $idDatos->id;
         $archivosForo->nombreArchivo = $nombreArchivo;
@@ -156,7 +165,9 @@ class materialPublicoController extends Controller
 
     public function deleteArchivosMaterialPublico($p)
     {
-        Storage::disk('ftp')->delete($p->nombreArchivo);
+        if (!App::environment(['testing'])) {
+            Storage::disk('ftp')->delete($p->nombreArchivo);
+        }
         $p->delete();
     }
 }

@@ -59,7 +59,7 @@ return [
             'password' => env('FTP_PASSWORD'),
             'root' => 'pdf', // for example: /var/www/html/dev/images
             'ssl' => false,
-            'passive'  => true, 
+            'passive'  => true,
         ],
 
         'tarea' => [

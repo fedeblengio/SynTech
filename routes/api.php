@@ -30,12 +30,13 @@ Route::middleware(['verificar_token'])->group(function () {
   Route::get('/usuario/{id}','App\Http\Controllers\usuariosController@show');
   Route::get('/usuario/{id}/grupo', 'App\Http\Controllers\ProfesorEscribeForo@traerGrupos');
   //FORO PRINCIPAL PUBLICACIONES
-  Route::get('/foro', 'App\Http\Controllers\ProfesorEscribeForo@show');
+  Route::get('/foro/grupo/{idGrupo}/usuario/{idUsuario}/{limit}', 'App\Http\Controllers\ProfesorEscribeForo@getAllPublicaciones');
+  Route::get('/foro/grupo/{idGrupo}/usuario/{idUsuario}/materia/{idMateria}/{limit}', 'App\Http\Controllers\ProfesorEscribeForo@getAllPublicacionesMateria');
   Route::post('/foro', 'App\Http\Controllers\ProfesorEscribeForo@store');
   Route::delete('/foro/{id}','App\Http\Controllers\ProfesorEscribeForo@destroy');
 
   //AGENDA CLASE VIRTUAL
-  Route::get('/agenda-clase/usuario/{id}/grupo/{idGrupo}', 'App\Http\Controllers\AgendaClaseVirtualController@show');
+  Route::get('/agenda-clase/usuario/{id}/grupo/{idGrupo}', 'App\Http\Controllers\AgendaClaseVirtualController@index');
   Route::get('/agenda-clase/profesor/{idProfesor}/grupo/{idGrupo}/materia', 'App\Http\Controllers\AgendaClaseVirtualController@getMateriasFromProfesorGrupo');
   Route::post('/agenda-clase', 'App\Http\Controllers\AgendaClaseVirtualController@store')->middleware('controlar_profesor');
   Route::delete('/agenda-clase/{id}', 'App\Http\Controllers\AgendaClaseVirtualController@destroy')->middleware('controlar_profesor');
@@ -78,6 +79,8 @@ Route::middleware(['verificar_token'])->group(function () {
   // NOTIFICACIONES
   Route::get('/notificacion/usuario/{idUsuario}', 'App\Http\Controllers\NotificationController@listarNotificaciones');
   Route::put('/notificacion/{idNotificacion}', 'App\Http\Controllers\NotificationController@marcarLeida');
+
+  Route::post('/logout', 'App\Http\Controllers\loginController@cerrarSesion');
 });
 
 Route::get('/noticia','App\Http\Controllers\materialPublicoController@index'); // ENDPOINT PUBLICO
