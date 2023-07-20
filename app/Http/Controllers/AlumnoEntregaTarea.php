@@ -62,18 +62,19 @@ class AlumnoEntregaTarea extends Controller
             "entrega" => $primera_entrega,
             "archivosAlumno" => $archivosAlumno1,
         ];
+        
 
         $segundaE = [
             "entrega" => $segunda_entrega,
             "archivosAlumno" => $archivosAlumno2,
         ];
+   
         if(!App::environment(['testing'])){
             $aux["imagen_perfil_alumno"] = base64_encode(Storage::disk('ftp')->get($imagen_perfil_alumno));
         }
-        $aux = [
-            "primera_entrega" => $primeraE,
-            "segunda_entrega" => $segundaE
-        ];
+        $aux["primera_entrega"]= $primeraE;
+        $aux["segunda_entrega"]= $segundaE;
+    
 
         return response()->json($aux);
     }
@@ -837,10 +838,11 @@ class AlumnoEntregaTarea extends Controller
     public function getEntregasAlumno($idAlumno)
     {
         $entregas = DB::table('alumno_entrega_tareas')
-            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'alumno_entrega_tareas.re_hacer AS re_hacer', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria')
+            ->select('alumno_entrega_tareas.idTareas AS idTareas', 'tareas.titulo AS titulo', 'alumno_entrega_tareas.re_hacer AS re_hacer', 'tareas.descripcion', 'alumno_entrega_tareas.idAlumnos AS idAlumnos', 'alumno_entrega_tareas.calificacion AS calificacion', 'usuarios.nombre AS nombreUsuario', 'profesor_crea_tareas.idGrupo', 'profesor_crea_tareas.idProfesor', 'profesor_crea_tareas.idMateria', 'materias.nombre as materia')
             ->join('profesor_crea_tareas', 'alumno_entrega_tareas.idTareas', '=', 'profesor_crea_tareas.idTareas')
             ->join('usuarios', 'alumno_entrega_tareas.idAlumnos', '=', 'usuarios.id')
             ->join('tareas', 'alumno_entrega_tareas.idTareas', '=', 'tareas.id')
+            ->join('materias', 'materias.id', '=', 'profesor_crea_tareas.idMateria')
             ->where('alumno_entrega_tareas.idAlumnos', $idAlumno)
             ->orderBy('alumno_entrega_tareas.created_at', 'desc')
             ->get();

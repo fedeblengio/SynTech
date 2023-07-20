@@ -63,7 +63,7 @@ class CambiarContraTest extends TestCase
        
     }
 
-    public function test_cambiar_passwd(){
+    public function testCambiarPasswd(){
         $alumno = $this->buildUpDataForTesting();
         $token = token::factory()->create();
 
