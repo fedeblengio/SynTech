@@ -69,7 +69,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
 
         return $randomID;
     }
-    public function test_alumno_entrega_tarea()
+    public function testAlumnoEntregaTarea()
     {
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
@@ -96,7 +96,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
         ]);
     }
 
-    public function test_error_alumno_entrega_tarea(){
+    public function testErrorAlumnoEntregaTarea(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -113,9 +113,15 @@ class AlumnoEntregaTareaControllerTest extends TestCase
             ],
         ]);
         $response->assertStatus(302);
+        $this->assertDatabaseMissing('alumno_entrega_tareas', [
+            'idTareas' => $tarea->idTareas,
+            'idAlumnos' => $info['alumno']->id,
+            'mensaje' => $entrega['mensaje'],
+            're_hacer' => $entrega['re_hacer'],
+        ]);
     }
 
-    public function test_alumno_entrega_tarea_re_hacer()
+    public function testAlumnoEntregaTareaReHacer()
     {
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
@@ -140,7 +146,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
             'mensaje' => $entrega['mensaje'],
         ]);
     }
-    public function test_listar_entrega_alumno(){
+    public function testListarEntregaAlumno(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -162,7 +168,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
         $this->assertEquals($entrega->mensaje, $response->json()[0]['data']['mensaje']);
     }
 
-    public function test_error_listar_entrega_alumno(){
+    public function testErrorListarEntregaAlumno(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -179,7 +185,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
     }
 
 
-    public function test_listar_re_entrega_alumno(){
+    public function testListarReEntregaAlumno(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -202,7 +208,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
         $this->assertEquals($entrega->mensaje, $response->json()[0]['data']['mensaje']);
     }
 
-    public function test_error_listar_re_entrega_alumno(){
+    public function testErrorListarReEntregaAlumno(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -218,7 +224,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_listar_entregas_de_una_tarea(){
+    public function testListarEntregasDeUnaTarea(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -245,7 +251,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
         $this->assertEquals(1,count($response->json()['entregas_totalesNoCorregidas']['entregas_tareas_no_corregidas']));
     }
 
-    public function test_listar_entregas_corregidas_de_una_tarea(){
+    public function testListarEntregasCorregidasDeUnaTarea(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -272,7 +278,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
     }
 
 
-    public function test_listar_re_entregas_de_una_tarea(){
+    public function testListarReEntregasDeUnaTarea(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -299,7 +305,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
         $this->assertEquals(1,count($response->json()['entregas_totalesNoCorregidas']['re_hacer_no_corregidas']));
     }
 
-    public function test_listar_re_entregas_corregidas_de_una_tarea(){
+    public function testListarReEntregasCorregidasDeUnaTarea(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -326,7 +332,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
         $this->assertEquals(1,count($response->json()['entregas_totalesCorregidas']['re_hacer_corregidas']));
     }
 
-    public function test_listar_entregas_de_un_alumno(){
+    public function testListarEntregasDeUnAlumno(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -349,7 +355,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
         $this->assertEquals(1,count($response->json()));
     }
 
-    public function test_listar_registro_tarea(){
+    public function testListarRegistroTarea(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,
@@ -380,7 +386,7 @@ class AlumnoEntregaTareaControllerTest extends TestCase
         $this->assertEquals(1,count($response->json()['segunda_entrega']['entrega']));
     }
 
-    public function test_generar_promedio_grupo_materia(){
+    public function testGenerarPromedioGrupoMateria(){
         $info = $this->createDataNecesariaParaTest();
         $tarea = ProfesorTarea::factory()->create([
             'idMateria' => $info['materia']->id,

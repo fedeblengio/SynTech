@@ -48,7 +48,7 @@ class materialPublicoControllerTest extends TestCase
         return $randomID;
     }
 
-    public function test_publicar_noticia(){
+    public function testPublicarNoticia(){
         $info = $this->createDataNecesariaParaTest();
         $mensaje = [
             'titulo' =>"titulo", 
@@ -68,7 +68,7 @@ class materialPublicoControllerTest extends TestCase
         ]);
     }
 
-    public function test_error_publicar_noticia(){
+    public function testErrorPublicarNoticia(){
         $info = $this->createDataNecesariaParaTest();
         $mensaje = [
             'titulo' =>"titulo", 
@@ -80,9 +80,14 @@ class materialPublicoControllerTest extends TestCase
             ],
         ]);
         $response->assertStatus(302);   
+        $this->assertDatabaseMissing('material_publicos', [
+            'idUsuario' => $info['profesor']->id,
+            'titulo' => $mensaje['titulo'],
+            'mensaje' => $mensaje['mensaje'],
+        ]);
     }
 
-    public function test_error_publicar_noticia_if_alumno(){
+    public function testErrorPublicarNoticiaIfAlumno(){
         $info = $this->createDataNecesariaParaTest();
         $mensaje = [
             'titulo' =>"titulo", 
@@ -94,10 +99,15 @@ class materialPublicoControllerTest extends TestCase
                 $info['token'],
             ],
         ]);
-        $response->assertStatus(401);   
+        $response->assertStatus(401);
+        $this->assertDatabaseMissing('material_publicos', [
+            'idUsuario' => $info['alumno']->id,
+            'titulo' => $mensaje['titulo'],
+            'mensaje' => $mensaje['mensaje'],
+        ]);  
     }
 
-    public function test_eliminar_noticia(){
+    public function testEliminarNoticia(){
         $info = $this->createDataNecesariaParaTest();
         $noticia = MaterialPublico::factory()->create([
             'idUsuario' => $info['profesor']->id,
@@ -113,7 +123,7 @@ class materialPublicoControllerTest extends TestCase
             'id' => $noticia->id,
         ]);
     }
-    public function test_error_eliminar_noticia(){
+    public function testErrorEliminarNoticia(){
         $info = $this->createDataNecesariaParaTest();
         $randomId= rand(1000, 9999);
 
@@ -125,7 +135,7 @@ class materialPublicoControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_get_noticias(){
+    public function testGetNoticias(){
         $info = $this->createDataNecesariaParaTest();
         $noticia = MaterialPublico::factory()->create([
             'idUsuario' => $info['profesor']->id,
