@@ -38,6 +38,6 @@ jobs:
           sshpass -p ${{ secrets.SERVER_PASSWORD }} \
           ssh -o StrictHostKeyChecking=no \
           -p 223 \
-          root@${{ secrets.SERVER_IP }} kubectl create deployment --image akuster/laravel-sitio-actions laravel-sitio-actions
+          root@${{ secrets.SERVER_IP }} source /home/script-laravel-sitio.sh
 
   
