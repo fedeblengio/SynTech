@@ -15,7 +15,7 @@ COPY package*.json ./
 COPY .env.example .env
 COPY . .
 
-
+RUN  echo 'TLS_REQCERT never' > /etc/openldap/ldap.conf
 CMD ["php-fpm", "-F"]
 EXPOSE 8000
  
