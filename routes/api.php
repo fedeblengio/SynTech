@@ -16,14 +16,14 @@ use Illuminate\Support\Facades\DB;
 // LOGIN
 Route::post('/login', 'App\Http\Controllers\loginController@connect'); 
 //
-
+ Route::get('/archivo/{archivo}', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); 
 Route::middleware(['verificar_token'])->group(function () {
 
   // GET AND POST PROFILE IMAGE
   Route::post('/imagen-perfil', 'App\Http\Controllers\loginController@cargarImagen');
   Route::get('/imagen-perfil/{id}', 'App\Http\Controllers\loginController@traerImagen');
   // FTP GET FILE
-  Route::get('/archivo/{archivo}', 'App\Http\Controllers\ProfesorEscribeForo@traerArchivo'); 
+ 
   //USUARIO
   Route::put('/usuario/{id}/contrasenia', 'App\Http\Controllers\usuariosController@changePassword');
   Route::put('/usuario/{id}', 'App\Http\Controllers\usuariosController@updateUserInfo');
