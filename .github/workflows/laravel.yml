@@ -37,6 +37,8 @@ jobs:
       run: php artisan config:cache
     - name: Config clear  
       run: php artisan config:clear
+    - name: Run migration 
+      run: php artisan migrate:fresh
     - name: UsuarioControllerTest
       run: php artisan test --filter=UsuarioControllerTest
     - name: AlumnoEntregaTareaControllerTest
