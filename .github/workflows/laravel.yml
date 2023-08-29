@@ -39,8 +39,6 @@ jobs:
       run: php artisan config:clear
     - name: UsuarioControllerTest
       run: php artisan test --filter=UsuarioControllerTest
-    - name: AgendaClaseVirtualControllerTest
-      run: php artisan test --filter=AgendaClaseVirtualControllerTest
     - name: AlumnoEntregaTareaControllerTest
       run: php artisan test --filter=AlumnoEntregaTareaControllerTest 
     - name: Login Test
@@ -53,4 +51,6 @@ jobs:
       run: php artisan test --filter=ProfesorEscribeForoControllerTest 
     - name: CambiarContraTest
       run: php artisan test --filter=CambiarContraTest
+    - name: AgendaClaseVirtualControllerTest
+      run: php artisan test --filter=AgendaClaseVirtualControllerTest
 
