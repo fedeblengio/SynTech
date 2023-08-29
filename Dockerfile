@@ -18,5 +18,6 @@ COPY . .
 
 CMD ["php-fpm", "-F"]
 EXPOSE 8000
+
  
 CMD composer install && php artisan key:generate && chown -R apache /var/www/html/bootstrap/cache && chown -R apache /var/www/html/storage && php artisan serve --host 0.0.0.0
