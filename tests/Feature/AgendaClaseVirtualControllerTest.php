@@ -431,7 +431,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
             'asistencia' => 0,
         ]);
 
-        $response = $this->get('api/agenda-clase/'.$claseVirtual->id.'/asistencia/',[
+        $response = $this->get('api/agenda-clase/'.$claseVirtual->id.'/registro/',[
             'token' => [
                 $info['token'],
             ],
@@ -444,7 +444,7 @@ class AgendaClaseVirtualControllerTest extends TestCase
     public function testErrorGetListaClaseVirutal(){
         $info = $this->createDataNecesariaParaTest();
         $randomID = rand();
-        $response = $this->get('api/agenda-clase/'.$randomID.'/asistencia/',[
+        $response = $this->get('api/agenda-clase/'.$randomID.'/registro/',[
             'token' => [
                 $info['token'],
             ],
